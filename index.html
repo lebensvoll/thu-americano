@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#14150f">
+<title>World Cup Americano at STERLING</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sage:#5c6b56;
+    --sage-dark:#48543f;
+    --dark:#14150f;
+    --panel:#1d2018;
+    --panel2:#22261c;
+    --border:#333726;
+    --text:#f4f1ea;
+    --muted:#a7ac9c;
+    --orange:#c17d3a;
+    --orange-light:#d99a52;
+    --danger:#c15a4a;
+    --radius:14px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; touch-action:manipulation;}
+  html,body{height:100%;}
+  body{
+    margin:0; background:var(--dark); color:var(--text);
+    font-family:'Montserrat',-apple-system,BlinkMacSystemFont,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    padding-top:env(safe-area-inset-top);
+    padding-bottom:env(safe-area-inset-bottom);
+    padding-left:env(safe-area-inset-left);
+    padding-right:env(safe-area-inset-right);
+    overscroll-behavior-y:none;
+  }
+  h1,h2,h3,.display{
+    font-family:'Montserrat',sans-serif; text-transform:uppercase; letter-spacing:.01em; font-weight:800;
+  }
+  #app{min-height:100%;}
+  .hero{
+    background:var(--sage); padding:32px 48px; display:flex; align-items:center; justify-content:space-between; gap:24px;
+    border-bottom:4px solid var(--orange);
+  }
+  .hero h1{font-size:30px; margin:0 0 6px; color:#fff; font-weight:800; line-height:1.1;}
+  .hero .sub{font-size:14px; color:#e7ece3; font-weight:400;}
+  .hero .actions{display:flex; gap:10px; align-items:center;}
+  .badge{
+    background:var(--orange); color:#241304; font-weight:700;
+    padding:10px 18px; border-radius:10px; font-size:13px; white-space:nowrap; text-transform:uppercase; letter-spacing:.03em;
+  }
+  .container{max-width:1260px; margin:0 auto; padding:28px 48px 60px;}
+  .card{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:22px 24px; margin-bottom:18px;}
+  label{font-size:11.5px; color:var(--muted); display:block; margin-bottom:6px; letter-spacing:.04em; text-transform:uppercase; font-weight:600;}
+  .field{margin-bottom:16px;}
+  input,select{
+    font-family:'Montserrat',sans-serif; background:var(--panel2); color:var(--text);
+    border:1px solid var(--border); border-radius:9px; padding:10px 12px; font-size:14px; width:100%;
+  }
+  input:focus, select:focus{outline:none; border-color:var(--orange);}
+  button{
+    font-family:'Montserrat',sans-serif; border:none; border-radius:9px; padding:11px 18px;
+    font-size:13px; font-weight:700; letter-spacing:.02em; text-transform:uppercase; cursor:pointer;
+    background:var(--panel2); color:var(--text); border:1px solid var(--border);
+  }
+  button.primary{background:var(--orange); color:#241304; border:none;}
+  button.primary:hover{background:var(--orange-light);}
+  button.warn{background:var(--danger); color:#2a0906; border:none;}
+  button.small{padding:7px 13px; font-size:11.5px;}
+  button.ghost{background:transparent;}
+  button:active{opacity:.8;}
+  button:disabled{opacity:.4; cursor:not-allowed;}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  .grid4{display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:16px;}
+  .player-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px 14px;}
+  .player-row{display:flex; gap:8px; align-items:center;}
+  .player-row input{flex:1;}
+  .rm{padding:9px 12px; background:var(--panel2); border-radius:9px; color:var(--danger); border:1px solid var(--border); font-size:14px; line-height:1;}
+  .hint{font-size:12.5px; color:var(--muted); margin-top:8px; line-height:1.55;}
+  .rec-box{background:var(--panel2); border:1px solid var(--border); border-radius:10px; padding:12px 14px; margin-top:10px; font-size:13px;}
+  .rec-box b{color:var(--orange-light);}
+  .setup-actions{display:flex; gap:12px; align-items:center; margin-top:6px;}
+
+  .layout{display:grid; grid-template-columns:340px 1fr; gap:24px; align-items:start;}
+  .section-title{font-size:12.5px; font-weight:700; color:var(--orange-light); margin-bottom:14px; letter-spacing:.05em; text-transform:uppercase; display:flex; justify-content:space-between; align-items:center;}
+  .lb-row{display:flex; align-items:center; padding:10px 8px; border-radius:9px; gap:6px;}
+  .lb-row:nth-child(odd){background:var(--panel2);}
+  .lb-rank{width:20px; color:var(--muted); font-size:13px; font-weight:700;}
+  .lb-name{flex:1; font-weight:600; font-size:13.5px;}
+  .lb-stats{font-size:11.5px; color:var(--muted); text-align:right; min-width:78px;}
+  .lb-points{font-weight:800; color:var(--orange-light); font-size:16px; margin-left:6px; min-width:34px; text-align:right;}
+
+  .round-block{margin-bottom:20px;}
+  .round-title{font-size:12.5px; font-weight:700; color:var(--orange-light); margin-bottom:10px; text-transform:uppercase; letter-spacing:.05em; display:flex; align-items:center; gap:8px; justify-content:space-between;}
+  .round-title .left{display:flex; align-items:center; gap:8px;}
+  .played-badge{font-size:10px; background:var(--orange); color:#241304; padding:3px 8px; border-radius:6px; font-weight:700;}
+  .del-round{background:transparent; border:1px solid var(--border); color:var(--danger); padding:4px 9px; font-size:10.5px; border-radius:6px;}
+  .matches-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .match{border:1px solid var(--border); border-radius:11px; padding:12px 14px; background:var(--panel2);}
+  .match .court{font-size:10.5px; color:var(--muted); margin-bottom:8px; font-weight:700; letter-spacing:.03em;}
+  .teams{display:flex; align-items:center; gap:8px;}
+  .team{flex:1; font-size:13px; font-weight:500; line-height:1.3;}
+  .score-input{width:52px; text-align:center; padding:8px 4px; font-weight:700; border-color:var(--border);}
+  .score-input:focus{border-color:var(--orange);}
+  .vs{color:var(--muted); font-size:12px;}
+  .opp-score{display:inline-block; width:34px; text-align:center; font-weight:700; color:var(--muted);}
+  .bench{font-size:11.5px; color:var(--muted); margin-top:10px; padding-top:10px; border-top:1px dashed var(--border);}
+  .empty{color:var(--muted); font-size:13px; text-align:center; padding:24px 0;}
+  .add-round-row{display:flex; justify-content:center; margin-top:6px;}
+
+  .podium-wrap{margin-bottom:26px;}
+  .podium-title{font-size:12.5px; font-weight:700; color:var(--orange-light); margin-bottom:16px; letter-spacing:.06em; text-transform:uppercase; text-align:center;}
+  .podium{display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; align-items:end;}
+  .podium-card{
+    border-radius:16px; padding:22px 16px 20px; text-align:center; position:relative;
+    border:1px solid rgba(255,255,255,.12);
+  }
+  .podium-card .medal{font-size:38px; line-height:1; margin-bottom:8px; display:block;}
+  .podium-card .rank-label{font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; font-weight:700; opacity:.85; margin-bottom:6px;}
+  .podium-card .name{font-size:16px; font-weight:800; text-transform:uppercase; letter-spacing:.01em; margin-bottom:6px; line-height:1.2;}
+  .podium-card .pts{font-size:26px; font-weight:800; margin-bottom:2px;}
+  .podium-card .meta{font-size:11.5px; opacity:.8; font-weight:500;}
+  .podium-gold{
+    background:linear-gradient(160deg,#e9c766,#a97f1f); color:#2b1c02;
+    transform:translateY(-14px); box-shadow:0 10px 26px rgba(212,175,55,.28);
+  }
+  .podium-silver{
+    background:linear-gradient(160deg,#dfe3e6,#9aa1a8); color:#1c2024;
+    box-shadow:0 8px 20px rgba(180,190,198,.18);
+  }
+  .podium-bronze{
+    background:linear-gradient(160deg,#d79a5e,#93552a); color:#2a1607;
+    box-shadow:0 8px 20px rgba(150,90,40,.2);
+  }
+  .lb-row.top1{background:linear-gradient(90deg, rgba(233,199,102,.22), transparent); border-left:3px solid #d4af37;}
+  .lb-row.top2{background:linear-gradient(90deg, rgba(223,227,230,.16), transparent); border-left:3px solid #b9c1c9;}
+  .lb-row.top3{background:linear-gradient(90deg, rgba(215,154,94,.16), transparent); border-left:3px solid #b06a35;}
+  .lb-name{cursor:pointer; border-bottom:1px dashed transparent;}
+  .lb-name:hover{border-bottom-color:var(--muted);}
+  .lb-name-input{width:auto; padding:4px 6px; font-size:13.5px; font-weight:600;}
+  .lb-toggle{background:transparent; border:none; color:var(--muted); font-size:10px; padding:2px 6px; cursor:pointer;}
+  .lb-toggle:hover{color:var(--orange-light);}
+  .lb-detail{
+    font-size:11.5px; color:var(--muted); padding:6px 8px 10px 34px; display:flex; gap:16px;
+  }
+  .lb-detail b{color:var(--text);}
+  .lb-detail .diff-pos{color:#8fd19e;}
+  .lb-detail .diff-neg{color:var(--danger);}
+  .lb-add-row{margin-top:10px; padding-top:10px; border-top:1px solid var(--border);}
+
+  /* ---------- RESPONSIVE: TABLET / LANDSCAPE PHONE ---------- */
+  @media (max-width: 1000px){
+    .container{padding:24px 24px 50px;}
+    .hero{padding:24px 24px;}
+    .layout{grid-template-columns: 280px 1fr;}
+  }
+
+  /* ---------- RESPONSIVE: PORTRAIT PHONE (and small landscape) ---------- */
+  @media (max-width: 680px){
+    .hero{
+      padding:18px 16px; flex-direction:column; align-items:flex-start; gap:14px;
+    }
+    .hero h1{font-size:20px;}
+    .hero .sub{font-size:12.5px;}
+    .hero .actions{flex-wrap:wrap; gap:8px; width:100%;}
+    .hero .actions button{flex:0 0 auto;}
+    .badge{font-size:11px; padding:8px 14px;}
+    .container{padding:16px 14px 60px;}
+    .card{padding:16px 16px; border-radius:12px;}
+    .grid2, .grid4{grid-template-columns:1fr 1fr;}
+    .player-grid{grid-template-columns:1fr;}
+    .layout{grid-template-columns:1fr;}
+    .matches-grid{grid-template-columns:1fr;}
+    .podium{grid-template-columns:1fr; gap:10px;}
+    .podium-gold{transform:none;}
+    button{padding:12px 16px; font-size:13px;}
+    button.small{padding:10px 14px; font-size:12px;}
+    input,select{font-size:16px; padding:12px 12px;} /* 16px avoids iOS auto-zoom on focus */
+    .score-input{width:56px; padding:10px 4px; font-size:16px;}
+    .lb-row{flex-wrap:wrap; padding:12px 8px;}
+    .lb-stats{min-width:auto;}
+    .round-title{flex-wrap:wrap; gap:6px;}
+    .del-round{padding:6px 10px;}
+  }
+
+  /* Very narrow phones (SE, older models) */
+  @media (max-width: 380px){
+    .grid4{grid-template-columns:1fr 1fr;}
+    .hero h1{font-size:18px;}
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+const STORAGE_KEY = 'sterling_americano_state_v2';
+
+function loadState(){
+  try{ const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : null; }
+  catch(e){ return null; }
+}
+function saveState(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+}
+
+function todayLabel(){
+  return new Date().toLocaleDateString('en-GB', {day:'numeric', month:'long', year:'numeric'});
+}
+
+function defaultState(){
+  return {
+    stage: 'setup',
+    tournamentName: 'World Cup Americano at STERLING',
+    date: todayLabel(),
+    players: ['', '', '', '', '', '', '', ''],
+    pointsTarget: 21,
+    numCourts: 2,
+    numRounds: 8,
+    sessionMinutes: 120,
+    schedule: null,
+    scores: null
+  };
+}
+
+let state = loadState() || defaultState();
+if(state.sessionMinutes === undefined) state.sessionMinutes = 120;
+
+function render(){
+  const app = document.getElementById('app');
+  app.innerHTML = '';
+  app.appendChild(state.stage === 'setup' ? renderSetup() : renderPlaying());
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ---------- ROUND RECOMMENDATION ---------- */
+function estimateMinutesPerRound(points, players, courts){
+  const base = 10.9 * (points/16); // calibrated: 16 pts, decent court supply -> ~11 min/round
+  const maxPlayable = courts*4;
+  const benchRatio = players > maxPlayable ? (players - maxPlayable)/players : 0;
+  const overhead = benchRatio * 1.6; // extra swap/organisation time when many players rotate on/off court
+  return base + overhead;
+}
+function recommendRounds(points, players, courts, sessionMinutes){
+  const perRound = estimateMinutesPerRound(points, players, courts);
+  const rounds = Math.max(1, Math.round(sessionMinutes / perRound));
+  return {rounds, perRound};
+}
+
+/* ---------- SETUP ---------- */
+function renderSetup(){
+  const wrap = document.createElement('div');
+  wrap.innerHTML = `
+    <div class="hero">
+      <div>
+        <h1>${escapeHtml(state.tournamentName)}</h1>
+        <div class="sub">${escapeHtml(state.date)} &nbsp;&middot;&nbsp; Sterling Sport &amp; Wellness</div>
+      </div>
+      <div class="actions">
+        <button id="importBtnSetup" class="small ghost">Import tournament</button>
+        <input type="file" id="importFileSetup" accept="application/json" style="display:none;" />
+        <div class="badge">SET UP EVENT</div>
+      </div>
+    </div>
+    <div class="container">
+
+      <div class="card">
+        <div class="grid2">
+          <div class="field">
+            <label>Tournament name</label>
+            <input id="tName" type="text" value="${escapeHtml(state.tournamentName)}" />
+          </div>
+          <div class="field">
+            <label>Date</label>
+            <input id="tDate" type="text" value="${escapeHtml(state.date)}" />
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-title"><span>PLAYERS (8&ndash;12 RECOMMENDED)</span></div>
+        <div class="player-grid" id="playersList"></div>
+        <div style="margin-top:12px;">
+          <button id="addPlayer" class="small">+ Add player</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="grid4">
+          <div class="field">
+            <label>Points per match (8&ndash;32)</label>
+            <input id="pointsTarget" type="number" min="8" max="32" step="1" />
+          </div>
+          <div class="field">
+            <label>Courts</label>
+            <input id="numCourts" type="number" min="1" max="6" />
+          </div>
+          <div class="field">
+            <label>Rounds</label>
+            <input id="numRounds" type="number" min="1" max="40" />
+          </div>
+          <div class="field">
+            <label>Session length (min)</label>
+            <input id="sessionMinutes" type="number" min="15" max="480" step="5" />
+          </div>
+        </div>
+        <div class="hint">The scheduler prioritises avoiding repeat <b>partners</b> above all else; repeat opponents are a lower-priority secondary factor it also tries to reduce. If the number of players isn't a multiple of 4 &times; courts, players sit out on a fair rotation.</div>
+        <div class="rec-box" id="recBox"></div>
+      </div>
+
+      <div class="setup-actions">
+        <button id="generateBtn" class="primary" style="padding:13px 26px; font-size:14px;">Generate rounds &amp; start</button>
+      </div>
+    </div>
+  `;
+
+  const list = wrap.querySelector('#playersList');
+  function renderPlayers(){
+    list.innerHTML = '';
+    state.players.forEach((name,i)=>{
+      const row = document.createElement('div');
+      row.className = 'player-row';
+      row.innerHTML = `
+        <input type="text" placeholder="Player ${i+1}" value="${escapeHtml(name)}" data-idx="${i}" />
+        <button class="rm" data-idx="${i}">✕</button>
+      `;
+      list.appendChild(row);
+    });
+    list.querySelectorAll('input').forEach(inp=>{
+      inp.addEventListener('input', e=>{
+        state.players[+e.target.dataset.idx] = e.target.value;
+        saveState();
+        updateRec();
+      });
+    });
+    list.querySelectorAll('.rm').forEach(btn=>{
+      btn.addEventListener('click', e=>{
+        state.players.splice(+e.target.dataset.idx,1);
+        saveState();
+        renderPlayers();
+        updateRec();
+      });
+    });
+  }
+  renderPlayers();
+
+  const importFileSetup = wrap.querySelector('#importFileSetup');
+  wrap.querySelector('#importBtnSetup').addEventListener('click', ()=> importFileSetup.click());
+  importFileSetup.addEventListener('change', e=>{
+    const file = e.target.files[0];
+    if(file) importStateFromFile(file);
+  });
+
+  wrap.querySelector('#tName').addEventListener('input', e=>{ state.tournamentName = e.target.value; saveState(); });
+  wrap.querySelector('#tDate').addEventListener('input', e=>{ state.date = e.target.value; saveState(); });
+
+  wrap.querySelector('#addPlayer').addEventListener('click', ()=>{
+    if(state.players.length >= 24) return;
+    state.players.push('');
+    saveState();
+    renderPlayers();
+    updateRec();
+  });
+
+  const ptInp = wrap.querySelector('#pointsTarget');
+  ptInp.value = state.pointsTarget;
+  ptInp.addEventListener('input', e=>{
+    let v = +e.target.value || 8;
+    v = Math.max(8, Math.min(32, v));
+    state.pointsTarget = v;
+    saveState(); updateRec();
+  });
+
+  const courtsInp = wrap.querySelector('#numCourts');
+  courtsInp.value = state.numCourts;
+  courtsInp.addEventListener('input', e=>{ state.numCourts = Math.max(1, +e.target.value||1); saveState(); updateRec(); });
+
+  const roundsInp = wrap.querySelector('#numRounds');
+  roundsInp.value = state.numRounds;
+  roundsInp.addEventListener('input', e=>{ state.numRounds = Math.max(1, +e.target.value||1); saveState(); });
+
+  const sessionInp = wrap.querySelector('#sessionMinutes');
+  sessionInp.value = state.sessionMinutes;
+  sessionInp.addEventListener('input', e=>{ state.sessionMinutes = Math.max(15, +e.target.value||120); saveState(); updateRec(); });
+
+  const recBox = wrap.querySelector('#recBox');
+  function updateRec(){
+    const playerCount = state.players.map(n=>n.trim()).filter(Boolean).length || 8;
+    const {rounds, perRound} = recommendRounds(state.pointsTarget, playerCount, state.numCourts, state.sessionMinutes);
+    recBox.innerHTML = `Recommended: <b>~${rounds} rounds</b> to fit a ${state.sessionMinutes}-minute session &mdash; estimated <b>${perRound.toFixed(1)} min/round</b> at ${state.pointsTarget} points with ${playerCount} players on ${state.numCourts} court(s). This is an approximation; adjust the Rounds field above as you like.`;
+  }
+  updateRec();
+
+  wrap.querySelector('#generateBtn').addEventListener('click', ()=>{
+    const names = state.players.map(n=>n.trim()).filter(n=>n.length>0);
+    if(names.length < 4){ alert('You need at least 4 players.'); return; }
+    state.players = names;
+    const built = buildSchedule(names.length, state.numRounds, state.numCourts);
+    state.schedule = built.schedule;
+    state.scores = built.schedule.map(r => r.matches.map(()=>({a:null})));
+    state.stage = 'playing';
+    saveState();
+    render();
+  });
+
+  return wrap;
+}
+
+/* ---------- SCHEDULING ---------- */
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+
+const PARTNER_WEIGHT = 6;
+const OPPONENT_WEIGHT = 1;
+
+function generateSingleRound(n, numCourts, benchCount, partnerCount, opponentCount){
+  const maxPlayable = numCourts*4;
+  let slots = Math.min(n, maxPlayable);
+  slots = slots - (slots % 4);
+  const benchNeeded = n - slots;
+
+  const order = shuffle([...Array(n).keys()]).sort((a,b)=> benchCount[a]-benchCount[b]);
+  const benched = order.slice(0, benchNeeded);
+  const benchedSet = new Set(benched);
+  benched.forEach(p=> benchCount[p]++);
+
+  const playing = [...Array(n).keys()].filter(p=>!benchedSet.has(p));
+
+  let best = null, bestScore = Infinity;
+  const trials = 300;
+  for(let t=0; t<trials; t++){
+    const shuffled = shuffle(playing);
+    const groups = [];
+    for(let i=0;i<shuffled.length;i+=4) groups.push(shuffled.slice(i,i+4));
+    let totalScore = 0;
+    const matches = [];
+    for(const g of groups){
+      const [w,x,y,z] = g;
+      const options = [
+        {teamA:[w,x], teamB:[y,z]},
+        {teamA:[w,y], teamB:[x,z]},
+        {teamA:[w,z], teamB:[x,y]}
+      ];
+      let bestOpt=null, bestOptScore=Infinity;
+      for(const opt of options){
+        const [a1,a2]=opt.teamA, [b1,b2]=opt.teamB;
+        const score = (partnerCount[a1][a2] + partnerCount[b1][b2]) * PARTNER_WEIGHT +
+          (opponentCount[a1][b1]+opponentCount[a1][b2]+opponentCount[a2][b1]+opponentCount[a2][b2]) * OPPONENT_WEIGHT;
+        if(score < bestOptScore){ bestOptScore=score; bestOpt=opt; }
+      }
+      totalScore += bestOptScore;
+      matches.push(bestOpt);
+    }
+    if(totalScore < bestScore){ bestScore = totalScore; best = matches; }
+  }
+
+  const roundMatches = best.map((m,idx)=>{
+    const [a1,a2]=m.teamA, [b1,b2]=m.teamB;
+    partnerCount[a1][a2]++; partnerCount[a2][a1]++;
+    partnerCount[b1][b2]++; partnerCount[b2][b1]++;
+    opponentCount[a1][b1]++; opponentCount[b1][a1]++;
+    opponentCount[a1][b2]++; opponentCount[b2][a1]++;
+    opponentCount[a2][b1]++; opponentCount[b1][a2]++;
+    opponentCount[a2][b2]++; opponentCount[b2][a2]++;
+    return {court: idx+1, teamA:m.teamA, teamB:m.teamB};
+  });
+
+  return {matches: roundMatches, bench: benched};
+}
+
+function buildSchedule(n, numRounds, numCourts){
+  const benchCount = Array(n).fill(0);
+  const partnerCount = Array.from({length:n}, ()=>Array(n).fill(0));
+  const opponentCount = Array.from({length:n}, ()=>Array(n).fill(0));
+  const schedule = [];
+  for(let r=0;r<numRounds;r++){
+    schedule.push(generateSingleRound(n, numCourts, benchCount, partnerCount, opponentCount));
+  }
+  return {schedule};
+}
+
+// Replays existing schedule to rebuild count matrices, used when adding a round later
+function replayCounts(n, numCourts, schedule){
+  const benchCount = Array(n).fill(0);
+  const partnerCount = Array.from({length:n}, ()=>Array(n).fill(0));
+  const opponentCount = Array.from({length:n}, ()=>Array(n).fill(0));
+  schedule.forEach(round=>{
+    round.bench.forEach(p=> benchCount[p]++);
+    round.matches.forEach(m=>{
+      const [a1,a2]=m.teamA, [b1,b2]=m.teamB;
+      partnerCount[a1][a2]++; partnerCount[a2][a1]++;
+      partnerCount[b1][b2]++; partnerCount[b2][b1]++;
+      opponentCount[a1][b1]++; opponentCount[b1][a1]++;
+      opponentCount[a1][b2]++; opponentCount[b2][a1]++;
+      opponentCount[a2][b1]++; opponentCount[b1][a2]++;
+      opponentCount[a2][b2]++; opponentCount[b2][a2]++;
+    });
+  });
+  return {benchCount, partnerCount, opponentCount};
+}
+
+/* ---------- PLAYING ---------- */
+function computeLeaderboard(){
+  const n = state.players.length;
+  const stats = Array.from({length:n}, ()=>({points:0, against:0, wins:0, played:0}));
+  state.schedule.forEach((round,ri)=>{
+    round.matches.forEach((m,mi)=>{
+      const sc = state.scores[ri][mi];
+      if(sc.a === null || sc.a === undefined || sc.a === '') return;
+      const a = +sc.a, b = state.pointsTarget - a;
+      const [a1,a2]=m.teamA, [b1,b2]=m.teamB;
+      stats[a1].points+=a; stats[a2].points+=a; stats[b1].points+=b; stats[b2].points+=b;
+      stats[a1].against+=b; stats[a2].against+=b; stats[b1].against+=a; stats[b2].against+=a;
+      stats[a1].played++; stats[a2].played++; stats[b1].played++; stats[b2].played++;
+      if(a>b){ stats[a1].wins++; stats[a2].wins++; } else if(b>a){ stats[b1].wins++; stats[b2].wins++; }
+    });
+  });
+  return state.players.map((name,i)=>({name, idx:i, ...stats[i]})).sort((x,y)=> y.points-x.points || y.wins-x.wins);
+}
+
+function renderPlaying(){
+  const wrap = document.createElement('div');
+  wrap.innerHTML = `
+    <div class="hero">
+      <div>
+        <h1>${escapeHtml(state.tournamentName)}</h1>
+        <div class="sub">${escapeHtml(state.date)} &nbsp;&middot;&nbsp; up to ${state.pointsTarget} points &nbsp;&middot;&nbsp; ${state.numCourts} court(s) &nbsp;&middot;&nbsp; ${state.players.length} players</div>
+      </div>
+      <div class="actions">
+        <button id="exportBtn" class="small ghost">Export</button>
+        <button id="importBtn" class="small ghost">Import</button>
+        <input type="file" id="importFile" accept="application/json" style="display:none;" />
+        ${state.stage === 'finished'
+          ? '<button id="reopenBtn" class="small ghost">Reopen tournament</button>'
+          : '<button id="finishBtn" class="primary small">Finish tournament</button>'}
+        <button id="resetResultsBtn" class="small ghost">Reset results</button>
+        <button id="newTournament" class="warn small">New tournament</button>
+      </div>
+    </div>
+    <div class="container">
+      ${state.stage === 'finished' ? '<div id="podiumHolder"></div>' : ''}
+      <div class="layout">
+        <div class="card">
+          <div class="section-title"><span>LEADERBOARD</span></div>
+          <div id="leaderboard"></div>
+        </div>
+        <div id="roundsCol"></div>
+      </div>
+    </div>
+  `;
+
+  wrap.querySelector('#resetResultsBtn').addEventListener('click', ()=>{
+    if(!confirm('Reset all rounds and results? Your player list and settings will be kept.')) return;
+    state.stage = 'setup';
+    state.schedule = null;
+    state.scores = null;
+    expandedPlayers = new Set();
+    saveState();
+    render();
+  });
+
+  wrap.querySelector('#newTournament').addEventListener('click', ()=>{
+    if(confirm('Start a new tournament? Current data will be deleted.')){
+      state = defaultState();
+      saveState();
+      render();
+    }
+  });
+
+  wrap.querySelector('#exportBtn').addEventListener('click', exportState);
+  const importFile = wrap.querySelector('#importFile');
+  wrap.querySelector('#importBtn').addEventListener('click', ()=> importFile.click());
+  importFile.addEventListener('change', e=>{
+    const file = e.target.files[0];
+    if(file) importStateFromFile(file);
+  });
+
+  const finishBtn = wrap.querySelector('#finishBtn');
+  if(finishBtn){
+    finishBtn.addEventListener('click', ()=>{
+      if(!confirm('Finish the tournament? This saves a results file to your Downloads and highlights the top 3 players.')) return;
+      state.stage = 'finished';
+      saveState();
+      exportState();
+      render();
+    });
+  }
+  const reopenBtn = wrap.querySelector('#reopenBtn');
+  if(reopenBtn){
+    reopenBtn.addEventListener('click', ()=>{
+      state.stage = 'playing';
+      saveState();
+      render();
+    });
+  }
+
+  if(state.stage === 'finished'){
+    renderPodium(wrap.querySelector('#podiumHolder'));
+  }
+  renderLeaderboard(wrap.querySelector('#leaderboard'));
+  renderRounds(wrap.querySelector('#roundsCol'));
+
+  return wrap;
+}
+
+function importStateFromFile(file){
+  const reader = new FileReader();
+  reader.onload = ev=>{
+    try{
+      const parsed = JSON.parse(ev.target.result);
+      if(!parsed.players || !parsed.stage){ throw new Error('bad file'); }
+      if(parsed.sessionMinutes === undefined) parsed.sessionMinutes = 120;
+      state = parsed;
+      saveState();
+      render();
+    }catch(err){
+      alert('Could not read this file — it does not look like a valid Sterling Americano export.');
+    }
+  };
+  reader.readAsText(file);
+}
+
+function exportState(){
+  const safeName = (state.tournamentName || 'americano').replace(/[^a-z0-9]+/gi,'_').toLowerCase();
+  const safeDate = (state.date || '').replace(/[^a-z0-9]+/gi,'_').toLowerCase();
+  const filename = `${safeName}_${safeDate}.json`;
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+let expandedPlayers = new Set();
+
+function renderLeaderboard(container){
+  const lb = computeLeaderboard();
+  const hasData = lb.some(p=>p.played>0);
+
+  const listHtml = !hasData
+    ? '<div class="empty">Enter round 1 scores to see the leaderboard</div>'
+    : lb.map((p,i)=>{
+        const cls = i===0?'top1':i===1?'top2':i===2?'top3':'';
+        const expanded = expandedPlayers.has(p.idx);
+        const diff = p.points - p.against;
+        const diffStr = diff>0 ? ('+'+diff) : String(diff);
+        const diffClass = diff>0 ? 'diff-pos' : (diff<0 ? 'diff-neg' : '');
+        return `
+        <div>
+          <div class="lb-row ${cls}">
+            <div class="lb-rank">${i+1}</div>
+            <div class="lb-name" data-idx="${p.idx}" title="Click to rename">${escapeHtml(p.name)}</div>
+            <button class="lb-toggle" data-idx="${p.idx}">${expanded?'&#9650;':'&#9660;'}</button>
+            <div class="lb-stats">${p.wins}W &middot; ${p.played} played</div>
+            <div class="lb-points">${p.points}</div>
+          </div>
+          ${expanded ? `<div class="lb-detail">
+            <span>Points won: <b>${p.points}</b></span>
+            <span>Points lost: <b>${p.against}</b></span>
+            <span>Diff: <b class="${diffClass}">${diffStr}</b></span>
+          </div>` : ''}
+        </div>`;
+      }).join('');
+
+  container.innerHTML = `
+    <div id="lbList">${listHtml}</div>
+    <div class="lb-add-row">
+      <button id="lbAddPlayerBtn" class="small ghost">+ Add player</button>
+    </div>
+  `;
+
+  container.querySelectorAll('.lb-toggle').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const idx = +btn.dataset.idx;
+      if(expandedPlayers.has(idx)) expandedPlayers.delete(idx); else expandedPlayers.add(idx);
+      renderLeaderboard(container);
+    });
+  });
+
+  container.querySelectorAll('.lb-name').forEach(nameEl=>{
+    nameEl.addEventListener('click', ()=>{
+      const idx = +nameEl.dataset.idx;
+      const current = state.players[idx];
+      const input = document.createElement('input');
+      input.type = 'text'; input.value = current; input.className = 'lb-name-input';
+      nameEl.replaceWith(input);
+      input.focus(); input.select();
+      const commit = ()=>{
+        const val = input.value.trim();
+        if(val) state.players[idx] = val;
+        saveState();
+        render();
+      };
+      input.addEventListener('blur', commit);
+      input.addEventListener('keydown', e=>{
+        if(e.key === 'Enter') input.blur();
+        if(e.key === 'Escape'){ input.value = current; input.blur(); }
+      });
+    });
+  });
+
+  const addBtn = container.querySelector('#lbAddPlayerBtn');
+  if(addBtn){
+    addBtn.addEventListener('click', ()=>{
+      const name = prompt('New player name:');
+      if(name && name.trim()){
+        state.players.push(name.trim());
+        saveState();
+        render();
+      }
+    });
+  }
+}
+
+function renderPodium(container){
+  if(!container) return;
+  const lb = computeLeaderboard();
+  const top3 = lb.slice(0,3);
+  if(top3.length < 3){
+    container.innerHTML = '<div class="empty">Not enough completed matches to determine a podium.</div>';
+    return;
+  }
+  const [first, second, third] = top3;
+  container.innerHTML = `
+    <div class="podium-wrap">
+      <div class="podium-title">&#127942; Final Podium</div>
+      <div class="podium">
+        <div class="podium-card podium-silver">
+          <span class="medal">&#129352;</span>
+          <div class="rank-label">2nd place</div>
+          <div class="name">${escapeHtml(second.name)}</div>
+          <div class="pts">${second.points}</div>
+          <div class="meta">${second.wins}W &middot; ${second.played} played</div>
+        </div>
+        <div class="podium-card podium-gold">
+          <span class="medal">&#129351;</span>
+          <div class="rank-label">1st place</div>
+          <div class="name">${escapeHtml(first.name)}</div>
+          <div class="pts">${first.points}</div>
+          <div class="meta">${first.wins}W &middot; ${first.played} played</div>
+        </div>
+        <div class="podium-card podium-bronze">
+          <span class="medal">&#129353;</span>
+          <div class="rank-label">3rd place</div>
+          <div class="name">${escapeHtml(third.name)}</div>
+          <div class="pts">${third.points}</div>
+          <div class="meta">${third.wins}W &middot; ${third.played} played</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderRounds(container){
+  container.innerHTML = '';
+  state.schedule.forEach((round,ri)=>{
+    container.appendChild(renderRoundBlock(round, ri));
+  });
+  const addRow = document.createElement('div');
+  addRow.className = 'add-round-row';
+  addRow.innerHTML = `<button id="addRoundBtn" class="primary small">+ Add round</button>`;
+  container.appendChild(addRow);
+  addRow.querySelector('#addRoundBtn').addEventListener('click', ()=>{
+    const n = state.players.length;
+    const {benchCount, partnerCount, opponentCount} = replayCounts(n, state.numCourts, state.schedule);
+    const newRound = generateSingleRound(n, state.numCourts, benchCount, partnerCount, opponentCount);
+    state.schedule.push(newRound);
+    state.scores.push(newRound.matches.map(()=>({a:null})));
+    state.numRounds = state.schedule.length;
+    saveState();
+    render();
+  });
+}
+
+function renderRoundBlock(round, ri){
+  const block = document.createElement('div');
+  block.className = 'round-block';
+  block.dataset.ri = ri;
+  const allPlayed = round.matches.every((m,mi)=> state.scores[ri][mi].a !== null && state.scores[ri][mi].a !== '');
+  block.innerHTML = `
+    <div class="round-title">
+      <div class="left"><span>Round ${ri+1}</span>${allPlayed ? '<span class="played-badge">complete</span>' : ''}</div>
+      <button class="del-round" data-ri="${ri}">Delete round</button>
+    </div>
+  `;
+  const grid = document.createElement('div');
+  grid.className = 'matches-grid';
+  round.matches.forEach((m,mi)=>{
+    const [a1,a2]=m.teamA, [b1,b2]=m.teamB;
+    const sc = state.scores[ri][mi];
+    const el = document.createElement('div');
+    el.className = 'match';
+    const oppVal = (sc.a===null||sc.a==='') ? '—' : (state.pointsTarget - (+sc.a));
+    el.innerHTML = `
+      <div class="court">COURT ${m.court}</div>
+      <div class="teams">
+        <div class="team">${escapeHtml(state.players[a1])} + ${escapeHtml(state.players[a2])}</div>
+        <input type="number" min="0" max="${state.pointsTarget}" class="score-input" data-ri="${ri}" data-mi="${mi}" value="${sc.a===null?'':sc.a}" placeholder="—" />
+        <span class="vs">:</span>
+        <span class="opp-score">${oppVal}</span>
+        <div class="team" style="text-align:right;">${escapeHtml(state.players[b1])} + ${escapeHtml(state.players[b2])}</div>
+      </div>
+    `;
+    grid.appendChild(el);
+  });
+  block.appendChild(grid);
+  if(round.bench.length){
+    const b = document.createElement('div');
+    b.className = 'bench';
+    b.textContent = 'Resting: ' + round.bench.map(i=>state.players[i]).join(', ');
+    block.appendChild(b);
+  }
+
+  block.querySelector('.del-round').addEventListener('click', ()=>{
+    if(!confirm(`Delete Round ${ri+1}? This cannot be undone.`)) return;
+    state.schedule.splice(ri,1);
+    state.scores.splice(ri,1);
+    state.numRounds = state.schedule.length;
+    saveState();
+    render();
+  });
+
+  block.querySelectorAll('.score-input').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      const _ri = +e.target.dataset.ri, mi = +e.target.dataset.mi;
+      const val = e.target.value;
+      state.scores[_ri][mi].a = (val==='') ? null : Math.max(0, Math.min(state.pointsTarget, +val));
+      saveState();
+      updateAfterScoreChange(_ri, mi, e.target);
+    });
+  });
+
+  return block;
+}
+
+// Lightweight update: does NOT rebuild the score input itself, so typing a
+// second digit works normally (focus & cursor position are never disturbed).
+function updateAfterScoreChange(ri, mi, inputEl){
+  const sc = state.scores[ri][mi];
+  const matchEl = inputEl.closest('.match');
+  const oppSpan = matchEl.querySelector('.opp-score');
+  oppSpan.textContent = (sc.a===null || sc.a==='') ? '—' : (state.pointsTarget - (+sc.a));
+
+  const roundBlock = inputEl.closest('.round-block');
+  const rIdx = +roundBlock.dataset.ri;
+  const round = state.schedule[rIdx];
+  const allPlayed = round.matches.every((m,i)=> state.scores[rIdx][i].a !== null && state.scores[rIdx][i].a !== '');
+  const leftDiv = roundBlock.querySelector('.round-title .left');
+  leftDiv.innerHTML = `<span>Round ${rIdx+1}</span>${allPlayed ? '<span class="played-badge">complete</span>' : ''}`;
+
+  const lbContainer = document.getElementById('leaderboard');
+  if(lbContainer) renderLeaderboard(lbContainer);
+
+  const podiumHolder = document.getElementById('podiumHolder');
+  if(podiumHolder) renderPodium(podiumHolder);
+}
+
+render();
+</script>
+</body>
+</html>
