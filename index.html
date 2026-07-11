@@ -13,16 +13,16 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
-    --sage:#5c6b56;
-    --sage-dark:#48543f;
+    --sage:#44543f;
+    --sage-dark:#2f3c2c;
     --dark:#14150f;
     --panel:#1d2018;
     --panel2:#22261c;
-    --border:#333726;
+    --border:#3a3f2a;
     --text:#f4f1ea;
     --muted:#a7ac9c;
-    --orange:#c17d3a;
-    --orange-light:#d99a52;
+    --orange:#dd7a35;
+    --orange-light:#f4a865;
     --danger:#c15a4a;
     --radius:14px;
   }
@@ -74,8 +74,8 @@
   button.ghost{background:transparent;}
   button:active{opacity:.8;}
   button:disabled{opacity:.4; cursor:not-allowed;}
-  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
-  .grid4{display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:16px;}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:end;}
+  .grid4{display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:16px; align-items:end;}
   .player-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px 14px;}
   .player-row{display:flex; gap:8px; align-items:center;}
   .player-row input{flex:1;}
@@ -160,7 +160,7 @@
   }
 
   /* ---------- RESPONSIVE: PORTRAIT PHONE (and small landscape) ---------- */
-  @media (max-width: 680px){
+  @media (max-width: 680px), (max-height: 500px){
     .hero{
       padding:18px 16px; flex-direction:column; align-items:flex-start; gap:14px;
     }
@@ -272,16 +272,14 @@ function renderSetup(){
     <div class="container">
 
       <div class="card">
-        <div class="grid2">
-          <div class="field">
-            <label>Tournament name</label>
-            <input id="tName" type="text" value="${escapeHtml(state.tournamentName)}" />
-          </div>
-          <div class="field">
-            <label>Date</label>
-            <input id="tDate" type="text" value="${escapeHtml(state.date)}" />
+        <div class="field">
+          <label>Tournament name</label>
+          <div style="display:flex; gap:8px;">
+            <input id="tName" type="text" value="${escapeHtml(state.tournamentName)}" style="flex:1;" />
+            <button id="saveNameBtn" class="small">Save</button>
           </div>
         </div>
+        <div class="hint">Date is set automatically: <b>${escapeHtml(state.date)}</b></div>
       </div>
 
       <div class="card">
@@ -359,7 +357,17 @@ function renderSetup(){
   });
 
   wrap.querySelector('#tName').addEventListener('input', e=>{ state.tournamentName = e.target.value; saveState(); });
-  wrap.querySelector('#tDate').addEventListener('input', e=>{ state.date = e.target.value; saveState(); });
+  wrap.querySelector('#saveNameBtn').addEventListener('click', ()=>{
+    const val = wrap.querySelector('#tName').value.trim();
+    if(val) state.tournamentName = val;
+    saveState();
+    const btn = wrap.querySelector('#saveNameBtn');
+    const original = btn.textContent;
+    btn.textContent = 'Saved ✓';
+    btn.disabled = true;
+    setTimeout(()=>{ btn.textContent = original; btn.disabled = false; }, 900);
+    wrap.querySelector('.hero h1').textContent = state.tournamentName;
+  });
 
   wrap.querySelector('#addPlayer').addEventListener('click', ()=>{
     if(state.players.length >= 24) return;
@@ -692,20 +700,41 @@ function renderLeaderboard(container){
     nameEl.addEventListener('click', ()=>{
       const idx = +nameEl.dataset.idx;
       const current = state.players[idx];
+
+      const wrapEl = document.createElement('span');
+      wrapEl.style.display = 'flex';
+      wrapEl.style.gap = '6px';
+      wrapEl.style.flex = '1';
+      wrapEl.style.alignItems = 'center';
+
       const input = document.createElement('input');
       input.type = 'text'; input.value = current; input.className = 'lb-name-input';
-      nameEl.replaceWith(input);
+      input.style.flex = '1';
+
+      const saveBtn = document.createElement('button');
+      saveBtn.textContent = '✓';
+      saveBtn.className = 'small';
+      saveBtn.style.padding = '6px 10px';
+
+      wrapEl.appendChild(input);
+      wrapEl.appendChild(saveBtn);
+      nameEl.replaceWith(wrapEl);
       input.focus(); input.select();
+
+      let committed = false;
       const commit = ()=>{
+        if(committed) return;
+        committed = true;
         const val = input.value.trim();
         if(val) state.players[idx] = val;
         saveState();
         render();
       };
-      input.addEventListener('blur', commit);
+      saveBtn.addEventListener('click', commit);
+      input.addEventListener('blur', ()=> setTimeout(commit, 150)); // slight delay so a tap on the ✓ button registers first
       input.addEventListener('keydown', e=>{
-        if(e.key === 'Enter') input.blur();
-        if(e.key === 'Escape'){ input.value = current; input.blur(); }
+        if(e.key === 'Enter') commit();
+        if(e.key === 'Escape'){ committed = true; render(); }
       });
     });
   });
