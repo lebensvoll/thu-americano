@@ -182,8 +182,8 @@
     .layout{grid-template-columns: 280px 1fr;}
   }
 
-  /* ---------- RESPONSIVE: PORTRAIT PHONE (and small landscape) ---------- */
-  @media (max-width: 680px), (max-height: 500px){
+  /* ---------- RESPONSIVE: PORTRAIT PHONE ---------- */
+  @media (max-width: 680px){
     .brand-strip img{height:22px;}
     .hero{
       padding:18px 16px; flex-direction:column; align-items:flex-start; gap:14px;
@@ -210,6 +210,44 @@
     .lb-stats{min-width:auto;}
     .round-title{flex-wrap:wrap; gap:6px;}
     .del-round{padding:6px 10px;}
+  }
+
+  /* ---------- RESPONSIVE: LANDSCAPE PHONE (short height, wide enough for 2 columns) ---------- */
+  /* Mirrors the desktop two-column layout as closely as possible: score entry stays
+     on the left (wide), leaderboard moves to the right (narrow), and the action
+     buttons relocate into a fixed bottom bar so the short viewport isn't eaten by
+     header chrome. */
+  @media (max-height: 500px) and (min-width: 620px){
+    body{padding-bottom:0;}
+    .brand-strip{padding:6px 16px;}
+    .brand-strip img{height:18px;}
+    .hero{padding:10px 20px 10px;}
+    .hero h1{font-size:18px; margin-bottom:2px;}
+    .hero .sub{font-size:11px;}
+    .badge{font-size:10px; padding:6px 12px;}
+    .container{padding:14px 20px 78px;}
+    .card{padding:14px 16px;}
+
+    .layout{grid-template-columns: 1fr 260px; gap:16px;}
+    #roundsCol{order:1;}
+    .leaderboard-card{
+      order:2; position:sticky; top:8px;
+      max-height:calc(100vh - 100px);
+    }
+    .matches-grid{grid-template-columns:1fr 1fr;}
+
+    /* Action buttons become a fixed bottom bar, freeing the header */
+    .hero .actions{
+      position:fixed; left:0; right:0; bottom:0; z-index:50;
+      background:var(--dark2); border-top:2px solid var(--acid);
+      padding:8px 12px calc(8px + env(safe-area-inset-bottom));
+      display:flex; gap:6px; overflow-x:auto; flex-wrap:nowrap;
+      justify-content:flex-start;
+    }
+    .hero .actions button{flex:0 0 auto; white-space:nowrap; padding:9px 13px; font-size:11.5px;}
+    .hero .actions::-webkit-scrollbar{display:none;}
+
+    input,select{font-size:16px;} /* avoid iOS auto-zoom */
   }
 
   /* Very narrow phones (SE, older models) */
