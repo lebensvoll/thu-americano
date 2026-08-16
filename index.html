@@ -99,6 +99,18 @@
   .rec-box{background:var(--panel2); border:1px solid var(--border); border-radius:10px; padding:12px 14px; margin-top:10px; font-size:13px;}
   .rec-box b{color:var(--accent);}
   .setup-actions{display:flex; gap:12px; align-items:center; margin-top:6px;}
+  .format-toggle{display:flex; gap:10px;}
+  .format-btn{
+    flex:1; text-align:left; text-transform:none; letter-spacing:normal; font-weight:400;
+    background:var(--panel2); border:1px solid var(--border); border-radius:10px; padding:14px 16px;
+  }
+  .format-btn .fmt-name{
+    display:block; font-family:'Space Grotesk',sans-serif; font-weight:700; text-transform:uppercase;
+    letter-spacing:.02em; font-size:14px; color:var(--text); margin-bottom:5px;
+  }
+  .format-btn .fmt-desc{display:block; font-size:11.5px; color:var(--muted); line-height:1.5; white-space:normal;}
+  .format-btn.active{border-color:var(--accent); background:var(--panel);}
+  .format-btn.active .fmt-name{color:var(--accent);}
 
   .layout{display:grid; grid-template-columns:340px 1fr; gap:24px; align-items:start;}
   .section-title{font-size:12.5px; font-weight:700; color:var(--accent); margin-bottom:14px; letter-spacing:.05em; text-transform:uppercase; display:flex; justify-content:space-between; align-items:center;}
@@ -197,6 +209,7 @@
     .card{padding:16px 16px; border-radius:12px;}
     .grid2, .grid4{grid-template-columns:1fr 1fr;}
     .player-grid{grid-template-columns:1fr;}
+    .format-toggle{flex-direction:column;}
     .layout{grid-template-columns:1fr;}
     .leaderboard-card{position:sticky; top:8px; max-height:46vh;}
     .matches-grid{grid-template-columns:1fr;}
@@ -287,7 +300,8 @@ function defaultState(){
     schedule: null,
     scores: null,
     knockout: null,
-    cycleLength: null
+    cycleLength: null,
+    tournamentType: 'americano'
   };
 }
 
@@ -295,6 +309,7 @@ let state = loadState() || defaultState();
 if(state.sessionMinutes === undefined) state.sessionMinutes = 120;
 if(state.knockout === undefined) state.knockout = null;
 if(state.cycleLength === undefined) state.cycleLength = null;
+if(state.tournamentType === undefined) state.tournamentType = 'americano';
 
 function render(){
   const app = document.getElementById('app');
@@ -349,6 +364,20 @@ function renderSetup(){
       </div>
 
       <div class="card">
+        <div class="section-title"><span>TOURNAMENT FORMAT</span></div>
+        <div class="format-toggle" id="formatToggle">
+          <button type="button" class="format-btn" data-type="americano">
+            <span class="fmt-name">Americano</span>
+            <span class="fmt-desc">Fixed schedule, generated up front. Partners rotate so everyone partners with everyone before any pairing repeats.</span>
+          </button>
+          <button type="button" class="format-btn" data-type="mexicano">
+            <span class="fmt-name">Mexicano</span>
+            <span class="fmt-desc">Round 1 is random. After every round, players are ranked by points and regrouped into new foursomes (1st+4th vs 2nd+3rd) &mdash; winners rise, losers fall.</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
         <div class="section-title"><span>PLAYERS (8&ndash;12 RECOMMENDED)</span></div>
         <div class="player-grid" id="playersList"></div>
         <div style="margin-top:12px;">
@@ -367,7 +396,7 @@ function renderSetup(){
             <input id="numCourts" type="number" min="1" max="6" />
           </div>
           <div class="field">
-            <label>Rounds</label>
+            <label id="roundsLabel">Rounds</label>
             <input id="numRounds" type="number" min="1" max="40" />
           </div>
           <div class="field">
@@ -375,12 +404,12 @@ function renderSetup(){
             <input id="sessionMinutes" type="number" min="15" max="480" step="5" />
           </div>
         </div>
-        <div class="hint">The scheduler guarantees every player partners with every other player at least once before any partnership repeats (when mathematically possible for the group size). Repeat opponents are a lower-priority factor it also tries to reduce. If the number of players isn't a multiple of 4 &times; courts, players sit out on a fair rotation.</div>
+        <div class="hint" id="schedHint"></div>
         <div class="rec-box" id="recBox"></div>
       </div>
 
       <div class="setup-actions">
-        <button id="generateBtn" class="primary" style="padding:13px 26px; font-size:14px;">Generate rounds &amp; start</button>
+        <button id="generateBtn" class="primary" style="padding:13px 26px; font-size:14px;"></button>
       </div>
     </div>
   `;
@@ -421,6 +450,31 @@ function renderSetup(){
     });
   }
   renderPlayers();
+
+  const formatBtns = wrap.querySelectorAll('.format-btn');
+  const roundsLabel = wrap.querySelector('#roundsLabel');
+  const schedHint = wrap.querySelector('#schedHint');
+  const generateBtn = wrap.querySelector('#generateBtn');
+  function updateFormatUI(){
+    formatBtns.forEach(b=> b.classList.toggle('active', b.dataset.type === state.tournamentType));
+    if(state.tournamentType === 'mexicano'){
+      roundsLabel.textContent = 'Target rounds';
+      schedHint.innerHTML = 'Only Round 1 is generated now, seeded randomly. Every later round is built one at a time from the live leaderboard once you tap &ldquo;+ Add round&rdquo; &mdash; ranked players are grouped into new foursomes (1st+4th vs 2nd+3rd) each time, so winners keep climbing and losers keep sliding down. If the number of players isn&rsquo;t a multiple of 4 &times; courts, players sit out on a fair rotation.';
+      generateBtn.textContent = 'Start tournament (Round 1)';
+    } else {
+      roundsLabel.textContent = 'Rounds';
+      schedHint.innerHTML = 'The scheduler guarantees every player partners with every other player at least once before any partnership repeats (when mathematically possible for the group size). Repeat opponents are a lower-priority factor it also tries to reduce. If the number of players isn&rsquo;t a multiple of 4 &times; courts, players sit out on a fair rotation.';
+      generateBtn.textContent = 'Generate rounds & start';
+    }
+  }
+  formatBtns.forEach(b=>{
+    b.addEventListener('click', ()=>{
+      state.tournamentType = b.dataset.type;
+      saveState();
+      updateFormatUI();
+    });
+  });
+  updateFormatUI();
 
   wrap.querySelector('#tName').addEventListener('input', e=>{ state.tournamentName = e.target.value; saveState(); });
   wrap.querySelector('#saveNameBtn').addEventListener('click', ()=>{
@@ -476,10 +530,21 @@ function renderSetup(){
     const names = state.players.map(n=>n.trim()).filter(n=>n.length>0);
     if(names.length < 4){ alert('You need at least 4 players.'); return; }
     state.players = names;
-    const built = buildSchedule(names.length, state.numRounds, state.numCourts);
-    state.schedule = built.schedule;
-    state.cycleLength = built.cycleLength;
-    state.scores = built.schedule.map(r => r.matches.map(()=>({a:null})));
+    if(state.tournamentType === 'mexicano'){
+      // No standings exist yet, so Round 1 is seeded with a random order.
+      // Every later round is generated on demand from live standings via
+      // the "+ Add round" button, since Mexicano can't be pre-scheduled.
+      const benchCount = Array(names.length).fill(0);
+      const rankOrder = shuffle([...Array(names.length).keys()]);
+      const round = generateMexicanoRound(names.length, state.numCourts, benchCount, rankOrder);
+      state.schedule = [round];
+      state.cycleLength = null;
+    } else {
+      const built = buildSchedule(names.length, state.numRounds, state.numCourts);
+      state.schedule = built.schedule;
+      state.cycleLength = built.cycleLength;
+    }
+    state.scores = state.schedule.map(r => r.matches.map(()=>({a:null})));
     state.stage = 'playing';
     saveState();
     render();
@@ -564,6 +629,38 @@ function cloneRound(round){
     matches: round.matches.map(m=>({court: m.court, teamA: m.teamA.slice(), teamB: m.teamB.slice()})),
     bench: round.bench.slice()
   };
+}
+
+/* ---------- MEXICANO ROTATION ----------
+   Unlike Americano (fixed schedule, partners never repeat until forced to),
+   Mexicano is played one round at a time: after every round players are
+   re-ranked by total points and regrouped into fresh blocks of 4, so the
+   pairing itself is standings-driven rather than history-driven. Round 1
+   has no standings yet, so it's seeded with a random order instead. */
+
+// Builds one round from a best-to-worst player order. Players are benched
+// on the same fairness rotation as Americano, then whoever's left is split
+// into blocks of 4 in rank order — 1st+4th vs 2nd+3rd within each block —
+// so the closest-matched foursome always shares a court.
+function generateMexicanoRound(n, numCourts, benchCount, rankOrder){
+  const maxPlayable = numCourts*4;
+  let slots = Math.min(n, maxPlayable);
+  slots = slots - (slots % 4);
+  const benchNeeded = n - slots;
+
+  const benched = pickBenchSubset(n, benchNeeded, benchCount);
+  const benchedSet = new Set(benched);
+  const playing = rankOrder.filter(p=>!benchedSet.has(p));
+
+  const matches = [];
+  for(let i=0; i<playing.length; i+=4){
+    const [r1,r2,r3,r4] = playing.slice(i, i+4);
+    matches.push({court: (i/4)+1, teamA:[r1,r4], teamB:[r2,r3]});
+  }
+
+  const round = {matches, bench: benched};
+  round.bench.forEach(p=> benchCount[p]++);
+  return round;
 }
 
 // Tries to build a round where every partnership is brand new (nobody plays
@@ -925,7 +1022,7 @@ function renderPlaying(){
     <div class="hero">
       <div>
         <h1>${escapeHtml(state.tournamentName)}</h1>
-        <div class="sub">${escapeHtml(state.date)} &nbsp;&middot;&nbsp; up to ${state.pointsTarget} points &nbsp;&middot;&nbsp; ${state.numCourts} court(s) &nbsp;&middot;&nbsp; ${state.players.length} players</div>
+        <div class="sub">${escapeHtml(state.date)} &nbsp;&middot;&nbsp; ${state.tournamentType === 'mexicano' ? 'Mexicano' : 'Americano'} &nbsp;&middot;&nbsp; up to ${state.pointsTarget} points &nbsp;&middot;&nbsp; ${state.numCourts} court(s) &nbsp;&middot;&nbsp; ${state.players.length} players</div>
       </div>
       <div class="actions">
         <button id="exportBtn" class="small ghost">Export</button>
@@ -1172,6 +1269,22 @@ function renderRounds(container){
   container.appendChild(addRow);
   addRow.querySelector('#addRoundBtn').addEventListener('click', ()=>{
     const n = state.players.length;
+
+    if(state.tournamentType === 'mexicano'){
+      const lastScores = state.scores[state.scores.length-1];
+      const incomplete = lastScores.some(sc=> sc.a===null || sc.a==='');
+      if(incomplete && !confirm('Not every score in the last round has been entered yet, so standings are incomplete. Add the next round anyway?')) return;
+      const {benchCount} = replayCounts(n, state.numCourts, state.schedule);
+      const rankOrder = computeLeaderboard().map(p=>p.idx);
+      const newRound = generateMexicanoRound(n, state.numCourts, benchCount, rankOrder);
+      state.schedule.push(newRound);
+      state.scores.push(newRound.matches.map(()=>({a:null})));
+      state.numRounds = state.schedule.length;
+      saveState();
+      render();
+      return;
+    }
+
     const {benchCount, partnerCount, opponentCount} = replayCounts(n, state.numCourts, state.schedule);
     let newRound = state.cycleLength ? null : generateFreshRound(n, state.numCourts, benchCount, partnerCount, opponentCount);
     if(!newRound){
