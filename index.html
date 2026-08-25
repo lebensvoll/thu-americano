@@ -208,6 +208,12 @@
   }
   .leaderboard-card #leaderboard{overflow-y:auto; flex:1; padding-right:4px; margin:0 -4px;}
   .leaderboard-card #leaderboard::-webkit-scrollbar{width:6px;}
+  .lb-toggle{
+    display:none; align-items:center; justify-content:center;
+    width:20px; height:20px; padding:0; background:transparent;
+    border:1px solid var(--muted); border-radius:50%; color:var(--muted);
+    font-size:10px; cursor:pointer; line-height:1;
+  }
   .leaderboard-card #leaderboard::-webkit-scrollbar-thumb{background:var(--border); border-radius:6px;}
 
   .round-block{margin-bottom:20px;}
@@ -316,10 +322,21 @@
     .player-grid{grid-template-columns:1fr;}
     .format-toggle{flex-direction:column;}
     .layout{grid-template-columns:1fr;}
-    .leaderboard-card{position:sticky; top:8px; max-height:46vh;}
+    /* Sticky sidebar makes sense side-by-side on desktop, but in this
+       single-column mobile layout it pins the leaderboard over the rounds
+       as they scroll past underneath it — so on mobile it's a normal,
+       non-sticky, collapsible block instead. */
+    .leaderboard-card{position:static; max-height:none; overflow:visible;}
+    .leaderboard-card #leaderboard{overflow-y:visible; max-height:none;}
+    .lb-toggle{display:inline-flex;}
+    .leaderboard-card.lb-collapsed #leaderboard,
+    .leaderboard-card.lb-collapsed #restWarnings,
+    .leaderboard-card.lb-collapsed #lbInfoHint{display:none;}
     .matches-grid{grid-template-columns:1fr;}
     .podium{grid-template-columns:1fr; gap:10px;}
-    .podium-gold{transform:none;}
+    .podium-gold{transform:none; order:1;}
+    .podium-silver{order:2;}
+    .podium-bronze{order:3;}
     button{padding:12px 16px; font-size:13px;}
     button.small{padding:10px 14px; font-size:12px;}
     input,select{font-size:16px; padding:12px 12px;} /* 16px avoids iOS auto-zoom on focus */
@@ -395,6 +412,10 @@ const THEMES = ['default', 'sakura'];
 const THEME_ICONS = {default:'\u{1F3BE}', sakura:'\u{1F338}'};
 const THEME_COLORS = {default:'#15201b', sakura:'#150c17'};
 let theme = THEMES.includes(localStorage.getItem(THEME_KEY)) ? localStorage.getItem(THEME_KEY) : 'default';
+// Mobile-only: leaderboard starts collapsed so the rounds (where scores are
+// actually entered) aren't pushed below a long player list. Desktop ignores
+// this entirely (sticky sidebar there instead) — see the lb-toggle CSS.
+let lbCollapsedMobile = true;
 function applyTheme(){
   document.documentElement.setAttribute('data-theme', theme);
   const metaTheme = document.querySelector('meta[name="theme-color"]');
@@ -1298,10 +1319,13 @@ function renderPlaying(){
     <div class="container">
       ${state.stage === 'finished' ? '<div id="podiumHolder"></div>' : ''}
       <div class="layout">
-        <div class="card leaderboard-card">
+        <div class="card leaderboard-card${lbCollapsedMobile ? ' lb-collapsed' : ''}">
           <div class="section-title">
             <span>LEADERBOARD</span>
-            <button type="button" class="info-icon" id="lbInfoBtn" aria-label="Tournament details">i</button>
+            <span style="display:flex; gap:6px; align-items:center;">
+              <button type="button" class="info-icon" id="lbInfoBtn" aria-label="Tournament details">i</button>
+              <button type="button" class="lb-toggle" id="lbToggleBtn" aria-label="Expand or collapse leaderboard">${lbCollapsedMobile ? '&#9660;' : '&#9650;'}</button>
+            </span>
           </div>
           <div class="hint" id="lbInfoHint" style="display:none; margin-top:-8px;">${state.tournamentType === 'mexicano' ? 'Mexicano' : 'Americano'} &middot; up to ${state.pointsTarget} points &middot; ${state.numCourts} court(s) &middot; ${activePlayerIndices().length} players</div>
           <div id="leaderboard"></div>
@@ -1318,6 +1342,11 @@ function renderPlaying(){
   const lbInfoHint = wrap.querySelector('#lbInfoHint');
   wrap.querySelector('#lbInfoBtn').addEventListener('click', ()=>{
     lbInfoHint.style.display = lbInfoHint.style.display === 'none' ? 'block' : 'none';
+  });
+  wrap.querySelector('#lbToggleBtn').addEventListener('click', ()=>{
+    lbCollapsedMobile = !lbCollapsedMobile;
+    wrap.querySelector('.leaderboard-card').classList.toggle('lb-collapsed', lbCollapsedMobile);
+    wrap.querySelector('#lbToggleBtn').innerHTML = lbCollapsedMobile ? '&#9660;' : '&#9650;';
   });
   wrap.querySelector('#resetResultsBtn').addEventListener('click', ()=>{
     if(!confirm('Reset all rounds and results? Your player list and settings will be kept.')) return;
