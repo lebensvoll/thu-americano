@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#15201b">
-<title>World Cup Americano at STERLING</title>
+<title>Thursday Americano</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -38,6 +38,53 @@
     --danger:#d0554a;
     --radius:14px;
   }
+  /* Sakura theme — dark cherry-blossom palette: white/near-white for active
+     elements, pink-violet for inactive ones, glassy translucent surfaces.
+     Panel opacity/blur/glow pulled ~25% back toward the original theme's
+     flatter, more opaque contrast — still glass, just less washed-out. */
+  :root[data-theme="sakura"]{
+    --dark:#150c17;
+    --dark2:#20101f;
+    --panel:rgba(33,16,38,.64);
+    --panel2:rgba(44,23,48,.66);
+    --border:rgba(216,176,222,.32);
+    --text:#f3e4f5;
+    --muted:#cfc2dd;
+    --accent:#ff2f87;
+    --accent-dark:#b81e63;
+    --accent-light:#ff8fc0;
+    --sage:#ffb3d1;
+    --ink:#241029;
+    --danger:#b05374;
+  }
+  :root[data-theme="sakura"] body{
+    background:
+      radial-gradient(circle at 10% 15%, rgba(236,83,133,.21), transparent 42%),
+      radial-gradient(circle at 90% 4%, rgba(190,140,235,.17), transparent 48%),
+      radial-gradient(circle at 50% 108%, rgba(236,83,133,.12), transparent 55%),
+      #150c17;
+    background-attachment:fixed;
+  }
+  :root[data-theme="sakura"] .hero,
+  :root[data-theme="sakura"] .card,
+  :root[data-theme="sakura"] .match,
+  :root[data-theme="sakura"] .format-btn,
+  :root[data-theme="sakura"] .rec-box,
+  :root[data-theme="sakura"] input,
+  :root[data-theme="sakura"] select,
+  :root[data-theme="sakura"] button:not(.primary):not(.accent):not(.warn){
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+  }
+  :root[data-theme="sakura"] .card,
+  :root[data-theme="sakura"] .match,
+  :root[data-theme="sakura"] .format-btn,
+  :root[data-theme="sakura"] .rec-box{
+    box-shadow:0 6px 24px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.06);
+  }
+  :root[data-theme="sakura"] .hero{
+    background:linear-gradient(135deg, rgba(38,18,30,.66), rgba(21,12,23,.55));
+  }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; touch-action:manipulation;}
   html,body{height:100%;}
   body{
@@ -66,9 +113,28 @@
     background:var(--accent); color:var(--ink); font-weight:700;
     padding:10px 18px; border-radius:10px; font-size:13px; white-space:nowrap; text-transform:uppercase; letter-spacing:.03em;
   }
+  .theme-switch{
+    position:relative; width:46px; height:26px; flex:0 0 auto; padding:0; margin:0;
+    background:var(--panel2); border:1px solid var(--border); border-radius:999px;
+    cursor:pointer; text-transform:none;
+  }
+  .theme-switch .thumb{
+    position:absolute; top:2px; left:2px; height:20px; width:20px; border-radius:50%;
+    background:var(--accent); display:flex; align-items:center; justify-content:center;
+    font-size:12px; line-height:1; transition:transform .25s ease, background .25s ease;
+  }
+  .theme-switch[data-active="sakura"] .thumb{transform:translateX(20px);}
   .container{max-width:1260px; margin:0 auto; padding:28px 48px 60px;}
   .card{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:22px 24px; margin-bottom:18px;}
   label{font-size:11.5px; color:var(--muted); display:block; margin-bottom:6px; letter-spacing:.04em; text-transform:uppercase; font-weight:600;}
+  .info-icon{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:14px; height:14px; padding:0; margin-left:3px; vertical-align:middle;
+    border-radius:50%; background:transparent; border:1px solid var(--muted); color:var(--muted);
+    font-family:'Space Grotesk',sans-serif; font-style:italic; font-size:9.5px; font-weight:700;
+    letter-spacing:normal; text-transform:none; line-height:1; cursor:pointer;
+  }
+  .info-icon:hover, .info-icon:focus-visible{border-color:var(--accent); color:var(--accent);}
   .field{margin-bottom:16px;}
   input,select{
     font-family:'Manrope',sans-serif; background:var(--panel2); color:var(--text);
@@ -147,6 +213,16 @@
   .bench{font-size:11.5px; color:var(--muted); margin-top:10px; padding-top:10px; border-top:1px dashed var(--border);}
   .empty{color:var(--muted); font-size:13px; text-align:center; padding:24px 0;}
   .add-round-row{display:flex; justify-content:center; margin-top:6px; margin-bottom:24px;}
+
+  .round-choice{width:100%; margin-bottom:24px;}
+  .round-choice-title{font-size:12.5px; font-weight:700; color:var(--accent); margin-bottom:10px; text-transform:uppercase; letter-spacing:.05em; text-align:center;}
+  .round-choice-option{display:flex; flex-direction:column;}
+  .rc-label{font-family:'Space Grotesk',sans-serif; font-weight:700; text-transform:uppercase; letter-spacing:.03em; font-size:12px; color:var(--accent); margin-bottom:10px;}
+  .rc-lines{display:flex; flex-direction:column; gap:7px; margin-bottom:4px;}
+  .rc-line{font-size:12.5px; line-height:1.4;}
+  .rc-line .court-no{color:var(--muted); font-weight:700; margin-right:6px;}
+  .rc-line .vs{margin:0 5px;}
+  .round-choice-option .rc-pick{margin-top:12px;}
 
   .podium-wrap{margin-bottom:26px;}
   .podium-title{font-size:12.5px; font-weight:700; color:var(--accent); margin-bottom:16px; letter-spacing:.06em; text-transform:uppercase; text-align:center;}
@@ -283,6 +359,30 @@ function saveState(){
   try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
 }
 
+const THEME_KEY = 'sterling_americano_theme_v1';
+const THEMES = ['default', 'sakura'];
+const THEME_ICONS = {default:'\u{1F3BE}', sakura:'\u{1F338}'};
+const THEME_COLORS = {default:'#15201b', sakura:'#150c17'};
+let theme = THEMES.includes(localStorage.getItem(THEME_KEY)) ? localStorage.getItem(THEME_KEY) : 'default';
+function applyTheme(){
+  document.documentElement.setAttribute('data-theme', theme);
+  const metaTheme = document.querySelector('meta[name="theme-color"]');
+  if(metaTheme) metaTheme.setAttribute('content', THEME_COLORS[theme]);
+}
+applyTheme();
+function wireThemeSwitch(root){
+  const el = root.querySelector('#themeToggle');
+  if(!el) return;
+  const setUI = ()=>{ el.dataset.active = theme; el.querySelector('.thumb').textContent = THEME_ICONS[theme]; };
+  setUI();
+  el.addEventListener('click', ()=>{
+    theme = THEMES[(THEMES.indexOf(theme) + 1) % THEMES.length];
+    localStorage.setItem(THEME_KEY, theme);
+    applyTheme();
+    setUI();
+  });
+}
+
 function todayLabel(){
   return new Date().toLocaleDateString('en-GB', {day:'numeric', month:'long', year:'numeric'});
 }
@@ -345,9 +445,9 @@ function renderSetup(){
         <div class="sub">${escapeHtml(state.date)} &nbsp;&middot;&nbsp; Sterling Sport &amp; Wellness</div>
       </div>
       <div class="actions">
+        <button type="button" class="theme-switch" id="themeToggle" title="Design"><span class="thumb"></span></button>
         <button id="importBtnSetup" class="small ghost">Import tournament</button>
         <input type="file" id="importFileSetup" accept="application/json" style="display:none;" />
-        <div class="badge">SET UP EVENT</div>
       </div>
     </div>
     <div class="container">
@@ -360,7 +460,6 @@ function renderSetup(){
             <button id="saveNameBtn" class="small">Save</button>
           </div>
         </div>
-        <div class="hint">Date is set automatically: <b>${escapeHtml(state.date)}</b></div>
       </div>
 
       <div class="card">
@@ -388,7 +487,7 @@ function renderSetup(){
       <div class="card">
         <div class="grid4">
           <div class="field">
-            <label>Points per match (8&ndash;32)</label>
+            <label>Points per match (8&ndash;32) <button type="button" class="info-icon" id="schedInfoBtn" aria-label="Format details">i</button></label>
             <input id="pointsTarget" type="number" min="8" max="32" step="1" />
           </div>
           <div class="field">
@@ -404,7 +503,7 @@ function renderSetup(){
             <input id="sessionMinutes" type="number" min="15" max="480" step="5" />
           </div>
         </div>
-        <div class="hint" id="schedHint"></div>
+        <div class="hint" id="schedHint" style="display:none;"></div>
         <div class="rec-box" id="recBox"></div>
       </div>
 
@@ -414,6 +513,7 @@ function renderSetup(){
     </div>
   `;
 
+  wireThemeSwitch(wrap);
   const importFileSetup = wrap.querySelector('#importFileSetup');
   wrap.querySelector('#importBtnSetup').addEventListener('click', ()=> importFileSetup.click());
   importFileSetup.addEventListener('change', e=>{
@@ -455,6 +555,9 @@ function renderSetup(){
   const roundsLabel = wrap.querySelector('#roundsLabel');
   const schedHint = wrap.querySelector('#schedHint');
   const generateBtn = wrap.querySelector('#generateBtn');
+  wrap.querySelector('#schedInfoBtn').addEventListener('click', ()=>{
+    schedHint.style.display = schedHint.style.display === 'none' ? 'block' : 'none';
+  });
   function updateFormatUI(){
     formatBtns.forEach(b=> b.classList.toggle('active', b.dataset.type === state.tournamentType));
     if(state.tournamentType === 'mexicano'){
@@ -638,10 +741,21 @@ function cloneRound(round){
    pairing itself is standings-driven rather than history-driven. Round 1
    has no standings yet, so it's seeded with a random order instead. */
 
+// Splits a best-to-worst player order into blocks of 4 — 1st+4th vs 2nd+3rd
+// within each block — so the closest-matched foursome always shares a
+// court. Shared by Mexicano rounds and Americano's "balanced" round option.
+function foursomeMatches(rankedPlaying){
+  const matches = [];
+  for(let i=0; i<rankedPlaying.length; i+=4){
+    const [r1,r2,r3,r4] = rankedPlaying.slice(i, i+4);
+    matches.push({court: (i/4)+1, teamA:[r1,r4], teamB:[r2,r3]});
+  }
+  return matches;
+}
+
 // Builds one round from a best-to-worst player order. Players are benched
 // on the same fairness rotation as Americano, then whoever's left is split
-// into blocks of 4 in rank order — 1st+4th vs 2nd+3rd within each block —
-// so the closest-matched foursome always shares a court.
+// into ranked foursomes.
 function generateMexicanoRound(n, numCourts, benchCount, rankOrder){
   const maxPlayable = numCourts*4;
   let slots = Math.min(n, maxPlayable);
@@ -652,15 +766,19 @@ function generateMexicanoRound(n, numCourts, benchCount, rankOrder){
   const benchedSet = new Set(benched);
   const playing = rankOrder.filter(p=>!benchedSet.has(p));
 
-  const matches = [];
-  for(let i=0; i<playing.length; i+=4){
-    const [r1,r2,r3,r4] = playing.slice(i, i+4);
-    matches.push({court: (i/4)+1, teamA:[r1,r4], teamB:[r2,r3]});
-  }
-
-  const round = {matches, bench: benched};
+  const round = {matches: foursomeMatches(playing), bench: benched};
   round.bench.forEach(p=> benchCount[p]++);
   return round;
+}
+
+// Americano's "balanced by standings" alternative for a round: same bench
+// as the partner-rotation option (whoever sits stays the same either way),
+// but the players actually on court are grouped into ranked foursomes
+// (1st+4th vs 2nd+3rd) instead of by fresh-partner history.
+function generateBalancedRoundWithBench(bench, rankOrder){
+  const benchedSet = new Set(bench);
+  const playing = rankOrder.filter(p=>!benchedSet.has(p));
+  return {matches: foursomeMatches(playing), bench: bench.slice()};
 }
 
 // Tries to build a round where every partnership is brand new (nobody plays
@@ -1025,6 +1143,7 @@ function renderPlaying(){
         <div class="sub">${escapeHtml(state.date)} &nbsp;&middot;&nbsp; ${state.tournamentType === 'mexicano' ? 'Mexicano' : 'Americano'} &nbsp;&middot;&nbsp; up to ${state.pointsTarget} points &nbsp;&middot;&nbsp; ${state.numCourts} court(s) &nbsp;&middot;&nbsp; ${state.players.length} players</div>
       </div>
       <div class="actions">
+        <button type="button" class="theme-switch" id="themeToggle" title="Design"><span class="thumb"></span></button>
         <button id="exportBtn" class="small ghost">Export</button>
         <button id="importBtn" class="small ghost">Import</button>
         <input type="file" id="importFile" accept="application/json" style="display:none;" />
@@ -1047,6 +1166,7 @@ function renderPlaying(){
     </div>
   `;
 
+  wireThemeSwitch(wrap);
   wrap.querySelector('#resetResultsBtn').addEventListener('click', ()=>{
     if(!confirm('Reset all rounds and results? Your player list and settings will be kept.')) return;
     state.stage = 'setup';
@@ -1258,8 +1378,26 @@ function renderPodium(container){
   `;
 }
 
+// From how many rounds onward Americano starts offering a standings-based
+// "balanced" alternative alongside the usual partner-rotation round.
+const BALANCED_ROUND_FROM = 8;
+// Minimum number of rounds that must separate two sit-outs of the same
+// player (a gap of 3 means at least 2 rounds actually played in between).
+const MIN_ROUNDS_BETWEEN_SITOUTS = 3;
+
+function commitNewRound(round){
+  state.schedule.push(round);
+  state.scores.push(round.matches.map(()=>({a:null})));
+  state.numRounds = state.schedule.length;
+  saveState();
+  render();
+}
+
 function renderRounds(container){
   container.innerHTML = '';
+  const warnDiv = document.createElement('div');
+  container.appendChild(warnDiv);
+  renderBenchWarnings(warnDiv);
   state.schedule.forEach((round,ri)=>{
     container.appendChild(renderRoundBlock(round, ri));
   });
@@ -1277,31 +1415,103 @@ function renderRounds(container){
       const {benchCount} = replayCounts(n, state.numCourts, state.schedule);
       const rankOrder = computeLeaderboard().map(p=>p.idx);
       const newRound = generateMexicanoRound(n, state.numCourts, benchCount, rankOrder);
-      state.schedule.push(newRound);
-      state.scores.push(newRound.matches.map(()=>({a:null})));
-      state.numRounds = state.schedule.length;
-      saveState();
-      render();
+      commitNewRound(newRound);
       return;
     }
 
     const {benchCount, partnerCount, opponentCount} = replayCounts(n, state.numCourts, state.schedule);
-    let newRound = state.cycleLength ? null : generateFreshRound(n, state.numCourts, benchCount, partnerCount, opponentCount);
-    if(!newRound){
+    let freshRound = state.cycleLength ? null : generateFreshRound(n, state.numCourts, benchCount, partnerCount, opponentCount);
+    if(!freshRound){
       // Partner rotation exhausted (or already known to be): replay it
       // from Round 1 instead of repeating a partnership early.
       if(!state.cycleLength) state.cycleLength = state.schedule.length || 1;
-      newRound = cloneRound(state.schedule[state.schedule.length % state.cycleLength]);
-      applyRoundCounts(newRound, benchCount, partnerCount, opponentCount);
+      freshRound = cloneRound(state.schedule[state.schedule.length % state.cycleLength]);
+      applyRoundCounts(freshRound, benchCount, partnerCount, opponentCount);
     }
-    state.schedule.push(newRound);
-    state.scores.push(newRound.matches.map(()=>({a:null})));
-    state.numRounds = state.schedule.length;
-    saveState();
-    render();
+
+    if(state.schedule.length >= BALANCED_ROUND_FROM){
+      // Offer a second, standings-based lineup for the same round — same
+      // players rest either way, only the on-court pairing differs — and
+      // let the organizer pick which one to actually add.
+      const rankOrder = computeLeaderboard().map(p=>p.idx);
+      const balancedRound = generateBalancedRoundWithBench(freshRound.bench, rankOrder);
+      renderRoundChoice(addRow, freshRound, balancedRound);
+      return;
+    }
+
+    commitNewRound(freshRound);
   });
 
   renderKnockoutSection(container);
+}
+
+function matchesPreviewHtml(round){
+  const lines = round.matches.map(m=>{
+    const [a1,a2]=m.teamA, [b1,b2]=m.teamB;
+    return `<div class="rc-line"><span class="court-no">Court ${m.court}</span>${escapeHtml(state.players[a1])} + ${escapeHtml(state.players[a2])}<span class="vs">vs</span>${escapeHtml(state.players[b1])} + ${escapeHtml(state.players[b2])}</div>`;
+  }).join('');
+  const bench = round.bench.length
+    ? `<div class="bench">Resting: ${round.bench.map(i=>escapeHtml(state.players[i])).join(', ')}</div>`
+    : '';
+  return `<div class="rc-lines">${lines}</div>${bench}`;
+}
+
+function renderRoundChoice(addRow, freshRound, balancedRound){
+  addRow.innerHTML = `
+    <div class="round-choice">
+      <div class="round-choice-title">Round ${state.schedule.length + 1} &mdash; choose a lineup</div>
+      <div class="round-choice-grid matches-grid">
+        <div class="match round-choice-option">
+          <div class="rc-label">Partner rotation</div>
+          ${matchesPreviewHtml(freshRound)}
+          <button class="small accent rc-pick" data-choice="fresh">Use this lineup</button>
+        </div>
+        <div class="match round-choice-option">
+          <div class="rc-label">Balanced by standings</div>
+          ${matchesPreviewHtml(balancedRound)}
+          <button class="small accent rc-pick" data-choice="balanced">Use this lineup</button>
+        </div>
+      </div>
+      <div class="hint" style="text-align:center;">Same players rest either way &mdash; only the on-court pairing differs.</div>
+    </div>
+  `;
+  addRow.querySelector('[data-choice="fresh"]').addEventListener('click', ()=> commitNewRound(freshRound));
+  addRow.querySelector('[data-choice="balanced"]').addEventListener('click', ()=> commitNewRound(balancedRound));
+}
+
+// Finds every case where the same player is benched again before at least
+// MIN_ROUNDS_BETWEEN_SITOUTS-1 rounds have actually been played in between
+// — e.g. deleting/adding rounds by hand can break the fair rest rotation
+// even though each round on its own still looks balanced.
+function findBenchSpacingViolations(){
+  const lastBenchRound = {};
+  const violations = [];
+  state.schedule.forEach((round, ri)=>{
+    round.bench.forEach(p=>{
+      if(lastBenchRound[p] !== undefined){
+        const gap = ri - lastBenchRound[p];
+        if(gap < MIN_ROUNDS_BETWEEN_SITOUTS){
+          violations.push({player:p, prevRound:lastBenchRound[p], round:ri, playedBetween:gap-1});
+        }
+      }
+      lastBenchRound[p] = ri;
+    });
+  });
+  return violations;
+}
+
+function renderBenchWarnings(container){
+  const violations = findBenchSpacingViolations();
+  if(!violations.length){ container.innerHTML = ''; return; }
+  const lines = violations.map(v=>{
+    const name = escapeHtml(state.players[v.player]);
+    const roundsPlayed = v.playedBetween === 1 ? '1 round' : `${v.playedBetween} rounds`;
+    return `<div>&#9888;&#65039; <b>${name}</b> rests again in Round ${v.round+1}, only ${roundsPlayed} played since resting in Round ${v.prevRound+1}.</div>`;
+  }).join('');
+  container.innerHTML = `<div class="card" style="border-color:var(--danger);">
+    <div class="section-title" style="color:var(--danger);"><span>UNEVEN REST ROTATION</span></div>
+    ${lines}
+  </div>`;
 }
 
 function renderRoundBlock(round, ri){
