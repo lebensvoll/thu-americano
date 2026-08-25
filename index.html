@@ -7,7 +7,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#15201b">
-<title>Thursday Americano</title>
+<title>Padel Runner</title>
+<link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48dGV4dCB5PSIuOWVtIiBmb250LXNpemU9IjkwIj7wn46+PC90ZXh0Pjwvc3ZnPg==">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -106,9 +107,22 @@
     background:linear-gradient(135deg, var(--dark2), var(--dark)); padding:32px 48px; display:flex; align-items:center; justify-content:space-between; gap:24px;
     border-bottom:4px solid var(--accent);
   }
-  .hero h1{font-size:30px; margin:0 0 6px; color:var(--text); font-weight:700; line-height:1.1;}
+  .hero h1{font-size:30px; margin:0 0 6px; color:var(--text); font-weight:700; line-height:1.1; cursor:pointer; border-bottom:1px dashed transparent;}
+  .hero h1:hover{border-bottom-color:var(--muted);}
   .hero .sub{font-size:14px; color:var(--muted); font-weight:400;}
   .hero .actions{display:flex; gap:10px; align-items:center;}
+  .hero-actions-col{display:flex; flex-direction:column; align-items:flex-end; gap:8px;}
+  .hero-credit{font-size:10px; color:var(--muted); opacity:.5; letter-spacing:.02em; text-decoration:none;}
+  .hero-credit:hover{opacity:.8;}
+  .hero-club-trigger{cursor:pointer; border-bottom:1px dashed transparent;}
+  .hero-club-trigger:hover{border-bottom-color:var(--muted); color:var(--text);}
+  .hero-club-empty{font-style:italic; opacity:.75;}
+  .hero-edit-input{
+    font-family:'Manrope',sans-serif; background:var(--panel2); color:var(--text);
+    border:1px solid var(--accent); border-radius:8px; padding:4px 9px;
+  }
+  .hero-edit-title{font-family:'Space Grotesk',sans-serif; text-transform:uppercase; letter-spacing:.01em; font-weight:700; font-size:26px; width:min(560px,100%);}
+  .hero-edit-club{font-size:13px; width:220px; max-width:100%;}
   .badge{
     background:var(--accent); color:var(--ink); font-weight:700;
     padding:10px 18px; border-radius:10px; font-size:13px; white-space:nowrap; text-transform:uppercase; letter-spacing:.03em;
@@ -129,13 +143,14 @@
   label{font-size:11.5px; color:var(--muted); display:block; margin-bottom:6px; letter-spacing:.04em; text-transform:uppercase; font-weight:600;}
   .info-icon{
     display:inline-flex; align-items:center; justify-content:center;
-    width:14px; height:14px; padding:0; margin-left:3px; vertical-align:middle;
-    border-radius:50%; background:transparent; border:1px solid var(--muted); color:var(--muted);
-    font-family:'Space Grotesk',sans-serif; font-style:italic; font-size:9.5px; font-weight:700;
+    width:15px; height:15px; padding:0; margin-left:3px; vertical-align:middle;
+    border-radius:50%; background:transparent; border:1.5px solid var(--muted); color:var(--muted);
+    font-family:Georgia,'Times New Roman',serif; font-style:normal; font-size:10.5px; font-weight:700;
     letter-spacing:normal; text-transform:none; line-height:1; cursor:pointer;
   }
   .info-icon:hover, .info-icon:focus-visible{border-color:var(--accent); color:var(--accent);}
   .field{margin-bottom:16px;}
+  .name-field input{max-width:420px;}
   input,select{
     font-family:'Manrope',sans-serif; background:var(--panel2); color:var(--text);
     border:1px solid var(--border); border-radius:9px; padding:10px 12px; font-size:14px; width:100%;
@@ -260,6 +275,17 @@
   .lb-sub .diff-pos{color:var(--sage);}
   .lb-sub .diff-neg{color:var(--danger);}
   .lb-add-row{margin-top:10px; padding-top:10px; border-top:1px solid var(--border);}
+  .lb-remove{background:transparent; border:none; color:var(--muted); font-size:12px; padding:4px 6px; margin-left:2px; cursor:pointer; line-height:1; flex:0 0 auto;}
+  .lb-remove:hover{color:var(--danger);}
+
+  .modal-overlay{position:fixed; inset:0; background:rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center; z-index:100; padding:20px;}
+  .modal-box{background:var(--panel); border:1px solid var(--border); border-radius:16px; max-width:560px; width:100%; max-height:85vh; overflow-y:auto; padding:26px 28px;}
+  .modal-box h2{margin:0 0 16px; font-size:18px; color:var(--accent);}
+  .modal-box h3{margin:20px 0 6px; font-size:12.5px; color:var(--accent); text-transform:uppercase; letter-spacing:.04em;}
+  .modal-box h3:first-of-type{margin-top:0;}
+  .modal-box p{margin:0 0 4px; font-size:13px; color:var(--text); line-height:1.6;}
+  .modal-box .modal-close{position:absolute; top:20px; right:20px;}
+  .modal-box-wrap{position:relative;}
 
   .ko-card{border:1px solid var(--accent-dark);}
   .ko-card .section-title{color:var(--accent);}
@@ -278,7 +304,10 @@
     }
     .hero h1{font-size:20px;}
     .hero .sub{font-size:12.5px;}
+    .hero-edit-title{font-size:18px;}
+    .hero-edit-club{font-size:16px; width:160px;} /* 16px avoids iOS auto-zoom on focus */
     .hero .actions{flex-wrap:wrap; gap:8px; width:100%;}
+    .hero-actions-col{width:100%;}
     .hero .actions button{flex:0 0 auto;}
     .badge{font-size:11px; padding:8px 14px;}
     .container{padding:16px 14px 60px;}
@@ -349,6 +378,8 @@
 
 <script>
 const STORAGE_KEY = 'sterling_americano_state_v3';
+// build fingerprint, base64 — see console
+const _bf = 'UGFkZWwgUnVubmVyIC0gRGV2ZWxvcGVkIGJ5IE9sZWcgUHJhY2h1aw==';
 
 
 function loadState(){
@@ -383,6 +414,45 @@ function wireThemeSwitch(root){
   });
 }
 
+function openHelpModal(){
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal-box modal-box-wrap">
+      <button class="ghost small modal-close" id="helpCloseBtn">Close</button>
+      <h2>How Padel Runner works</h2>
+
+      <h3>Setup</h3>
+      <p>Name the tournament and (optionally) your club, add 8&ndash;12 players, and pick a format:</p>
+      <p><b>Americano</b> &mdash; the full schedule is generated up front; partners rotate so everyone partners with everyone before any pair repeats.</p>
+      <p><b>Mexicano</b> &mdash; only Round 1 is random; every later round is built from the live leaderboard (1st+4th vs 2nd+3rd).</p>
+
+      <h3>Playing</h3>
+      <p>Tap a score box to enter a match result &mdash; the other team's score fills in automatically (scores add up to the points target). The leaderboard updates live.</p>
+      <p>Click a player's name in the leaderboard to rename them, or the &#10005; next to them to remove a player who has to leave early &mdash; they keep the points they've already earned, and just won't be scheduled in rounds after the one currently being played.</p>
+      <p>Use <b>+ Add round</b> to extend the tournament, or <b>Delete round</b> on any round card to remove it.</p>
+
+      <h3>Knockout stage</h3>
+      <p>Once enough players have results, generate a knockout bracket from the current standings (top finisher paired with the lowest qualifying finisher, and so on). The round-robin leaderboard keeps running underneath.</p>
+
+      <h3>Export / Import</h3>
+      <p><b>Export</b> saves the current tournament as a JSON file. <b>Import</b> loads one back in &mdash; handy for backups or moving to another device.</p>
+
+      <h3>Theme</h3>
+      <p>The little toggle switch swaps between the STERLING Sport &amp; Wellness theme and a Sakura theme.</p>
+
+      <p style="margin-top:20px;">This tool is free for everyone to use. If you'd like to say thanks, message the developer on Instagram: <a href="https://instagram.com/olegprachuk" target="_blank" rel="noopener" style="color:var(--accent); text-decoration:none;">instagram.com/olegprachuk</a></p>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  const close = ()=> overlay.remove();
+  overlay.addEventListener('click', e=>{ if(e.target === overlay) close(); });
+  overlay.querySelector('#helpCloseBtn').addEventListener('click', close);
+  document.addEventListener('keydown', function onEsc(e){
+    if(e.key === 'Escape'){ close(); document.removeEventListener('keydown', onEsc); }
+  });
+}
+
 function todayLabel(){
   return new Date().toLocaleDateString('en-GB', {day:'numeric', month:'long', year:'numeric'});
 }
@@ -391,6 +461,7 @@ function defaultState(){
   return {
     stage: 'setup',
     tournamentName: 'World Cup Americano at STERLING',
+    clubName: 'Sterling Sport & Wellness',
     date: todayLabel(),
     players: ['', '', '', '', '', '', '', ''],
     pointsTarget: 21,
@@ -401,15 +472,26 @@ function defaultState(){
     scores: null,
     knockout: null,
     cycleLength: null,
-    tournamentType: 'americano'
+    tournamentType: 'americano',
+    removed: [],
+    rankBy: 'points'
   };
 }
 
 let state = loadState() || defaultState();
+if(state.clubName === undefined) state.clubName = 'Sterling Sport & Wellness';
+if(state.removed === undefined) state.removed = [];
+if(state.rankBy === undefined) state.rankBy = 'points';
 if(state.sessionMinutes === undefined) state.sessionMinutes = 120;
 if(state.knockout === undefined) state.knockout = null;
 if(state.cycleLength === undefined) state.cycleLength = null;
 if(state.tournamentType === undefined) state.tournamentType = 'americano';
+// Guards against stale/incompatible knockout data from an older version of
+// this tool (file:// pages all share one localStorage bucket in Chrome, so
+// leftover data from a different local tool/version can otherwise crash render()).
+if(state.knockout && !(Array.isArray(state.knockout.seeds) && state.knockout.seeds.every(s=>Array.isArray(s) && s.length===2))){
+  state.knockout = null;
+}
 
 function render(){
   const app = document.getElementById('app');
@@ -419,6 +501,56 @@ function render(){
 
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ---------- EDITABLE HERO (tournament name / club name) ---------- */
+function heroSubHtml(){
+  const clubHtml = state.clubName
+    ? `<span id="hClub" class="hero-club-trigger" title="Click to edit">${escapeHtml(state.clubName)}</span>`
+    : `<span id="hClub" class="hero-club-trigger hero-club-empty" title="Click to add a club name">+ Add club name</span>`;
+  return `<span id="hDate">${escapeHtml(state.date)}</span> &nbsp;&middot;&nbsp; ${clubHtml}`;
+}
+
+// Swaps a hero display element for a plain input, focused and pre-filled;
+// commits back to state on blur/Enter and re-renders (which naturally
+// restores the element's normal, non-input styling), or discards on Escape.
+function makeHeroFieldEditable(el, {getValue, setValue, inputClass}){
+  if(!el) return;
+  el.addEventListener('click', e=>{
+    e.stopPropagation();
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = getValue();
+    input.className = inputClass;
+    el.replaceWith(input);
+    input.focus(); input.select();
+    let done = false;
+    const commit = ()=>{
+      if(done) return;
+      done = true;
+      setValue(input.value.trim());
+      saveState();
+      render();
+    };
+    input.addEventListener('blur', ()=> setTimeout(commit, 120));
+    input.addEventListener('keydown', ev=>{
+      if(ev.key === 'Enter') commit();
+      if(ev.key === 'Escape'){ done = true; render(); }
+    });
+  });
+}
+
+function wireHeroEdit(wrap){
+  makeHeroFieldEditable(wrap.querySelector('#hTitle'), {
+    getValue: ()=> state.tournamentName,
+    setValue: v=>{ if(v) state.tournamentName = v; },
+    inputClass: 'hero-edit-input hero-edit-title'
+  });
+  makeHeroFieldEditable(wrap.querySelector('#hClub'), {
+    getValue: ()=> state.clubName,
+    setValue: v=>{ state.clubName = v; },
+    inputClass: 'hero-edit-input hero-edit-club'
+  });
 }
 
 /* ---------- ROUND RECOMMENDATION ---------- */
@@ -441,26 +573,20 @@ function renderSetup(){
   wrap.innerHTML = `
     <div class="hero">
       <div>
-        <h1>${escapeHtml(state.tournamentName)}</h1>
-        <div class="sub">${escapeHtml(state.date)} &nbsp;&middot;&nbsp; Sterling Sport &amp; Wellness</div>
+        <h1 id="hTitle" title="Click to rename">${escapeHtml(state.tournamentName)}</h1>
+        <div class="sub">${heroSubHtml()}</div>
       </div>
-      <div class="actions">
-        <button type="button" class="theme-switch" id="themeToggle" title="Design"><span class="thumb"></span></button>
-        <button id="importBtnSetup" class="small ghost">Import tournament</button>
-        <input type="file" id="importFileSetup" accept="application/json" style="display:none;" />
+      <div class="hero-actions-col">
+        <div class="actions">
+          <button type="button" class="theme-switch" id="themeToggle" title="Design"><span class="thumb"></span></button>
+          <button type="button" class="info-icon" id="helpBtn" style="width:22px; height:22px; font-size:12px;" aria-label="How to use">i</button>
+          <button id="importBtnSetup" class="small ghost">Import tournament</button>
+          <input type="file" id="importFileSetup" accept="application/json" style="display:none;" />
+        </div>
+        <a class="hero-credit" href="https://instagram.com/olegprachuk" target="_blank" rel="noopener">🎾 Padel Runner &mdash; Developed by Oleg Prachuk</a>
       </div>
     </div>
     <div class="container">
-
-      <div class="card">
-        <div class="field">
-          <label>Tournament name</label>
-          <div style="display:flex; gap:8px;">
-            <input id="tName" type="text" value="${escapeHtml(state.tournamentName)}" style="flex:1;" />
-            <button id="saveNameBtn" class="small">Save</button>
-          </div>
-        </div>
-      </div>
 
       <div class="card">
         <div class="section-title"><span>TOURNAMENT FORMAT</span></div>
@@ -505,6 +631,13 @@ function renderSetup(){
         </div>
         <div class="hint" id="schedHint" style="display:none;"></div>
         <div class="rec-box" id="recBox"></div>
+        <div class="field" style="margin-top:14px; margin-bottom:0; max-width:320px;">
+          <label>Rank leaderboard by</label>
+          <select id="rankBySelect">
+            <option value="points">Total points scored</option>
+            <option value="diff">Point differential (W&minus;L)</option>
+          </select>
+        </div>
       </div>
 
       <div class="setup-actions">
@@ -514,6 +647,8 @@ function renderSetup(){
   `;
 
   wireThemeSwitch(wrap);
+  wireHeroEdit(wrap);
+  wrap.querySelector('#helpBtn').addEventListener('click', openHelpModal);
   const importFileSetup = wrap.querySelector('#importFileSetup');
   wrap.querySelector('#importBtnSetup').addEventListener('click', ()=> importFileSetup.click());
   importFileSetup.addEventListener('change', e=>{
@@ -579,19 +714,6 @@ function renderSetup(){
   });
   updateFormatUI();
 
-  wrap.querySelector('#tName').addEventListener('input', e=>{ state.tournamentName = e.target.value; saveState(); });
-  wrap.querySelector('#saveNameBtn').addEventListener('click', ()=>{
-    const val = wrap.querySelector('#tName').value.trim();
-    if(val) state.tournamentName = val;
-    saveState();
-    const btn = wrap.querySelector('#saveNameBtn');
-    const original = btn.textContent;
-    btn.textContent = 'Saved \u2713';
-    btn.disabled = true;
-    setTimeout(()=>{ btn.textContent = original; btn.disabled = false; }, 900);
-    wrap.querySelector('.hero h1').textContent = state.tournamentName;
-  });
-
   wrap.querySelector('#addPlayer').addEventListener('click', ()=>{
     if(state.players.length >= 24) return;
     state.players.push('');
@@ -620,6 +742,10 @@ function renderSetup(){
   const sessionInp = wrap.querySelector('#sessionMinutes');
   sessionInp.value = state.sessionMinutes;
   sessionInp.addEventListener('input', e=>{ state.sessionMinutes = Math.max(15, +e.target.value||120); saveState(); updateRec(); });
+
+  const rankBySelect = wrap.querySelector('#rankBySelect');
+  rankBySelect.value = state.rankBy;
+  rankBySelect.addEventListener('change', e=>{ state.rankBy = e.target.value; saveState(); });
 
   const recBox = wrap.querySelector('#recBox');
   function updateRec(){
@@ -709,8 +835,8 @@ function pairUpCourts(pairs, opponentCount, trials){
 // Picks who sits out this round. Players who have rested least are the most
 // likely to rest now (fairness), but the exact tie-break is re-rolled on
 // every call so different attempts can try different rest groups.
-function pickBenchSubset(n, benchNeeded, benchCount){
-  const order = shuffle([...Array(n).keys()]).sort((a,b)=> benchCount[a]-benchCount[b]);
+function pickBenchSubset(candidates, benchNeeded, benchCount){
+  const order = shuffle(candidates.slice()).sort((a,b)=> benchCount[a]-benchCount[b]);
   return order.slice(0, benchNeeded);
 }
 
@@ -762,7 +888,7 @@ function generateMexicanoRound(n, numCourts, benchCount, rankOrder){
   slots = slots - (slots % 4);
   const benchNeeded = n - slots;
 
-  const benched = pickBenchSubset(n, benchNeeded, benchCount);
+  const benched = pickBenchSubset(rankOrder, benchNeeded, benchCount);
   const benchedSet = new Set(benched);
   const playing = rankOrder.filter(p=>!benchedSet.has(p));
 
@@ -786,16 +912,17 @@ function generateBalancedRoundWithBench(bench, rankOrder){
 // since a round that looks impossible with one rest group can be easy with
 // another. Returns null once no rest group yields a fully fresh round —
 // i.e. the partner rotation has been exhausted.
-function generateFreshRound(n, numCourts, benchCount, partnerCount, opponentCount, benchTrials){
+function generateFreshRound(candidates, numCourts, benchCount, partnerCount, opponentCount, benchTrials){
+  const n = candidates.length;
   const maxPlayable = numCourts*4;
   let slots = Math.min(n, maxPlayable);
   slots = slots - (slots % 4);
   const benchNeeded = n - slots;
 
   for(let bt=0; bt<(benchTrials||25); bt++){
-    const benched = pickBenchSubset(n, benchNeeded, benchCount);
+    const benched = pickBenchSubset(candidates, benchNeeded, benchCount);
     const benchedSet = new Set(benched);
-    const playing = [...Array(n).keys()].filter(p=>!benchedSet.has(p));
+    const playing = candidates.filter(p=>!benchedSet.has(p));
 
     const pairs = findFreshPerfectMatching(playing, partnerCount, 400);
     if(!pairs) continue;
@@ -822,10 +949,11 @@ function buildSchedule(n, numRounds, numCourts){
   const opponentCount = Array.from({length:n}, ()=>Array(n).fill(0));
   const schedule = [];
   let cycleLength = null;
+  const candidates = [...Array(n).keys()];
 
   for(let r=0; r<numRounds; r++){
     if(cycleLength === null){
-      const round = generateFreshRound(n, numCourts, benchCount, partnerCount, opponentCount);
+      const round = generateFreshRound(candidates, numCourts, benchCount, partnerCount, opponentCount);
       if(round){ schedule.push(round); continue; }
       cycleLength = schedule.length || 1;
     }
@@ -890,7 +1018,7 @@ function buildKoTeams(lb, teamCount){
 }
 
 function generateKnockout(stage){
-  const lb = computeLeaderboard().filter(p=>p.played>0);
+  const lb = computeLeaderboard().filter(p=>p.played>0 && !p.removed);
   let seeds, rounds;
   if(stage === 'quarterfinal'){
     if(lb.length < 16){ alert('You need at least 16 players with recorded results to form 8 two-player teams for the Quarterfinal stage.'); return; }
@@ -1131,7 +1259,16 @@ function computeLeaderboard(){
       if(a>b){ stats[a1].wins++; stats[a2].wins++; } else if(b>a){ stats[b1].wins++; stats[b2].wins++; }
     });
   });
-  return state.players.map((name,i)=>({name, idx:i, ...stats[i]})).sort((x,y)=> y.points-x.points || y.wins-x.wins);
+  return state.players.map((name,i)=>({name, idx:i, removed: state.removed.includes(i), ...stats[i]})).sort((x,y)=>{
+    if(state.rankBy === 'diff'){
+      return (y.points-y.against) - (x.points-x.against) || y.points-x.points || y.wins-x.wins;
+    }
+    return y.points-x.points || y.wins-x.wins;
+  });
+}
+
+function activePlayerIndices(){
+  return state.players.map((_,i)=>i).filter(i=>!state.removed.includes(i));
 }
 
 function renderPlaying(){
@@ -1139,27 +1276,36 @@ function renderPlaying(){
   wrap.innerHTML = `
     <div class="hero">
       <div>
-        <h1>${escapeHtml(state.tournamentName)}</h1>
-        <div class="sub">${escapeHtml(state.date)} &nbsp;&middot;&nbsp; ${state.tournamentType === 'mexicano' ? 'Mexicano' : 'Americano'} &nbsp;&middot;&nbsp; up to ${state.pointsTarget} points &nbsp;&middot;&nbsp; ${state.numCourts} court(s) &nbsp;&middot;&nbsp; ${state.players.length} players</div>
+        <h1 id="hTitle" title="Click to rename">${escapeHtml(state.tournamentName)}</h1>
+        <div class="sub">${heroSubHtml()}</div>
       </div>
-      <div class="actions">
-        <button type="button" class="theme-switch" id="themeToggle" title="Design"><span class="thumb"></span></button>
-        <button id="exportBtn" class="small ghost">Export</button>
-        <button id="importBtn" class="small ghost">Import</button>
-        <input type="file" id="importFile" accept="application/json" style="display:none;" />
-        ${state.stage === 'finished'
-          ? '<button id="reopenBtn" class="small ghost">Reopen tournament</button>'
-          : '<button id="finishBtn" class="primary small">Finish tournament</button>'}
-        <button id="resetResultsBtn" class="small ghost">Reset results</button>
-        <button id="newTournament" class="warn small">New tournament</button>
+      <div class="hero-actions-col">
+        <div class="actions">
+          <button type="button" class="theme-switch" id="themeToggle" title="Design"><span class="thumb"></span></button>
+          <button type="button" class="info-icon" id="helpBtn" style="width:22px; height:22px; font-size:12px;" aria-label="How to use">i</button>
+          <button id="exportBtn" class="small ghost">Export</button>
+          <button id="importBtn" class="small ghost">Import</button>
+          <input type="file" id="importFile" accept="application/json" style="display:none;" />
+          ${state.stage === 'finished'
+            ? '<button id="reopenBtn" class="small ghost">Reopen tournament</button>'
+            : '<button id="finishBtn" class="primary small">Finish tournament</button>'}
+          <button id="resetResultsBtn" class="small ghost">Reset results</button>
+          <button id="newTournament" class="warn small">New tournament</button>
+        </div>
+        <a class="hero-credit" href="https://instagram.com/olegprachuk" target="_blank" rel="noopener">🎾 Padel Runner &mdash; Developed by Oleg Prachuk</a>
       </div>
     </div>
     <div class="container">
       ${state.stage === 'finished' ? '<div id="podiumHolder"></div>' : ''}
       <div class="layout">
         <div class="card leaderboard-card">
-          <div class="section-title"><span>LEADERBOARD</span></div>
+          <div class="section-title">
+            <span>LEADERBOARD</span>
+            <button type="button" class="info-icon" id="lbInfoBtn" aria-label="Tournament details">i</button>
+          </div>
+          <div class="hint" id="lbInfoHint" style="display:none; margin-top:-8px;">${state.tournamentType === 'mexicano' ? 'Mexicano' : 'Americano'} &middot; up to ${state.pointsTarget} points &middot; ${state.numCourts} court(s) &middot; ${activePlayerIndices().length} players</div>
           <div id="leaderboard"></div>
+          <div id="restWarnings"></div>
         </div>
         <div id="roundsCol"></div>
       </div>
@@ -1167,12 +1313,20 @@ function renderPlaying(){
   `;
 
   wireThemeSwitch(wrap);
+  wireHeroEdit(wrap);
+  wrap.querySelector('#helpBtn').addEventListener('click', openHelpModal);
+  const lbInfoHint = wrap.querySelector('#lbInfoHint');
+  wrap.querySelector('#lbInfoBtn').addEventListener('click', ()=>{
+    lbInfoHint.style.display = lbInfoHint.style.display === 'none' ? 'block' : 'none';
+  });
   wrap.querySelector('#resetResultsBtn').addEventListener('click', ()=>{
     if(!confirm('Reset all rounds and results? Your player list and settings will be kept.')) return;
     state.stage = 'setup';
     state.schedule = null;
     state.scores = null;
     state.knockout = null;
+    state.cycleLength = null;
+    state.removed = [];
     saveState();
     render();
   });
@@ -1216,9 +1370,37 @@ function renderPlaying(){
     renderPodium(wrap.querySelector('#podiumHolder'));
   }
   renderLeaderboard(wrap.querySelector('#leaderboard'));
+  renderBenchWarnings(wrap.querySelector('#restWarnings'));
   renderRounds(wrap.querySelector('#roundsCol'));
 
   return wrap;
+}
+
+// Soft-removes a player from future scheduling: their slot and past results
+// stay put (so already-played rounds and their earned points don't shift or
+// vanish), but they're dropped from the candidate pool for any round that
+// hasn't been played yet. The round currently in progress is left exactly as
+// scheduled — only fully-untouched rounds after it are discarded so the next
+// "+ Add round" rebuilds them without this player.
+function removePlayerFromRotation(idx){
+  const name = state.players[idx] || 'This player';
+  if(!confirm(`Remove ${name} from the rotation?\n\nPoints they've already earned stay on the leaderboard. The round currently in progress won't change — only rounds after it will be rebuilt without them.`)) return;
+
+  state.removed.push(idx);
+
+  if(state.schedule && state.schedule.length){
+    let currentRoundIdx = state.schedule.findIndex((round, ri)=>
+      round.matches.some((m, mi)=> state.scores[ri][mi].a === null || state.scores[ri][mi].a === '')
+    );
+    if(currentRoundIdx === -1) currentRoundIdx = state.schedule.length - 1;
+    state.schedule.length = currentRoundIdx + 1;
+    state.scores.length = currentRoundIdx + 1;
+    state.numRounds = state.schedule.length;
+    state.cycleLength = null;
+  }
+
+  saveState();
+  render();
 }
 
 function importStateFromFile(file){
@@ -1229,6 +1411,11 @@ function importStateFromFile(file){
       if(!parsed.players || !parsed.stage){ throw new Error('bad file'); }
       if(parsed.sessionMinutes === undefined) parsed.sessionMinutes = 120;
       if(parsed.knockout === undefined) parsed.knockout = null;
+      if(parsed.removed === undefined) parsed.removed = [];
+      if(parsed.rankBy === undefined) parsed.rankBy = 'points';
+      if(parsed.knockout && !(Array.isArray(parsed.knockout.seeds) && parsed.knockout.seeds.every(s=>Array.isArray(s) && s.length===2))){
+        parsed.knockout = null;
+      }
       state = parsed;
       saveState();
       render();
@@ -1263,16 +1450,17 @@ function renderLeaderboard(container){
         const diffStr = diff>0 ? ('+'+diff) : String(diff);
         const diffClass = diff>0 ? 'diff-pos' : (diff<0 ? 'diff-neg' : '');
         return `
-        <div class="lb-row ${cls}">
+        <div class="lb-row ${cls}" style="${p.removed ? 'opacity:.5;' : ''}">
           <div class="lb-rank">${i+1}</div>
           <div class="lb-name-col">
             <div class="lb-name" data-idx="${p.idx}" title="Click to rename">${escapeHtml(p.name)}</div>
-            <div class="lb-sub">${p.wins}W &middot; ${p.played} played</div>
+            <div class="lb-sub">${p.removed ? 'Left rotation &middot; ' : ''}${p.wins}W &middot; ${p.played} played</div>
           </div>
           <div class="lb-points-col">
             <div class="lb-points">${p.points}</div>
             <div class="lb-sub">W ${p.points} &middot; L ${p.against} &middot; <span class="${diffClass}">${diffStr}</span></div>
           </div>
+          ${p.removed ? '' : `<button class="lb-remove" data-idx="${p.idx}" title="Remove from rotation">&#10005;</button>`}
         </div>`;
       }).join('');
 
@@ -1326,6 +1514,13 @@ function renderLeaderboard(container){
     });
   });
 
+  container.querySelectorAll('.lb-remove').forEach(btn=>{
+    btn.addEventListener('click', e=>{
+      e.stopPropagation();
+      removePlayerFromRotation(+btn.dataset.idx);
+    });
+  });
+
   const addBtn = container.querySelector('#lbAddPlayerBtn');
   if(addBtn){
     addBtn.addEventListener('click', ()=>{
@@ -1357,21 +1552,18 @@ function renderPodium(container){
           <div class="rank-label">2nd place</div>
           <div class="name">${escapeHtml(second.name)}</div>
           <div class="pts">${second.points}</div>
-          <div class="meta">${second.wins}W &middot; ${second.played} played</div>
         </div>
         <div class="podium-card podium-gold">
           <span class="medal">&#129351;</span>
           <div class="rank-label">1st place</div>
           <div class="name">${escapeHtml(first.name)}</div>
           <div class="pts">${first.points}</div>
-          <div class="meta">${first.wins}W &middot; ${first.played} played</div>
         </div>
         <div class="podium-card podium-bronze">
           <span class="medal">&#129353;</span>
           <div class="rank-label">3rd place</div>
           <div class="name">${escapeHtml(third.name)}</div>
           <div class="pts">${third.points}</div>
-          <div class="meta">${third.wins}W &middot; ${third.played} played</div>
         </div>
       </div>
     </div>
@@ -1395,9 +1587,6 @@ function commitNewRound(round){
 
 function renderRounds(container){
   container.innerHTML = '';
-  const warnDiv = document.createElement('div');
-  container.appendChild(warnDiv);
-  renderBenchWarnings(warnDiv);
   state.schedule.forEach((round,ri)=>{
     container.appendChild(renderRoundBlock(round, ri));
   });
@@ -1407,20 +1596,21 @@ function renderRounds(container){
   container.appendChild(addRow);
   addRow.querySelector('#addRoundBtn').addEventListener('click', ()=>{
     const n = state.players.length;
+    const candidates = activePlayerIndices();
 
     if(state.tournamentType === 'mexicano'){
       const lastScores = state.scores[state.scores.length-1];
       const incomplete = lastScores.some(sc=> sc.a===null || sc.a==='');
       if(incomplete && !confirm('Not every score in the last round has been entered yet, so standings are incomplete. Add the next round anyway?')) return;
       const {benchCount} = replayCounts(n, state.numCourts, state.schedule);
-      const rankOrder = computeLeaderboard().map(p=>p.idx);
-      const newRound = generateMexicanoRound(n, state.numCourts, benchCount, rankOrder);
+      const rankOrder = computeLeaderboard().map(p=>p.idx).filter(i=>candidates.includes(i));
+      const newRound = generateMexicanoRound(rankOrder.length, state.numCourts, benchCount, rankOrder);
       commitNewRound(newRound);
       return;
     }
 
     const {benchCount, partnerCount, opponentCount} = replayCounts(n, state.numCourts, state.schedule);
-    let freshRound = state.cycleLength ? null : generateFreshRound(n, state.numCourts, benchCount, partnerCount, opponentCount);
+    let freshRound = state.cycleLength ? null : generateFreshRound(candidates, state.numCourts, benchCount, partnerCount, opponentCount);
     if(!freshRound){
       // Partner rotation exhausted (or already known to be): replay it
       // from Round 1 instead of repeating a partnership early.
@@ -1433,7 +1623,7 @@ function renderRounds(container){
       // Offer a second, standings-based lineup for the same round — same
       // players rest either way, only the on-court pairing differs — and
       // let the organizer pick which one to actually add.
-      const rankOrder = computeLeaderboard().map(p=>p.idx);
+      const rankOrder = computeLeaderboard().map(p=>p.idx).filter(i=>candidates.includes(i));
       const balancedRound = generateBalancedRoundWithBench(freshRound.bench, rankOrder);
       renderRoundChoice(addRow, freshRound, balancedRound);
       return;
@@ -1501,17 +1691,19 @@ function findBenchSpacingViolations(){
 }
 
 function renderBenchWarnings(container){
+  if(!container) return;
   const violations = findBenchSpacingViolations();
   if(!violations.length){ container.innerHTML = ''; return; }
-  const lines = violations.map(v=>{
+  const items = violations.map(v=>{
     const name = escapeHtml(state.players[v.player]);
-    const roundsPlayed = v.playedBetween === 1 ? '1 round' : `${v.playedBetween} rounds`;
-    return `<div>&#9888;&#65039; <b>${name}</b> rests again in Round ${v.round+1}, only ${roundsPlayed} played since resting in Round ${v.prevRound+1}.</div>`;
-  }).join('');
-  container.innerHTML = `<div class="card" style="border-color:var(--danger);">
-    <div class="section-title" style="color:var(--danger);"><span>UNEVEN REST ROTATION</span></div>
-    ${lines}
-  </div>`;
+    return `<b>${name}</b> in R${v.round+1}`;
+  }).join(', ');
+  container.innerHTML = `
+    <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border);">
+      <div style="font-size:10px; font-weight:700; color:var(--danger); letter-spacing:.05em; text-transform:uppercase; margin-bottom:5px;">&#9888;&#65039; Uneven rest</div>
+      <div style="font-size:11.5px; color:var(--muted); line-height:1.5;">${items}</div>
+    </div>
+  `;
 }
 
 function renderRoundBlock(round, ri){
