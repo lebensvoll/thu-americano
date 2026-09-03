@@ -111,6 +111,7 @@
   .hero h1:hover{border-bottom-color:var(--muted);}
   .hero .sub{font-size:14px; color:var(--muted); font-weight:400;}
   .hero .actions{display:flex; gap:10px; align-items:center;}
+  .actions-utils{display:contents;} /* transparent on desktop; a real flex row only on mobile */
   .hero-actions-col{display:flex; flex-direction:column; align-items:flex-end; gap:8px;}
   .hero-credit{font-size:10px; color:var(--muted); opacity:.5; letter-spacing:.02em; text-decoration:none;}
   .hero-credit:hover{opacity:.8;}
@@ -123,6 +124,12 @@
   }
   .hero-edit-title{font-family:'Space Grotesk',sans-serif; text-transform:uppercase; letter-spacing:.01em; font-weight:700; font-size:26px; width:min(560px,100%);}
   .hero-edit-club{font-size:13px; width:220px; max-width:100%;}
+  .hero-warn{
+    background:var(--panel2); border:1px solid var(--accent); border-left:4px solid var(--accent);
+    color:var(--text); font-size:12.5px; line-height:1.55;
+    padding:11px 14px; border-radius:10px; margin-bottom:18px;
+  }
+  .hero-warn b{color:var(--accent);}
   .badge{
     background:var(--accent); color:var(--ink); font-weight:700;
     padding:10px 18px; border-radius:10px; font-size:13px; white-space:nowrap; text-transform:uppercase; letter-spacing:.03em;
@@ -235,6 +242,53 @@
   .empty{color:var(--muted); font-size:13px; text-align:center; padding:24px 0;}
   .add-round-row{display:flex; justify-content:center; margin-top:6px; margin-bottom:24px;}
 
+  /* editable court number/label — the word COURT stays fixed */
+  .court-label{cursor:pointer; border-bottom:1px dashed transparent; padding-bottom:1px;}
+  .court-label:hover{border-bottom-color:var(--muted); color:var(--text);}
+  .court-label-input{
+    font-family:'Manrope',sans-serif; background:var(--panel); color:var(--text);
+    border:1px solid var(--accent); border-radius:6px; padding:2px 6px;
+    font-size:11px; width:96px; text-transform:none; letter-spacing:normal; font-weight:700;
+  }
+
+  /* session timer — sticky at the top of the rounds column */
+  .timer-bar{
+    position:sticky; top:8px; z-index:20;
+    display:flex; gap:18px; flex-wrap:wrap; align-items:center;
+    background:var(--panel); border:1px solid var(--border); border-radius:10px;
+    padding:9px 14px; margin-bottom:16px; font-size:12.5px;
+  }
+  .timer-bar .timer-k{color:var(--muted); text-transform:uppercase; letter-spacing:.05em; font-size:10.5px; font-weight:700;}
+  .timer-bar b{font-variant-numeric:tabular-nums; font-weight:800;}
+  .timer-bar .timer-over b, .timer-bar .timer-over .timer-k{color:var(--danger);}
+
+  /* always-visible finish / podium call-to-action inside the rounds flow */
+  .finish-cta{display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin:4px 0 26px;}
+  .finish-cta button{padding:13px 24px; font-size:13px;}
+
+  /* autosave / undo toast */
+  .toast{
+    position:fixed; left:50%; bottom:calc(20px + env(safe-area-inset-bottom));
+    transform:translateX(-50%) translateY(12px);
+    background:var(--panel2); color:var(--text);
+    border:1px solid var(--border); border-left:3px solid var(--accent);
+    padding:10px 16px; border-radius:10px; font-size:12.5px; font-weight:600;
+    box-shadow:0 8px 24px rgba(0,0,0,.35); z-index:200;
+    opacity:0; pointer-events:none; transition:opacity .25s ease, transform .25s ease;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  .hist-btn{
+    width:26px; height:26px; padding:0; font-size:15px; line-height:1;
+    display:inline-flex; align-items:center; justify-content:center;
+    background:var(--panel2); border:1px solid var(--border); color:var(--text);
+    border-radius:8px; text-transform:none;
+  }
+  .hist-btn:disabled{opacity:.35;}
+
+  .podium-modal .modal-box{max-width:640px; text-align:center;}
+  .podium-modal .podium{margin-top:4px;}
+
   .round-choice{width:100%; margin-bottom:24px;}
   .round-choice-title{font-size:12.5px; font-weight:700; color:var(--accent); margin-bottom:10px; text-transform:uppercase; letter-spacing:.05em; text-align:center;}
   .round-choice-option{display:flex; flex-direction:column;}
@@ -312,9 +366,21 @@
     .hero .sub{font-size:12.5px;}
     .hero-edit-title{font-size:18px;}
     .hero-edit-club{font-size:16px; width:160px;} /* 16px avoids iOS auto-zoom on focus */
-    .hero .actions{flex-wrap:wrap; gap:8px; width:100%;}
-    .hero-actions-col{width:100%;}
-    .hero .actions button{flex:0 0 auto;}
+    .hero-actions-col{width:100%; align-items:stretch;}
+    /* Even, grid-aligned buttons instead of a ragged wrapped row: the
+       toggle + info icon share a full-width top row, then every text
+       button fills its column so they all come out the same size. */
+    .hero .actions{
+      display:grid; grid-template-columns:1fr 1fr; gap:8px; width:100%;
+      align-items:center;
+    }
+    .hero .actions .actions-utils{
+      display:flex; gap:8px; align-items:center; grid-column:1 / -1;
+    }
+    .hero .actions button:not(#themeToggle):not(.info-icon){width:100%; margin:0;}
+    /* standalone action gets the full-width bottom row */
+    .hero .actions #newTournament,
+    .hero .actions #importBtnSetup{grid-column:1 / -1;}
     .badge{font-size:11px; padding:8px 14px;}
     .container{padding:16px 14px 60px;}
     .card{padding:16px 16px; border-radius:12px;}
@@ -495,7 +561,10 @@ function defaultState(){
     cycleLength: null,
     tournamentType: 'americano',
     removed: [],
-    rankBy: 'points'
+    rankBy: 'points',
+    courtLabels: {},        // { "1": "A", "2": "Centre", ... } — overrides the number after "COURT"
+    startedAt: null,        // ms epoch when rounds were first generated
+    finishedAt: null        // ms epoch when the tournament was finished (freezes the timer)
   };
 }
 
@@ -507,6 +576,13 @@ if(state.sessionMinutes === undefined) state.sessionMinutes = 120;
 if(state.knockout === undefined) state.knockout = null;
 if(state.cycleLength === undefined) state.cycleLength = null;
 if(state.tournamentType === undefined) state.tournamentType = 'americano';
+if(state.courtLabels === undefined || state.courtLabels === null) state.courtLabels = {};
+if(state.startedAt === undefined) state.startedAt = null;
+if(state.finishedAt === undefined) state.finishedAt = null;
+// A tournament already in progress from before the timer existed: start the
+// clock now rather than never — under-counts the elapsed time, but at least
+// the remaining-time estimate becomes useful from here on.
+if(state.startedAt === null && state.schedule && state.schedule.length){ state.startedAt = Date.now(); saveState(); }
 // Guards against stale/incompatible knockout data from an older version of
 // this tool (file:// pages all share one localStorage bucket in Chrome, so
 // leftover data from a different local tool/version can otherwise crash render()).
@@ -514,7 +590,231 @@ if(state.knockout && !(Array.isArray(state.knockout.seeds) && state.knockout.see
   state.knockout = null;
 }
 
+/* ---------- UNDO / REDO (in-memory, per session) ---------- */
+const HISTORY_LIMIT = 40;
+let undoStack = [], redoStack = [];
+let scoreEditGroup = null;   // round index currently being score-edited (whole burst = one undo step)
+let scoreEditTimer = null;
+const _snapshot = ()=> JSON.stringify(state);
+function _pushSnapshot(){
+  undoStack.push(_snapshot());
+  if(undoStack.length > HISTORY_LIMIT) undoStack.shift();
+  redoStack.length = 0;
+  refreshHistoryButtons();
+}
+function refreshHistoryButtons(){
+  const u = document.getElementById('undoBtn'), r = document.getElementById('redoBtn');
+  if(u) u.disabled = !undoStack.length;
+  if(r) r.disabled = !redoStack.length;
+}
+// Call BEFORE any structural mutation (add/delete round, remove player,
+// knockout, reset, finish, rename court...).
+function pushHistory(){ _pushSnapshot(); endScoreEditGroup(); }
+// Score typing: the first edit in a round opens a group; further edits in the
+// same round fold into it until 4s pass with no typing or another action runs.
+function beginScoreEdit(ri){
+  if(scoreEditGroup !== ri){ _pushSnapshot(); scoreEditGroup = ri; }
+  clearTimeout(scoreEditTimer);
+  scoreEditTimer = setTimeout(endScoreEditGroup, 4000);
+}
+function endScoreEditGroup(){ clearTimeout(scoreEditTimer); scoreEditTimer = null; scoreEditGroup = null; }
+function doUndo(){
+  if(!undoStack.length) return;
+  redoStack.push(_snapshot());
+  state = JSON.parse(undoStack.pop());
+  endScoreEditGroup();
+  saveState(); render();
+  showToast('↶ Undone');
+}
+function doRedo(){
+  if(!redoStack.length) return;
+  undoStack.push(_snapshot());
+  state = JSON.parse(redoStack.pop());
+  endScoreEditGroup();
+  saveState(); render();
+  showToast('↷ Redone');
+}
+document.addEventListener('keydown', e=>{
+  if(!(e.metaKey || e.ctrlKey)) return;
+  const tag = (e.target.tagName || '').toLowerCase();
+  if(tag === 'input' || tag === 'select' || tag === 'textarea') return;
+  const k = e.key.toLowerCase();
+  if(k === 'z'){ e.preventDefault(); e.shiftKey ? doRedo() : doUndo(); }
+  else if(k === 'y'){ e.preventDefault(); doRedo(); }
+});
+
+/* ---------- TOAST ---------- */
+let toastTimer = null;
+function showToast(msg, ms){
+  let t = document.getElementById('toast');
+  if(!t){ t = document.createElement('div'); t.id = 'toast'; t.className = 'toast'; document.body.appendChild(t); }
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> t.classList.remove('show'), ms || 6000);
+}
+
+/* ---------- SESSION TIMER ---------- */
+let timerTicker = null;
+function fmtDur(ms){
+  if(ms < 0) ms = 0;
+  const s = Math.floor(ms / 1000);
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), ss = s % 60;
+  const pad = n => String(n).padStart(2, '0');
+  return h > 0 ? `${h}:${pad(m)}:${pad(ss)}` : `${pad(m)}:${pad(ss)}`;
+}
+function timerParts(){
+  if(!state.startedAt) return null;
+  const end = state.finishedAt || Date.now();
+  const elapsed = end - state.startedAt;
+  const remaining = (state.sessionMinutes || 0) * 60000 - elapsed;
+  return {elapsed, remaining, finished: !!state.finishedAt};
+}
+function renderTimerBar(container){
+  if(!container) return;
+  if(timerTicker){ clearInterval(timerTicker); timerTicker = null; }
+  if(!timerParts()){ container.innerHTML = ''; container.classList.remove('timer-bar'); return; }
+  container.classList.add('timer-bar');
+  const paint = ()=>{
+    const p = timerParts();
+    if(!p) return;
+    if(p.finished){
+      container.innerHTML = `<span class="timer-seg"><span class="timer-k">Total time played</span> <b>${fmtDur(p.elapsed)}</b></span>`;
+      return;
+    }
+    const over = p.remaining < 0;
+    const rightK = over ? 'Overtime' : 'Remaining';
+    const rightV = over ? fmtDur(-p.remaining) + ' over' : '~' + fmtDur(p.remaining) + ' left';
+    container.innerHTML =
+      `<span class="timer-seg"><span class="timer-k">Elapsed</span> <b>${fmtDur(p.elapsed)}</b></span>` +
+      `<span class="timer-seg ${over ? 'timer-over' : ''}"><span class="timer-k">${rightK}</span> <b>${rightV}</b></span>`;
+  };
+  paint();
+  if(!state.finishedAt) timerTicker = setInterval(paint, 1000);
+}
+
+/* ---------- COURT LABELS ---------- */
+function courtLabel(n){
+  const c = state.courtLabels && state.courtLabels[n];
+  return (c === undefined || c === null || c === '') ? String(n) : String(c);
+}
+// Turns a .court-label span into an inline editor. Empty / unchanged input
+// clears any override so the court falls back to its plain number.
+function wireCourtLabelEdit(root){
+  root.querySelectorAll('.court-label').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const court = el.dataset.court;
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'court-label-input';
+      input.value = courtLabel(court);
+      el.replaceWith(input);
+      input.focus(); input.select();
+      let done = false;
+      const commit = ()=>{
+        if(done) return;
+        done = true;
+        const raw = input.value.trim();
+        pushHistory();
+        if(raw === '' || raw === String(court)) delete state.courtLabels[court];
+        else state.courtLabels[court] = raw;
+        saveState();
+        render();
+      };
+      input.addEventListener('blur', ()=> setTimeout(commit, 120));
+      input.addEventListener('keydown', ev=>{
+        if(ev.key === 'Enter') commit();
+        if(ev.key === 'Escape'){ done = true; render(); }
+      });
+    });
+  });
+}
+
+/* ---------- FINISH / PODIUM ---------- */
+function firstIncompleteRoundIdx(){
+  for(let ri = 0; ri < state.schedule.length; ri++){
+    const hole = state.schedule[ri].matches.some((m, mi)=>{
+      const v = state.scores[ri][mi].a;
+      return v === null || v === '' || v === undefined;
+    });
+    if(hole) return ri;
+  }
+  return -1;
+}
+function finishTournament(){
+  if(!confirm('Finish the tournament? This saves a results file to your Downloads and shows the final podium.')) return;
+  pushHistory();
+  state.stage = 'finished';
+  state.finishedAt = Date.now();
+  saveState();
+  exportState();
+  render();
+  openPodiumModal();
+}
+function reopenTournament(){
+  pushHistory();
+  state.stage = 'playing';
+  state.finishedAt = null;   // timer resumes
+  saveState();
+  render();
+}
+function podiumInnerHtml(){
+  const top3 = computeLeaderboard().slice(0, 3);
+  if(top3.length < 3) return '<div class="empty">Not enough completed matches to determine a podium.</div>';
+  const [first, second, third] = top3;
+  const card = (cls, medal, label, p)=>`
+    <div class="podium-card ${cls}">
+      <span class="medal">${medal}</span>
+      <div class="rank-label">${label}</div>
+      <div class="name">${escapeHtml(p.name)}</div>
+      <div class="pts">${p.points}</div>
+    </div>`;
+  return `<div class="podium">
+    ${card('podium-silver', '&#129352;', '2nd place', second)}
+    ${card('podium-gold', '&#129351;', '1st place', first)}
+    ${card('podium-bronze', '&#129353;', '3rd place', third)}
+  </div>`;
+}
+function openPodiumModal(){
+  if(document.getElementById('podiumOverlay')) return;
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay podium-modal';
+  overlay.id = 'podiumOverlay';
+  const venue = state.clubName ? ' &middot; ' + escapeHtml(state.clubName) : '';
+  overlay.innerHTML = `
+    <div class="modal-box modal-box-wrap">
+      <button class="ghost small modal-close" id="podiumCloseBtn">Close</button>
+      <h2 style="padding-right:78px;">&#127942; Final Podium</h2>
+      ${podiumInnerHtml()}
+      <div class="hint" style="margin-top:16px;">${escapeHtml(state.tournamentName)}${venue}</div>
+    </div>`;
+  document.body.appendChild(overlay);
+  const close = ()=> overlay.remove();
+  overlay.addEventListener('click', e=>{ if(e.target === overlay) close(); });
+  overlay.querySelector('#podiumCloseBtn').addEventListener('click', close);
+  document.addEventListener('keydown', function onEsc(e){
+    if(e.key === 'Escape'){ close(); document.removeEventListener('keydown', onEsc); }
+  });
+}
+function renderFinishCta(){
+  const el = document.createElement('div');
+  el.className = 'finish-cta';
+  el.innerHTML = state.stage === 'finished'
+    ? `<button type="button" class="accent" id="showPodiumCta">&#127942; Show final podium</button>
+       <button type="button" class="ghost small" id="reopenCta">Reopen tournament</button>`
+    : `<button type="button" class="primary" id="finishCta">Finish tournament &amp; show podium</button>`;
+  el.addEventListener('click', e=>{
+    const t = e.target.closest('button');
+    if(!t) return;
+    if(t.id === 'finishCta') finishTournament();
+    else if(t.id === 'showPodiumCta') openPodiumModal();
+    else if(t.id === 'reopenCta') reopenTournament();
+  });
+  return el;
+}
+
 function render(){
+  if(timerTicker){ clearInterval(timerTicker); timerTicker = null; }
   const app = document.getElementById('app');
   app.innerHTML = '';
   app.appendChild(state.stage === 'setup' ? renderSetup() : renderPlaying());
@@ -530,6 +830,19 @@ function heroSubHtml(){
     ? `<span id="hClub" class="hero-club-trigger" title="Click to edit">${escapeHtml(state.clubName)}</span>`
     : `<span id="hClub" class="hero-club-trigger hero-club-empty" title="Click to add a club name">+ Add club name</span>`;
   return `<span id="hDate">${escapeHtml(state.date)}</span> &nbsp;&middot;&nbsp; ${clubHtml}`;
+}
+
+// Once a tournament is under way, nudge the organizer if the name or the
+// club/venue is still the untouched default placeholder — an exact-string
+// check, so a field they deliberately cleared or edited never triggers it.
+// The notice re-renders away by itself the moment either field is set.
+function placeholderHeroWarning(){
+  const fields = [];
+  if(state.tournamentName === 'Tournament Name Here') fields.push('tournament name');
+  if(state.clubName === 'Enter your Club or Venue Name') fields.push('club / venue name');
+  if(!fields.length) return '';
+  const many = fields.length > 1;
+  return `<div class="hero-warn">&#9888;&#65039; The <b>${fields.join('</b> and <b>')}</b> ${many ? 'are' : 'is'} still the default placeholder &mdash; tap the ${many ? 'title and the line below it' : (fields[0] === 'tournament name' ? 'title' : 'line under the title')} in the header above to set ${many ? 'them' : 'it'} before sharing this tournament.</div>`;
 }
 
 // Swaps a hero display element for a plain input, focused and pre-filled;
@@ -599,8 +912,10 @@ function renderSetup(){
       </div>
       <div class="hero-actions-col">
         <div class="actions">
-          <button type="button" class="theme-switch" id="themeToggle" title="Design"><span class="thumb"></span></button>
-          <button type="button" class="info-icon" id="helpBtn" style="width:22px; height:22px; font-size:12px;" aria-label="How to use">i</button>
+          <span class="actions-utils">
+            <button type="button" class="theme-switch" id="themeToggle" title="Design"><span class="thumb"></span></button>
+            <button type="button" class="info-icon" id="helpBtn" style="width:22px; height:22px; font-size:12px;" aria-label="How to use">i</button>
+          </span>
           <button id="importBtnSetup" class="small ghost">Import tournament</button>
           <input type="file" id="importFileSetup" accept="application/json" style="display:none;" />
         </div>
@@ -796,6 +1111,8 @@ function renderSetup(){
     }
     state.scores = state.schedule.map(r => r.matches.map(()=>({a:null})));
     state.stage = 'playing';
+    state.startedAt = Date.now();   // starts the session timer
+    state.finishedAt = null;
     saveState();
     render();
   });
@@ -1084,6 +1401,7 @@ function generateKnockout(stage){
       ]}
     ];
   }
+  pushHistory();
   state.knockout = {stage, seeds, rounds};
   saveState();
   render();
@@ -1162,7 +1480,8 @@ function renderKnockoutSection(container){
       wrap.appendChild(roundDiv);
     });
     wrap.querySelector('#koResetBtn').addEventListener('click', ()=>{
-      if(!confirm('Reset the knockout stage? This cannot be undone.')) return;
+      if(!confirm('Reset the knockout stage? You can undo this with the ↶ button.')) return;
+      pushHistory();
       state.knockout = null;
       saveState();
       render();
@@ -1204,8 +1523,10 @@ function renderKoMatchCard(m){
   if(inp && !inp.disabled){
     inp.addEventListener('input', e=>{
       const val = e.target.value;
+      beginScoreEdit('ko');
       m.score.a = (val==='') ? null : Math.max(0, Math.min(target, +val));
       saveState();
+      showToast('✓ Saved automatically', 8000);
       updateAfterKoScoreChange(m.id, e.target);
     });
   }
@@ -1302,8 +1623,12 @@ function renderPlaying(){
       </div>
       <div class="hero-actions-col">
         <div class="actions">
-          <button type="button" class="theme-switch" id="themeToggle" title="Design"><span class="thumb"></span></button>
-          <button type="button" class="info-icon" id="helpBtn" style="width:22px; height:22px; font-size:12px;" aria-label="How to use">i</button>
+          <span class="actions-utils">
+            <button type="button" class="theme-switch" id="themeToggle" title="Design"><span class="thumb"></span></button>
+            <button type="button" class="info-icon" id="helpBtn" style="width:22px; height:22px; font-size:12px;" aria-label="How to use">i</button>
+            <button type="button" class="hist-btn" id="undoBtn" title="Undo (Ctrl/Cmd+Z)" aria-label="Undo">&#8630;</button>
+            <button type="button" class="hist-btn" id="redoBtn" title="Redo (Ctrl/Cmd+Shift+Z)" aria-label="Redo">&#8631;</button>
+          </span>
           <button id="exportBtn" class="small ghost">Export</button>
           <button id="importBtn" class="small ghost">Import</button>
           <input type="file" id="importFile" accept="application/json" style="display:none;" />
@@ -1317,7 +1642,7 @@ function renderPlaying(){
       </div>
     </div>
     <div class="container">
-      ${state.stage === 'finished' ? '<div id="podiumHolder"></div>' : ''}
+      ${placeholderHeroWarning()}
       <div class="layout">
         <div class="card leaderboard-card${lbCollapsedMobile ? ' lb-collapsed' : ''}">
           <div class="section-title">
@@ -1339,6 +1664,11 @@ function renderPlaying(){
   wireThemeSwitch(wrap);
   wireHeroEdit(wrap);
   wrap.querySelector('#helpBtn').addEventListener('click', openHelpModal);
+  const undoBtn = wrap.querySelector('#undoBtn'), redoBtn = wrap.querySelector('#redoBtn');
+  undoBtn.disabled = !undoStack.length;
+  redoBtn.disabled = !redoStack.length;
+  undoBtn.addEventListener('click', doUndo);
+  redoBtn.addEventListener('click', doRedo);
   const lbInfoHint = wrap.querySelector('#lbInfoHint');
   wrap.querySelector('#lbInfoBtn').addEventListener('click', ()=>{
     lbInfoHint.style.display = lbInfoHint.style.display === 'none' ? 'block' : 'none';
@@ -1350,12 +1680,15 @@ function renderPlaying(){
   });
   wrap.querySelector('#resetResultsBtn').addEventListener('click', ()=>{
     if(!confirm('Reset all rounds and results? Your player list and settings will be kept.')) return;
+    pushHistory();
     state.stage = 'setup';
     state.schedule = null;
     state.scores = null;
     state.knockout = null;
     state.cycleLength = null;
     state.removed = [];
+    state.startedAt = null;
+    state.finishedAt = null;
     saveState();
     render();
   });
@@ -1377,27 +1710,10 @@ function renderPlaying(){
   });
 
   const finishBtn = wrap.querySelector('#finishBtn');
-  if(finishBtn){
-    finishBtn.addEventListener('click', ()=>{
-      if(!confirm('Finish the tournament? This saves a results file to your Downloads and highlights the top 3 players.')) return;
-      state.stage = 'finished';
-      saveState();
-      exportState();
-      render();
-    });
-  }
+  if(finishBtn) finishBtn.addEventListener('click', finishTournament);
   const reopenBtn = wrap.querySelector('#reopenBtn');
-  if(reopenBtn){
-    reopenBtn.addEventListener('click', ()=>{
-      state.stage = 'playing';
-      saveState();
-      render();
-    });
-  }
+  if(reopenBtn) reopenBtn.addEventListener('click', reopenTournament);
 
-  if(state.stage === 'finished'){
-    renderPodium(wrap.querySelector('#podiumHolder'));
-  }
   renderLeaderboard(wrap.querySelector('#leaderboard'));
   renderBenchWarnings(wrap.querySelector('#restWarnings'));
   renderRounds(wrap.querySelector('#roundsCol'));
@@ -1413,18 +1729,34 @@ function renderPlaying(){
 // "+ Add round" rebuilds them without this player.
 function removePlayerFromRotation(idx){
   const name = state.players[idx] || 'This player';
-  if(!confirm(`Remove ${name} from the rotation?\n\nPoints they've already earned stay on the leaderboard. The round currently in progress won't change — only rounds after it will be rebuilt without them.`)) return;
+  if(!confirm(`Remove ${name} from the rotation?\n\nPoints they've already earned stay on the leaderboard. The round currently in progress won't change — only rounds after it will be rebuilt without them. (Undo with the ↶ button.)`)) return;
 
+  pushHistory();
   state.removed.push(idx);
 
   if(state.schedule && state.schedule.length){
-    let currentRoundIdx = state.schedule.findIndex((round, ri)=>
-      round.matches.some((m, mi)=> state.scores[ri][mi].a === null || state.scores[ri][mi].a === '')
-    );
-    if(currentRoundIdx === -1) currentRoundIdx = state.schedule.length - 1;
-    state.schedule.length = currentRoundIdx + 1;
-    state.scores.length = currentRoundIdx + 1;
-    state.numRounds = state.schedule.length;
+    // Keep every round up to and including the last one that has ANY score
+    // recorded; only discard the entirely-unplayed rounds after it (which the
+    // next "+ Add round" then rebuilds without this player).
+    //
+    // The old check used "first round with any missing score" as the cutoff,
+    // which was buggy: a single un-entered match in an early round (scores
+    // typed out of order, one court forgotten, a 0 mistaken for blank, etc.)
+    // dragged the cutoff forward and truncated away every later round —
+    // fully-played ones included. Anchoring to the LAST scored round instead
+    // means a recorded result can never be dropped.
+    const scored = v => v !== null && v !== '' && v !== undefined;
+    let lastScoredRound = -1;
+    state.schedule.forEach((round, ri)=>{
+      if(round.matches.some((m, mi)=> scored(state.scores[ri][mi].a))) lastScoredRound = ri;
+    });
+    const keepThrough = Math.max(0, lastScoredRound); // always keep at least round 1
+
+    if(keepThrough + 1 < state.schedule.length){
+      state.schedule.length = keepThrough + 1;
+      state.scores.length = keepThrough + 1;
+      state.numRounds = state.schedule.length;
+    }
     state.cycleLength = null;
   }
 
@@ -1442,6 +1774,10 @@ function importStateFromFile(file){
       if(parsed.knockout === undefined) parsed.knockout = null;
       if(parsed.removed === undefined) parsed.removed = [];
       if(parsed.rankBy === undefined) parsed.rankBy = 'points';
+      if(parsed.courtLabels === undefined || parsed.courtLabels === null) parsed.courtLabels = {};
+      if(parsed.startedAt === undefined) parsed.startedAt = null;
+      if(parsed.finishedAt === undefined) parsed.finishedAt = null;
+      if(parsed.startedAt === null && parsed.schedule && parsed.schedule.length) parsed.startedAt = Date.now();
       if(parsed.knockout && !(Array.isArray(parsed.knockout.seeds) && parsed.knockout.seeds.every(s=>Array.isArray(s) && s.length===2))){
         parsed.knockout = null;
       }
@@ -1563,42 +1899,6 @@ function renderLeaderboard(container){
   }
 }
 
-function renderPodium(container){
-  if(!container) return;
-  const lb = computeLeaderboard();
-  const top3 = lb.slice(0,3);
-  if(top3.length < 3){
-    container.innerHTML = '<div class="empty">Not enough completed matches to determine a podium.</div>';
-    return;
-  }
-  const [first, second, third] = top3;
-  container.innerHTML = `
-    <div class="podium-wrap">
-      <div class="podium-title">&#127942; Final Podium</div>
-      <div class="podium">
-        <div class="podium-card podium-silver">
-          <span class="medal">&#129352;</span>
-          <div class="rank-label">2nd place</div>
-          <div class="name">${escapeHtml(second.name)}</div>
-          <div class="pts">${second.points}</div>
-        </div>
-        <div class="podium-card podium-gold">
-          <span class="medal">&#129351;</span>
-          <div class="rank-label">1st place</div>
-          <div class="name">${escapeHtml(first.name)}</div>
-          <div class="pts">${first.points}</div>
-        </div>
-        <div class="podium-card podium-bronze">
-          <span class="medal">&#129353;</span>
-          <div class="rank-label">3rd place</div>
-          <div class="name">${escapeHtml(third.name)}</div>
-          <div class="pts">${third.points}</div>
-        </div>
-      </div>
-    </div>
-  `;
-}
-
 // From how many rounds onward Americano starts offering a standings-based
 // "balanced" alternative alongside the usual partner-rotation round.
 const BALANCED_ROUND_FROM = 8;
@@ -1607,6 +1907,7 @@ const BALANCED_ROUND_FROM = 8;
 const MIN_ROUNDS_BETWEEN_SITOUTS = 3;
 
 function commitNewRound(round){
+  pushHistory();
   state.schedule.push(round);
   state.scores.push(round.matches.map(()=>({a:null})));
   state.numRounds = state.schedule.length;
@@ -1616,9 +1917,22 @@ function commitNewRound(round){
 
 function renderRounds(container){
   container.innerHTML = '';
-  state.schedule.forEach((round,ri)=>{
+
+  const timerBar = document.createElement('div');
+  timerBar.id = 'timerBar';
+  container.appendChild(timerBar);
+  renderTimerBar(timerBar);
+
+  // The finish / podium CTA sits right under the first round that still has an
+  // empty score box (the round being played now); if every round is complete
+  // it goes after the last one instead — either way it stays in view.
+  const firstInc = firstIncompleteRoundIdx();
+  state.schedule.forEach((round, ri)=>{
     container.appendChild(renderRoundBlock(round, ri));
+    if(ri === firstInc) container.appendChild(renderFinishCta());
   });
+  if(firstInc === -1) container.appendChild(renderFinishCta());
+
   const addRow = document.createElement('div');
   addRow.className = 'add-round-row';
   addRow.innerHTML = `<button id="addRoundBtn" class="primary small">+ Add round</button>`;
@@ -1667,7 +1981,7 @@ function renderRounds(container){
 function matchesPreviewHtml(round){
   const lines = round.matches.map(m=>{
     const [a1,a2]=m.teamA, [b1,b2]=m.teamB;
-    return `<div class="rc-line"><span class="court-no">Court ${m.court}</span>${escapeHtml(state.players[a1])} + ${escapeHtml(state.players[a2])}<span class="vs">vs</span>${escapeHtml(state.players[b1])} + ${escapeHtml(state.players[b2])}</div>`;
+    return `<div class="rc-line"><span class="court-no">Court ${escapeHtml(courtLabel(m.court))}</span>${escapeHtml(state.players[a1])} + ${escapeHtml(state.players[a2])}<span class="vs">vs</span>${escapeHtml(state.players[b1])} + ${escapeHtml(state.players[b2])}</div>`;
   }).join('');
   const bench = round.bench.length
     ? `<div class="bench">Resting: ${round.bench.map(i=>escapeHtml(state.players[i])).join(', ')}</div>`
@@ -1755,7 +2069,7 @@ function renderRoundBlock(round, ri){
     el.className = 'match';
     const oppVal = (sc.a===null||sc.a==='') ? '\u2014' : (state.pointsTarget - (+sc.a));
     el.innerHTML = `
-      <div class="court">COURT ${m.court}</div>
+      <div class="court">COURT <span class="court-label" data-court="${m.court}" title="Click to rename this court">${escapeHtml(courtLabel(m.court))}</span></div>
       <div class="teams">
         <div class="team">${escapeHtml(state.players[a1])} + ${escapeHtml(state.players[a2])}</div>
         <input type="number" min="0" max="${state.pointsTarget}" class="score-input" data-ri="${ri}" data-mi="${mi}" value="${sc.a===null?'':sc.a}" placeholder="\u2014" />
@@ -1775,7 +2089,8 @@ function renderRoundBlock(round, ri){
   }
 
   block.querySelector('.del-round').addEventListener('click', ()=>{
-    if(!confirm(`Delete Round ${ri+1}? This cannot be undone.`)) return;
+    if(!confirm(`Delete Round ${ri+1}? You can undo this with the ↶ button.`)) return;
+    pushHistory();
     state.schedule.splice(ri,1);
     state.scores.splice(ri,1);
     state.numRounds = state.schedule.length;
@@ -1788,12 +2103,15 @@ function renderRoundBlock(round, ri){
     inp.addEventListener('input', e=>{
       const _ri = +e.target.dataset.ri, mi = +e.target.dataset.mi;
       const val = e.target.value;
+      beginScoreEdit(_ri);
       state.scores[_ri][mi].a = (val==='') ? null : Math.max(0, Math.min(state.pointsTarget, +val));
       saveState();
+      showToast('✓ Saved automatically', 8000);
       updateAfterScoreChange(_ri, mi, e.target);
     });
   });
 
+  wireCourtLabelEdit(block);
   return block;
 }
 
@@ -1813,8 +2131,14 @@ function updateAfterScoreChange(ri, mi, inputEl){
   const lbContainer = document.getElementById('leaderboard');
   if(lbContainer) renderLeaderboard(lbContainer);
 
-  const podiumHolder = document.getElementById('podiumHolder');
-  if(podiumHolder) renderPodium(podiumHolder);
+  // When this keystroke fills the last empty box of the round the finish CTA
+  // was sitting under, re-lay the rounds column so the CTA drops to the next
+  // unfinished round. Only on that transition, so normal typing keeps focus.
+  const wasFirstIncomplete = firstIncompleteRoundIdx();
+  if(allPlayed && wasFirstIncomplete !== rIdx){
+    const roundsCol = document.getElementById('roundsCol');
+    if(roundsCol) renderRounds(roundsCol);
+  }
 }
 
 render();
