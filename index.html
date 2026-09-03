@@ -156,6 +156,9 @@
     letter-spacing:normal; text-transform:none; line-height:1; cursor:pointer;
   }
   .info-icon:hover, .info-icon:focus-visible{border-color:var(--accent); color:var(--accent);}
+  /* the header help button is a stand-alone control, not an inline label mark */
+  .actions-utils .info-icon{width:28px; height:28px; font-size:14px; margin-left:0; flex:0 0 auto;}
+  .actions-utils > *{flex:0 0 auto;}
   .field{margin-bottom:16px;}
   .name-field input{max-width:420px;}
   input,select{
@@ -164,8 +167,8 @@
   }
   input:focus, select:focus{outline:none; border-color:var(--accent);}
   button{
-    font-family:'Space Grotesk',sans-serif; border:none; border-radius:9px; padding:11px 18px;
-    font-size:13px; font-weight:600; letter-spacing:.02em; text-transform:uppercase; cursor:pointer;
+    font-family:'Manrope',-apple-system,BlinkMacSystemFont,sans-serif; border:none; border-radius:9px; padding:11px 18px;
+    font-size:13.5px; font-weight:700; letter-spacing:0; text-transform:none; cursor:pointer;
     background:var(--panel2); color:var(--text); border:1px solid var(--border);
   }
   button.primary{background:var(--accent); color:var(--ink); border:none;}
@@ -173,7 +176,7 @@
   button.accent{background:var(--accent); color:var(--ink); border:none;}
   button.accent:hover{background:var(--accent-light);}
   button.warn{background:var(--danger); color:#2a0906; border:none;}
-  button.small{padding:7px 13px; font-size:11.5px;}
+  button.small{padding:7px 13px; font-size:12px; font-weight:600;}
   button.ghost{background:transparent;}
   button:active{opacity:.8;}
   button:disabled{opacity:.4; cursor:not-allowed;}
@@ -278,13 +281,18 @@
   }
   .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
 
+  /* undo / redo — a single connected pill so they read as one control */
+  .hist-group{display:inline-flex; flex:0 0 auto; border:1px solid var(--border); border-radius:9px; overflow:hidden; background:var(--panel2);}
   .hist-btn{
-    width:26px; height:26px; padding:0; font-size:15px; line-height:1;
+    width:33px; height:28px; padding:0; margin:0; border:none; border-radius:0;
     display:inline-flex; align-items:center; justify-content:center;
-    background:var(--panel2); border:1px solid var(--border); color:var(--text);
-    border-radius:8px; text-transform:none;
+    background:transparent; color:var(--muted); cursor:pointer;
   }
-  .hist-btn:disabled{opacity:.35;}
+  .hist-btn + .hist-btn{border-left:1px solid var(--border);}
+  .hist-btn svg{width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:2.1; stroke-linecap:round; stroke-linejoin:round;}
+  .hist-btn:not(:disabled):hover{background:var(--panel); color:var(--text);}
+  .hist-btn:not(:disabled):active{color:var(--accent);}
+  .hist-btn:disabled{opacity:.32; cursor:not-allowed;}
 
   .podium-modal .modal-box{max-width:640px; text-align:center;}
   .podium-modal .podium{margin-top:4px;}
@@ -377,7 +385,7 @@
     .hero .actions .actions-utils{
       display:flex; gap:8px; align-items:center; grid-column:1 / -1;
     }
-    .hero .actions button:not(#themeToggle):not(.info-icon){width:100%; margin:0;}
+    .hero .actions > button{width:100%; margin:0;}  /* only the direct text buttons stretch */
     /* standalone action gets the full-width bottom row */
     .hero .actions #newTournament,
     .hero .actions #importBtnSetup{grid-column:1 / -1;}
@@ -509,24 +517,40 @@ function openHelpModal(){
       <button class="ghost small modal-close" id="helpCloseBtn">Close</button>
       <h2>How Padel Runner works</h2>
 
-      <h3>Setup</h3>
-      <p>Name the tournament and (optionally) your club, add 8&ndash;12 players, and pick a format:</p>
-      <p><b>Americano</b> &mdash; the full schedule is generated up front; partners rotate so everyone partners with everyone before any pair repeats.</p>
-      <p><b>Mexicano</b> &mdash; only Round 1 is random; every later round is built from the live leaderboard (1st+4th vs 2nd+3rd).</p>
+      <h3>1. Set up the tournament</h3>
+      <p>Tap the title and the line under it (date &middot; club) at the top of the page to name your tournament and venue &mdash; do this before sharing the page, or a reminder banner will keep nagging you.</p>
+      <p>Choose a <b>format</b>, add your players (8&ndash;12 works best), then set the points per match, number of courts, and how long you want the session to run. The recommendation box suggests how many rounds fit that time &mdash; you can override it.</p>
+      <p><b>Americano</b> &mdash; the whole schedule is drawn up front. Partners rotate so everyone plays with everyone before any pairing repeats; once every combination is used it simply loops.</p>
+      <p><b>Mexicano</b> &mdash; only Round&nbsp;1 is random. Each later round is built when you tap <b>+ Add round</b>, using the current standings (1st + 4th vs 2nd + 3rd), so winners climb and losers slide.</p>
+      <p>If the player count isn't a multiple of 4 &times; courts, players sit out on a fair rotation &mdash; the same person is never benched twice in quick succession.</p>
 
-      <h3>Playing</h3>
-      <p>Tap a score box to enter a match result &mdash; the other team's score fills in automatically (scores add up to the points target). The leaderboard updates live.</p>
-      <p>Click a player's name in the leaderboard to rename them, or the &#10005; next to them to remove a player who has to leave early &mdash; they keep the points they've already earned, and just won't be scheduled in rounds after the one currently being played.</p>
-      <p>Use <b>+ Add round</b> to extend the tournament, or <b>Delete round</b> on any round card to remove it.</p>
+      <h3>2. Run the rounds</h3>
+      <p>Tap a score box and type one team's score &mdash; the other side fills in automatically to reach the points target. The leaderboard updates instantly, and every entry is <b>saved to this device</b> the moment you type it (you'll see a &ldquo;Saved automatically&rdquo; note).</p>
+      <p><b>Rank by</b> (set in Setup) decides the leaderboard order: total points scored, or point differential (points won minus points lost).</p>
+      <p>Rename a court by tapping the number after the word COURT &mdash; use a letter or a name, it carries across every round.</p>
+      <p><b>+ Add round</b> extends the tournament; <b>Delete round</b> on a card removes it. From round&nbsp;8 on, Americano offers a choice each time: keep rotating partners, or a lineup balanced by current standings (the same players rest either way).</p>
 
-      <h3>Knockout stage</h3>
-      <p>Once enough players have results, generate a knockout bracket from the current standings (top finisher paired with the lowest qualifying finisher, and so on). The round-robin leaderboard keeps running underneath.</p>
+      <h3>3. Players who join or leave</h3>
+      <p>Tap a player's name on the leaderboard to rename them, or <b>+ Add player</b> to bring someone in mid-tournament.</p>
+      <p>The <b>&#10005;</b> next to a name removes that player from the rotation. They keep every point already earned and stay on the leaderboard; only not-yet-played rounds are rebuilt without them &mdash; the round in progress and all recorded results are left untouched.</p>
 
-      <h3>Export / Import</h3>
-      <p><b>Export</b> saves the current tournament as a JSON file. <b>Import</b> loads one back in &mdash; handy for backups or moving to another device.</p>
+      <h3>4. Undo / redo</h3>
+      <p>The <b>&#8630; / &#8631;</b> buttons (or Ctrl/Cmd&#8288;+&#8288;Z and Ctrl/Cmd&#8288;+&#8288;Shift&#8288;+&#8288;Z) step back and forward through structural changes &mdash; adding or deleting a round, removing a player, generating a bracket, finishing, and so on. Score typing within one round counts as a single step. History is kept for the current session only.</p>
+
+      <h3>5. Session timer</h3>
+      <p>The bar above the rounds shows how long you've been playing (since the schedule was generated) and roughly how much of your planned session is left. Go past the planned time and it flips to <b>Overtime</b>. It freezes when you finish.</p>
+
+      <h3>6. Knockout stage</h3>
+      <p>Once enough players have results, pick a starting stage and generate an elimination bracket. Teams are formed by pairing a strong finisher with a weaker one (snake seeding). The round-robin leaderboard keeps running underneath, and knockout standings are tracked separately.</p>
+
+      <h3>7. Finishing</h3>
+      <p><b>Finish tournament</b> (the button under the last round, or in the header) saves a results file to your device and opens the <b>podium</b> as a pop-up. Close it and reopen it any time with <b>Show final podium</b>. <b>Reopen tournament</b> puts you back into play if you need to fix something.</p>
+
+      <h3>Backups &amp; devices</h3>
+      <p><b>Export</b> downloads the whole tournament as a JSON file; <b>Import</b> loads one back &mdash; use it for backups or to move a running tournament to another device.</p>
 
       <h3>Theme</h3>
-      <p>The little toggle switch swaps between the STERLING Sport &amp; Wellness theme and a Sakura theme.</p>
+      <p>The toggle switch swaps between the STERLING Sport &amp; Wellness look and a Sakura theme.</p>
 
       <p style="margin-top:20px;">This tool is free for everyone to use. If you'd like to say thanks, message the developer on Instagram: <a href="https://instagram.com/olegprachuk" target="_blank" rel="noopener" style="color:var(--accent); text-decoration:none;">instagram.com/olegprachuk</a></p>
     </div>
@@ -731,16 +755,6 @@ function wireCourtLabelEdit(root){
 }
 
 /* ---------- FINISH / PODIUM ---------- */
-function firstIncompleteRoundIdx(){
-  for(let ri = 0; ri < state.schedule.length; ri++){
-    const hole = state.schedule[ri].matches.some((m, mi)=>{
-      const v = state.scores[ri][mi].a;
-      return v === null || v === '' || v === undefined;
-    });
-    if(hole) return ri;
-  }
-  return -1;
-}
 function finishTournament(){
   if(!confirm('Finish the tournament? This saves a results file to your Downloads and shows the final podium.')) return;
   pushHistory();
@@ -914,7 +928,7 @@ function renderSetup(){
         <div class="actions">
           <span class="actions-utils">
             <button type="button" class="theme-switch" id="themeToggle" title="Design"><span class="thumb"></span></button>
-            <button type="button" class="info-icon" id="helpBtn" style="width:22px; height:22px; font-size:12px;" aria-label="How to use">i</button>
+            <button type="button" class="info-icon" id="helpBtn" aria-label="How to use">i</button>
           </span>
           <button id="importBtnSetup" class="small ghost">Import tournament</button>
           <input type="file" id="importFileSetup" accept="application/json" style="display:none;" />
@@ -1625,9 +1639,15 @@ function renderPlaying(){
         <div class="actions">
           <span class="actions-utils">
             <button type="button" class="theme-switch" id="themeToggle" title="Design"><span class="thumb"></span></button>
-            <button type="button" class="info-icon" id="helpBtn" style="width:22px; height:22px; font-size:12px;" aria-label="How to use">i</button>
-            <button type="button" class="hist-btn" id="undoBtn" title="Undo (Ctrl/Cmd+Z)" aria-label="Undo">&#8630;</button>
-            <button type="button" class="hist-btn" id="redoBtn" title="Redo (Ctrl/Cmd+Shift+Z)" aria-label="Redo">&#8631;</button>
+            <button type="button" class="info-icon" id="helpBtn" aria-label="How to use">i</button>
+            <span class="hist-group">
+              <button type="button" class="hist-btn" id="undoBtn" title="Undo (Ctrl/Cmd+Z)" aria-label="Undo">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-4"/></svg>
+              </button>
+              <button type="button" class="hist-btn" id="redoBtn" title="Redo (Ctrl/Cmd+Shift+Z)" aria-label="Redo">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 14 5-5-5-5"/><path d="M20 9H9a5 5 0 0 0 0 10h4"/></svg>
+              </button>
+            </span>
           </span>
           <button id="exportBtn" class="small ghost">Export</button>
           <button id="importBtn" class="small ghost">Import</button>
@@ -1923,15 +1943,12 @@ function renderRounds(container){
   container.appendChild(timerBar);
   renderTimerBar(timerBar);
 
-  // The finish / podium CTA sits right under the first round that still has an
-  // empty score box (the round being played now); if every round is complete
-  // it goes after the last one instead — either way it stays in view.
-  const firstInc = firstIncompleteRoundIdx();
   state.schedule.forEach((round, ri)=>{
     container.appendChild(renderRoundBlock(round, ri));
-    if(ri === firstInc) container.appendChild(renderFinishCta());
   });
-  if(firstInc === -1) container.appendChild(renderFinishCta());
+  // The finish / podium CTA always sits under the last round — a fixed spot,
+  // never jumping around as scores get filled in.
+  container.appendChild(renderFinishCta());
 
   const addRow = document.createElement('div');
   addRow.className = 'add-round-row';
@@ -2130,15 +2147,8 @@ function updateAfterScoreChange(ri, mi, inputEl){
 
   const lbContainer = document.getElementById('leaderboard');
   if(lbContainer) renderLeaderboard(lbContainer);
-
-  // When this keystroke fills the last empty box of the round the finish CTA
-  // was sitting under, re-lay the rounds column so the CTA drops to the next
-  // unfinished round. Only on that transition, so normal typing keeps focus.
-  const wasFirstIncomplete = firstIncompleteRoundIdx();
-  if(allPlayed && wasFirstIncomplete !== rIdx){
-    const roundsCol = document.getElementById('roundsCol');
-    if(roundsCol) renderRounds(roundsCol);
-  }
+  // NB: deliberately no full re-render of the rounds column here — that would
+  // tear down the <input> mid-typing (couldn't enter a 2nd digit on mobile).
 }
 
 render();
