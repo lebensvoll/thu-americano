@@ -39,33 +39,74 @@
     --danger:#d0554a;
     --radius:14px;
   }
-  /* Sakura theme — dark cherry-blossom palette: white/near-white for active
-     elements, pink-violet for inactive ones, glassy translucent surfaces.
-     Panel opacity/blur/glow pulled ~25% back toward the original theme's
-     flatter, more opaque contrast — still glass, just less washed-out. */
-  :root[data-theme="sakura"]{
-    --dark:#150c17;
-    --dark2:#20101f;
-    --panel:rgba(33,16,38,.64);
-    --panel2:rgba(44,23,48,.66);
-    --border:rgba(216,176,222,.32);
-    --text:#f3e4f5;
-    --muted:#cfc2dd;
-    --accent:#ff2f87;
-    --accent-dark:#b81e63;
-    --accent-light:#ff8fc0;
-    --sage:#ffb3d1;
-    --ink:#241029;
-    --danger:#b05374;
+  /* ---------- GRAPHITE — deep-space grey, cosmic dust ---------- */
+  :root[data-theme="graphite"]{
+    --dark:#191b1f;
+    --dark2:#202329;
+    --panel:rgba(255,255,255,.045);
+    --panel2:rgba(255,255,255,.075);
+    --border:#34373f;
+    --text:#eef0f3;
+    --muted:#868a93;
+    --accent:#a9b7c9;
+    --accent-dark:#828fa1;
+    --accent-light:#c9d3e0;
+    --sage:#aab6c2;
+    --ink:#171a1e;
+    --danger:#dd9393;
+    --star:#cdd6e2;
+    --neb-1:rgba(122,138,163,.18);
+    --neb-2:rgba(92,88,120,.15);
+    --grain:.04;
   }
+  /* ---------- SAKURA — dark cherry blossom, magenta nebula ---------- */
+  :root[data-theme="sakura"]{
+    --dark:#0f0812;
+    --dark2:#170b1b;
+    --panel:rgba(32,18,37,.72);
+    --panel2:rgba(44,24,52,.72);
+    --border:rgba(226,176,216,.20);
+    --text:#f6e7f7;
+    --muted:#b49dbc;
+    --accent:#ff5fa0;
+    --accent-dark:#c73e78;
+    --accent-light:#ff9ecb;
+    --sage:#ffb3d1;
+    --ink:#1c0d21;
+    --danger:#e06a8a;
+    --star:#ffd9ec;
+    --neb-1:rgba(255,79,150,.20);
+    --neb-2:rgba(150,92,205,.17);
+    --grain:.055;
+  }
+
+  /* nebula wash + faint starfield behind the app, on the cosmic themes only */
+  :root[data-theme="graphite"] body,
   :root[data-theme="sakura"] body{
     background:
-      radial-gradient(circle at 10% 15%, rgba(236,83,133,.21), transparent 42%),
-      radial-gradient(circle at 90% 4%, rgba(190,140,235,.17), transparent 48%),
-      radial-gradient(circle at 50% 108%, rgba(236,83,133,.12), transparent 55%),
-      #150c17;
+      radial-gradient(46% 32% at 16% 5%, var(--neb-1), transparent 60%),
+      radial-gradient(44% 40% at 90% 24%, var(--neb-2), transparent 64%),
+      radial-gradient(60% 46% at 50% 112%, var(--neb-1), transparent 72%),
+      var(--dark);
     background-attachment:fixed;
   }
+  body::before, body::after{content:""; position:fixed; inset:0; z-index:0; pointer-events:none; opacity:0;}
+  :root[data-theme="graphite"] body::before,
+  :root[data-theme="sakura"] body::before{
+    opacity:.55;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cg fill='%23ffffff'%3E%3Ccircle cx='16' cy='24' r='.8' opacity='.85'/%3E%3Ccircle cx='58' cy='9' r='.5' opacity='.5'/%3E%3Ccircle cx='104' cy='31' r='.6' opacity='.6'/%3E%3Ccircle cx='150' cy='14' r='.5' opacity='.45'/%3E%3Ccircle cx='183' cy='40' r='.7' opacity='.7'/%3E%3Ccircle cx='33' cy='66' r='.5' opacity='.5'/%3E%3Ccircle cx='78' cy='88' r='.7' opacity='.75'/%3E%3Ccircle cx='125' cy='72' r='.5' opacity='.5'/%3E%3Ccircle cx='168' cy='96' r='.6' opacity='.55'/%3E%3Ccircle cx='11' cy='120' r='.6' opacity='.6'/%3E%3Ccircle cx='52' cy='150' r='.5' opacity='.45'/%3E%3Ccircle cx='96' cy='134' r='.7' opacity='.7'/%3E%3Ccircle cx='142' cy='163' r='.5' opacity='.5'/%3E%3Ccircle cx='188' cy='142' r='.6' opacity='.6'/%3E%3Ccircle cx='24' cy='184' r='.5' opacity='.5'/%3E%3Ccircle cx='118' cy='190' r='.6' opacity='.55'/%3E%3C/g%3E%3C/svg%3E");
+    background-repeat:repeat;
+  }
+  :root[data-theme="graphite"] body::before{filter:saturate(0);}
+  :root[data-theme="graphite"] body::after,
+  :root[data-theme="sakura"] body::after{
+    opacity:var(--grain); mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  :root[data-theme="graphite"] #app,
+  :root[data-theme="sakura"] #app{position:relative; z-index:1;}
+
+  /* sakura keeps a touch of glassiness on its translucent panels */
   :root[data-theme="sakura"] .hero,
   :root[data-theme="sakura"] .card,
   :root[data-theme="sakura"] .match,
@@ -81,10 +122,19 @@
   :root[data-theme="sakura"] .match,
   :root[data-theme="sakura"] .format-btn,
   :root[data-theme="sakura"] .rec-box{
-    box-shadow:0 6px 24px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.06);
+    box-shadow:0 6px 24px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.05);
   }
   :root[data-theme="sakura"] .hero{
-    background:linear-gradient(135deg, rgba(38,18,30,.66), rgba(21,12,23,.55));
+    background:linear-gradient(135deg, rgba(40,18,34,.62), rgba(15,8,18,.5));
+  }
+  :root[data-theme="graphite"] .hero{
+    background:linear-gradient(135deg, rgba(255,255,255,.04), rgba(255,255,255,.012));
+  }
+  :root[data-theme="graphite"] .card,
+  :root[data-theme="graphite"] .match,
+  :root[data-theme="graphite"] .format-btn,
+  :root[data-theme="graphite"] .rec-box{
+    box-shadow:0 4px 20px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.04);
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; touch-action:manipulation;}
   html,body{height:100%;}
@@ -110,7 +160,7 @@
   .hero h1{font-size:30px; margin:0 0 6px; color:var(--text); font-weight:700; line-height:1.1; cursor:pointer; border-bottom:1px dashed transparent;}
   .hero h1:hover{border-bottom-color:var(--muted);}
   .hero .sub{font-size:14px; color:var(--muted); font-weight:400;}
-  .hero .actions{display:flex; gap:10px; align-items:center;}
+  .hero .actions{display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end;}
   .actions-utils{display:contents;} /* transparent on desktop; a real flex row only on mobile */
   .hero-actions-col{display:flex; flex-direction:column; align-items:flex-end; gap:8px;}
   .hero-credit{font-size:10px; color:var(--muted); opacity:.5; letter-spacing:.02em; text-decoration:none;}
@@ -134,17 +184,18 @@
     background:var(--accent); color:var(--ink); font-weight:700;
     padding:10px 18px; border-radius:10px; font-size:13px; white-space:nowrap; text-transform:uppercase; letter-spacing:.03em;
   }
-  .theme-switch{
-    position:relative; width:46px; height:26px; flex:0 0 auto; padding:0; margin:0;
+  /* three-way colour-theme control — text labels, no icons */
+  .theme-seg{
+    display:inline-flex; flex:0 0 auto; padding:2px; margin:0;
     background:var(--panel2); border:1px solid var(--border); border-radius:999px;
-    cursor:pointer; text-transform:none;
   }
-  .theme-switch .thumb{
-    position:absolute; top:2px; left:2px; height:20px; width:20px; border-radius:50%;
-    background:var(--accent); display:flex; align-items:center; justify-content:center;
-    font-size:12px; line-height:1; transition:transform .25s ease, background .25s ease;
+  .theme-seg button{
+    font-family:'Manrope',sans-serif; font-size:10.5px; font-weight:700;
+    letter-spacing:.02em; text-transform:none; line-height:1;
+    color:var(--muted); background:transparent; border:0; border-radius:999px;
+    padding:6px 10px; cursor:pointer; white-space:nowrap;
   }
-  .theme-switch[data-active="sakura"] .thumb{transform:translateX(20px);}
+  .theme-seg button[aria-pressed="true"]{ color:var(--dark); background:var(--accent); }
   .container{max-width:1260px; margin:0 auto; padding:28px 48px 60px;}
   .card{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:22px 24px; margin-bottom:18px;}
   label{font-size:11.5px; color:var(--muted); display:block; margin-bottom:6px; letter-spacing:.04em; text-transform:uppercase; font-weight:600;}
@@ -383,8 +434,11 @@
       align-items:center;
     }
     .hero .actions .actions-utils{
-      display:flex; gap:8px; align-items:center; grid-column:1 / -1;
+      display:flex; flex-wrap:wrap; gap:8px; align-items:center; grid-column:1 / -1;
     }
+    /* theme control takes its own full-width row so all three labels stay legible */
+    .hero .actions .theme-seg{flex:1 1 100%;}
+    .hero .actions .theme-seg button{flex:1; text-align:center; padding:8px 6px;}
     .hero .actions > button{width:100%; margin:0;}  /* only the direct text buttons stretch */
     /* standalone action gets the full-width bottom row */
     .hero .actions #newTournament,
@@ -482,9 +536,9 @@ function saveState(){
 }
 
 const THEME_KEY = 'sterling_americano_theme_v1';
-const THEMES = ['default', 'sakura'];
-const THEME_ICONS = {default:'\u{1F3BE}', sakura:'\u{1F338}'};
-const THEME_COLORS = {default:'#15201b', sakura:'#150c17'};
+const THEMES = ['default', 'graphite', 'sakura'];
+const THEME_LABELS = {default:'Sterling', graphite:'Graphite', sakura:'Sakura'};
+const THEME_COLORS = {default:'#15201b', graphite:'#191b1f', sakura:'#0f0812'};
 let theme = THEMES.includes(localStorage.getItem(THEME_KEY)) ? localStorage.getItem(THEME_KEY) : 'default';
 // Mobile-only: leaderboard starts collapsed so the rounds (where scores are
 // actually entered) aren't pushed below a long player list. Desktop ignores
@@ -497,16 +551,25 @@ function applyTheme(){
 }
 applyTheme();
 function wireThemeSwitch(root){
-  const el = root.querySelector('#themeToggle');
-  if(!el) return;
-  const setUI = ()=>{ el.dataset.active = theme; el.querySelector('.thumb').textContent = THEME_ICONS[theme]; };
-  setUI();
-  el.addEventListener('click', ()=>{
-    theme = THEMES[(THEMES.indexOf(theme) + 1) % THEMES.length];
-    localStorage.setItem(THEME_KEY, theme);
-    applyTheme();
-    setUI();
+  const seg = root.querySelector('#themeToggle');
+  if(!seg) return;
+  const paint = ()=> seg.querySelectorAll('button').forEach(b=>{
+    b.setAttribute('aria-pressed', String(b.dataset.themeOpt === theme));
   });
+  paint();
+  seg.querySelectorAll('button').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      theme = b.dataset.themeOpt;
+      localStorage.setItem(THEME_KEY, theme);
+      applyTheme();
+      paint();
+    });
+  });
+}
+function themeSegHtml(){
+  return `<div class="theme-seg" id="themeToggle" role="group" aria-label="Colour theme">`
+    + THEMES.map(t=>`<button type="button" data-theme-opt="${t}">${THEME_LABELS[t]}</button>`).join('')
+    + `</div>`;
 }
 
 function openHelpModal(){
@@ -546,11 +609,12 @@ function openHelpModal(){
       <h3>7. Finishing</h3>
       <p><b>Finish tournament</b> (the button under the last round, or in the header) saves a results file to your device and opens the <b>podium</b> as a pop-up. Close it and reopen it any time with <b>Show final podium</b>. <b>Reopen tournament</b> puts you back into play if you need to fix something.</p>
 
-      <h3>Backups &amp; devices</h3>
-      <p><b>Export</b> downloads the whole tournament as a JSON file; <b>Import</b> loads one back &mdash; use it for backups or to move a running tournament to another device.</p>
+      <h3>Autosave, backups &amp; devices</h3>
+      <p>There is no save button. Every score, rename, added or deleted round is written straight to <b>this browser on this device</b> the instant you make it &mdash; the &ldquo;Saved automatically&rdquo; note just confirms it. Reopen the page on the same device and you carry on exactly where you left off.</p>
+      <p>It is <b>not</b> shared or synced: a friend opening the same link gets their own separate copy, and clearing your browser data (or using a private window) wipes it. To keep a backup or move a running tournament to another device, use <b>Export</b> (downloads a JSON file) and <b>Import</b> (loads one back).</p>
 
-      <h3>Theme</h3>
-      <p>The toggle switch swaps between the STERLING Sport &amp; Wellness look and a Sakura theme.</p>
+      <h3>Colour theme</h3>
+      <p>Three looks, from the switch at the top of the page: <b>Sterling</b> (the club&rsquo;s Sport &amp; Wellness palette), <b>Graphite</b> (deep-space grey with a dust of stars) and <b>Sakura</b> (dark cherry blossom over a magenta nebula). Your choice is remembered on this device.</p>
 
       <p style="margin-top:20px;">This tool is free for everyone to use. If you'd like to say thanks, message the developer on Instagram: <a href="https://instagram.com/olegprachuk" target="_blank" rel="noopener" style="color:var(--accent); text-decoration:none;">instagram.com/olegprachuk</a></p>
     </div>
@@ -927,7 +991,7 @@ function renderSetup(){
       <div class="hero-actions-col">
         <div class="actions">
           <span class="actions-utils">
-            <button type="button" class="theme-switch" id="themeToggle" title="Design"><span class="thumb"></span></button>
+            ${themeSegHtml()}
             <button type="button" class="info-icon" id="helpBtn" aria-label="How to use">i</button>
           </span>
           <button id="importBtnSetup" class="small ghost">Import tournament</button>
@@ -1638,7 +1702,7 @@ function renderPlaying(){
       <div class="hero-actions-col">
         <div class="actions">
           <span class="actions-utils">
-            <button type="button" class="theme-switch" id="themeToggle" title="Design"><span class="thumb"></span></button>
+            ${themeSegHtml()}
             <button type="button" class="info-icon" id="helpBtn" aria-label="How to use">i</button>
             <span class="hist-group">
               <button type="button" class="hist-btn" id="undoBtn" title="Undo (Ctrl/Cmd+Z)" aria-label="Undo">
