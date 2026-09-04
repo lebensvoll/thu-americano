@@ -254,6 +254,17 @@
   button.accent{background:var(--accent); color:var(--ink); border:none;}
   button.accent:hover{background:var(--accent-light);}
   button.warn{background:var(--danger); color:#2a0906; border:none;}
+  /* "New tournament" — inviting, not alarming: a soft lime neon outline
+     instead of a solid fill (it starts a fresh tournament, not a delete) */
+  #newTournament{
+    background:transparent; color:#cdf5a6; border:1px solid rgba(169,224,95,.55);
+    box-shadow:0 0 0 1px rgba(169,224,95,.12), 0 0 16px rgba(169,224,95,.26);
+    transition:box-shadow .18s ease, border-color .18s ease, color .18s ease;
+  }
+  #newTournament:hover{
+    color:#e6ffcf; border-color:rgba(169,224,95,.95);
+    box-shadow:0 0 0 1px rgba(169,224,95,.28), 0 0 24px rgba(169,224,95,.5);
+  }
   button.small{padding:7px 13px; font-size:12px; font-weight:600;}
   button.ghost{background:transparent;}
   button:active{opacity:.8;}
@@ -308,10 +319,12 @@
   .round-title{font-size:12.5px; font-weight:700; color:var(--accent); margin-bottom:10px; text-transform:uppercase; letter-spacing:.05em; display:flex; align-items:center; gap:8px; justify-content:space-between;}
   .round-title .left{display:flex; align-items:center; gap:8px;}
   .played-badge{font-size:10px; background:var(--accent); color:var(--ink); padding:3px 8px; border-radius:6px; font-weight:700;}
+  /* graphite: "complete" reads better as a fresh lime than the cool accent */
+  :root[data-theme="graphite"] .played-badge{background:#a9e05f; color:#122400;}
   .del-round{background:transparent; border:1px solid var(--border); color:var(--danger); padding:4px 9px; font-size:10.5px; border-radius:6px;}
   .matches-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
   .match{border:1px solid var(--border); border-radius:11px; padding:12px 14px; background:var(--panel2);}
-  .match .court{font-size:10.5px; color:var(--muted); margin-bottom:8px; font-weight:700; letter-spacing:.03em;}
+  .match .court{font-size:10.5px; color:var(--muted); margin-bottom:8px; font-weight:700; letter-spacing:.03em; text-align:center;}
   .teams{display:flex; align-items:center; gap:8px;}
   .team{flex:1; font-size:13px; font-weight:500; line-height:1.3;}
   .team.ko-winner{color:var(--accent); font-weight:800;}
@@ -332,16 +345,22 @@
     font-size:11px; width:96px; text-transform:none; letter-spacing:normal; font-weight:700;
   }
 
-  /* session timer — sticky at the top of the rounds column */
+  /* status strip — sticky at the top of the rounds column:
+     format / points / courts / players on the left, session clock on the right */
   .timer-bar{
     position:sticky; top:8px; z-index:20;
-    display:flex; gap:18px; flex-wrap:wrap; align-items:center;
+    display:flex; gap:10px 20px; flex-wrap:wrap; align-items:center;
     background:var(--panel); border:1px solid var(--border); border-radius:10px;
-    padding:9px 14px; margin-bottom:16px; font-size:12.5px;
+    padding:10px 14px; margin-bottom:16px; font-size:12.5px;
   }
+  .timer-bar .tb-info{display:flex; flex-wrap:wrap; gap:6px 14px; align-items:center; color:var(--muted);}
+  .timer-bar .tb-seg{white-space:nowrap;}
+  .timer-bar .tb-seg b{color:var(--text); font-weight:800;}
+  .timer-bar .tb-clock{display:flex; gap:18px; flex-wrap:wrap; align-items:center; margin-left:auto;}
   .timer-bar .timer-k{color:var(--muted); text-transform:uppercase; letter-spacing:.05em; font-size:10.5px; font-weight:700;}
   .timer-bar b{font-variant-numeric:tabular-nums; font-weight:800;}
   .timer-bar .timer-over b, .timer-bar .timer-over .timer-k{color:var(--danger);}
+  @media (max-width:680px){ .timer-bar .tb-clock{margin-left:0;} }
 
   /* always-visible finish / podium call-to-action inside the rounds flow */
   .finish-cta{display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin:4px 0 26px;}
@@ -426,6 +445,10 @@
 
   .modal-overlay{position:fixed; inset:0; background:rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center; z-index:100; padding:20px;}
   .modal-box{background:var(--panel); border:1px solid var(--border); border-radius:16px; max-width:560px; width:100%; max-height:85vh; overflow-y:auto; padding:26px 28px;}
+  /* graphite panels are barely-there translucent — the modal needs a real
+     opaque surface and a firmer dim so text isn't fighting the starfield */
+  :root[data-theme="graphite"] .modal-overlay{background:rgba(8,9,11,.82);}
+  :root[data-theme="graphite"] .modal-box{background:#1c1e23; border-color:#3c3f47;}
   .modal-box h2{margin:0 16px 16px 0; font-size:18px; color:var(--accent); padding-right:78px;}
   .modal-box h3{margin:20px 0 6px; font-size:12.5px; color:var(--accent); text-transform:uppercase; letter-spacing:.04em;}
   .modal-box h3:first-of-type{margin-top:0;}
@@ -447,28 +470,37 @@
   @media (max-width: 680px){
     .hero{
       padding:18px 16px; flex-direction:column; align-items:flex-start; gap:14px;
+      position:relative;
     }
+    .hero > div:first-child{padding-right:42px;}   /* clear the corner help icon */
     .hero h1{font-size:20px;}
     .hero .sub{font-size:12.5px;}
     .hero-edit-title{font-size:18px;}
     .hero-edit-club{font-size:16px; width:160px;} /* 16px avoids iOS auto-zoom on focus */
     .hero-actions-col{width:100%; align-items:stretch;}
-    /* Even, grid-aligned buttons instead of a ragged wrapped row: the
-       toggle + info icon share a full-width top row, then every text
-       button fills its column so they all come out the same size. */
+    /* help "i" tucks into the hero's top-right corner instead of eating a whole
+       row alongside the undo/redo control */
+    .hero #helpBtn{position:absolute; top:14px; right:14px; z-index:6;}
     .hero .actions{
       display:grid; grid-template-columns:1fr 1fr; gap:8px; width:100%;
       align-items:center;
     }
     .hero .actions .actions-utils{
       display:flex; flex-wrap:wrap; gap:8px; align-items:center; grid-column:1 / -1;
+      order:1;
     }
-    /* theme control takes its own full-width row so all three labels stay legible */
-    .hero .actions .theme-seg{flex:1 1 100%;}
-    .hero .actions .theme-seg button{flex:1; text-align:center; padding:8px 6px;}
+    .hero .actions .theme-seg{flex:1 1 auto;}
+    .hero .actions .theme-seg button{flex:1; text-align:center; padding:8px 4px;}
+    .hero .actions .hist-group{flex:0 0 auto;}
     .hero .actions > button{width:100%; margin:0;}  /* only the direct text buttons stretch */
-    /* standalone action gets the full-width bottom row */
-    .hero .actions #newTournament,
+    /* "New tournament" sits right under the theme row — the obvious place to
+       tap when you arrive on a stale tournament — with the rest below it */
+    .hero .actions #newTournament{order:2; grid-column:1 / -1;}
+    .hero .actions #exportBtn,
+    .hero .actions #importBtn,
+    .hero .actions #finishBtn,
+    .hero .actions #reopenBtn,
+    .hero .actions #resetResultsBtn{order:3;}
     .hero .actions #importBtnSetup{grid-column:1 / -1;}
     .badge{font-size:11px; padding:8px 14px;}
     .container{padding:16px 14px 60px;}
@@ -485,8 +517,7 @@
     .leaderboard-card #leaderboard{overflow-y:visible; max-height:none;}
     .lb-toggle{display:inline-flex;}
     .leaderboard-card.lb-collapsed #leaderboard,
-    .leaderboard-card.lb-collapsed #restWarnings,
-    .leaderboard-card.lb-collapsed #lbInfoHint{display:none;}
+    .leaderboard-card.lb-collapsed #restWarnings{display:none;}
     .matches-grid{grid-template-columns:1fr;}
     .podium{grid-template-columns:1fr; gap:10px;}
     .podium-gold{transform:none; order:1;}
@@ -785,27 +816,37 @@ function timerParts(){
   const remaining = (state.sessionMinutes || 0) * 60000 - elapsed;
   return {elapsed, remaining, finished: !!state.finishedAt};
 }
+// A single always-visible status strip: what's being played (format, points
+// target, courts, active players) on the left, the session clock on the right.
+function statusInfoHtml(){
+  const fmt = state.tournamentType === 'mexicano' ? 'Mexicano' : 'Americano';
+  const players = activePlayerIndices().length;
+  const courts = state.numCourts;
+  return `<span class="tb-seg"><b>${fmt}</b></span>`
+    + `<span class="tb-seg">to <b>${state.pointsTarget}</b> pts</span>`
+    + `<span class="tb-seg"><b>${courts}</b> court${courts === 1 ? '' : 's'}</span>`
+    + `<span class="tb-seg"><b>${players}</b> player${players === 1 ? '' : 's'}</span>`;
+}
 function renderTimerBar(container){
   if(!container) return;
   if(timerTicker){ clearInterval(timerTicker); timerTicker = null; }
-  if(!timerParts()){ container.innerHTML = ''; container.classList.remove('timer-bar'); return; }
   container.classList.add('timer-bar');
+  container.innerHTML = `<span class="tb-info">${statusInfoHtml()}</span><span class="tb-clock" id="tbClock"></span>`;
+  const clock = container.querySelector('#tbClock');
   const paint = ()=>{
     const p = timerParts();
-    if(!p) return;
+    if(!p){ clock.innerHTML = ''; return; }
     if(p.finished){
-      container.innerHTML = `<span class="timer-seg"><span class="timer-k">Total time played</span> <b>${fmtDur(p.elapsed)}</b></span>`;
+      clock.innerHTML = `<span class="timer-seg"><span class="timer-k">Total played</span> <b>${fmtDur(p.elapsed)}</b></span>`;
       return;
     }
     const over = p.remaining < 0;
-    const rightK = over ? 'Overtime' : 'Remaining';
-    const rightV = over ? fmtDur(-p.remaining) + ' over' : '~' + fmtDur(p.remaining) + ' left';
-    container.innerHTML =
+    clock.innerHTML =
       `<span class="timer-seg"><span class="timer-k">Elapsed</span> <b>${fmtDur(p.elapsed)}</b></span>` +
-      `<span class="timer-seg ${over ? 'timer-over' : ''}"><span class="timer-k">${rightK}</span> <b>${rightV}</b></span>`;
+      `<span class="timer-seg ${over ? 'timer-over' : ''}"><span class="timer-k">${over ? 'Overtime' : 'Remaining'}</span> <b>${over ? fmtDur(-p.remaining) + ' over' : '~' + fmtDur(p.remaining) + ' left'}</b></span>`;
   };
   paint();
-  if(!state.finishedAt) timerTicker = setInterval(paint, 1000);
+  if(timerParts() && !state.finishedAt) timerTicker = setInterval(paint, 1000);
 }
 
 /* ---------- COURT LABELS ---------- */
@@ -1758,12 +1799,8 @@ function renderPlaying(){
         <div class="card leaderboard-card${lbCollapsedMobile ? ' lb-collapsed' : ''}">
           <div class="section-title">
             <span>LEADERBOARD</span>
-            <span style="display:flex; gap:6px; align-items:center;">
-              <button type="button" class="info-icon" id="lbInfoBtn" aria-label="Tournament details">i</button>
-              <button type="button" class="lb-toggle" id="lbToggleBtn" aria-label="Expand or collapse leaderboard">${lbCollapsedMobile ? '&#9660;' : '&#9650;'}</button>
-            </span>
+            <button type="button" class="lb-toggle" id="lbToggleBtn" aria-label="Expand or collapse leaderboard">${lbCollapsedMobile ? '&#9660;' : '&#9650;'}</button>
           </div>
-          <div class="hint" id="lbInfoHint" style="display:none; margin-top:-8px;">${state.tournamentType === 'mexicano' ? 'Mexicano' : 'Americano'} &middot; up to ${state.pointsTarget} points &middot; ${state.numCourts} court(s) &middot; ${activePlayerIndices().length} players</div>
           <div id="leaderboard"></div>
           <div id="restWarnings"></div>
         </div>
@@ -1780,10 +1817,6 @@ function renderPlaying(){
   redoBtn.disabled = !redoStack.length;
   undoBtn.addEventListener('click', doUndo);
   redoBtn.addEventListener('click', doRedo);
-  const lbInfoHint = wrap.querySelector('#lbInfoHint');
-  wrap.querySelector('#lbInfoBtn').addEventListener('click', ()=>{
-    lbInfoHint.style.display = lbInfoHint.style.display === 'none' ? 'block' : 'none';
-  });
   wrap.querySelector('#lbToggleBtn').addEventListener('click', ()=>{
     lbCollapsedMobile = !lbCollapsedMobile;
     wrap.querySelector('.leaderboard-card').classList.toggle('lb-collapsed', lbCollapsedMobile);
