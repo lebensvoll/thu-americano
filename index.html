@@ -295,13 +295,13 @@
   .format-btn.active .fmt-name{color:var(--accent);}
 
   .layout{display:grid; grid-template-columns:340px 1fr; gap:24px; align-items:start;}
-  .section-title{font-size:12.5px; font-weight:700; color:var(--accent); margin-bottom:14px; letter-spacing:.05em; text-transform:uppercase; display:flex; justify-content:space-between; align-items:center;}
+  .section-title{font-family:var(--font-display); font-size:15px; font-weight:400; color:var(--accent); margin-bottom:14px; letter-spacing:.06em; text-transform:uppercase; display:flex; justify-content:space-between; align-items:center;}
   .lb-row{display:flex; align-items:center; padding:10px 8px; border-radius:9px; gap:6px;}
   .lb-row:nth-child(odd){background:var(--panel2);}
-  .lb-rank{width:20px; color:var(--muted); font-size:13px; font-weight:700;}
+  .lb-rank{width:20px; color:var(--muted); font-family:var(--font-display); font-size:16px; font-weight:400;}
   .lb-name{flex:1; font-weight:600; font-size:13.5px;}
   .lb-stats{font-size:11.5px; color:var(--muted); text-align:right; min-width:78px;}
-  .lb-points{font-weight:800; color:var(--accent); font-size:16px; margin-left:6px; min-width:34px; text-align:right;}
+  .lb-points{font-family:var(--font-display); font-weight:400; color:var(--accent); font-size:20px; margin-left:6px; min-width:34px; text-align:right;}
 
   .leaderboard-card{
     position:sticky; top:14px; max-height:calc(100vh - 28px);
@@ -318,9 +318,9 @@
   .leaderboard-card #leaderboard::-webkit-scrollbar-thumb{background:var(--border); border-radius:6px;}
 
   .round-block{margin-bottom:20px;}
-  .round-title{font-size:12.5px; font-weight:700; color:var(--accent); margin-bottom:10px; text-transform:uppercase; letter-spacing:.05em; display:flex; align-items:center; gap:8px; justify-content:space-between;}
+  .round-title{font-family:var(--font-display); font-size:15px; font-weight:400; color:var(--accent); margin-bottom:10px; text-transform:uppercase; letter-spacing:.06em; display:flex; align-items:center; gap:8px; justify-content:space-between;}
   .round-title .left{display:flex; align-items:center; gap:8px;}
-  .played-badge{font-size:10px; background:var(--accent); color:var(--ink); padding:3px 8px; border-radius:6px; font-weight:700;}
+  .played-badge{font-family:var(--font-display); font-size:12px; letter-spacing:.04em; background:var(--accent); color:var(--ink); padding:2px 8px; border-radius:6px; font-weight:400;}
   /* graphite: "complete" reads better as a fresh lime than the cool accent */
   :root[data-theme="graphite"] .played-badge{background:#a9e05f; color:#122400;}
   .del-round{background:transparent; border:1px solid var(--border); color:var(--danger); padding:4px 9px; font-size:10.5px; border-radius:6px;}
@@ -397,7 +397,7 @@
   .podium-modal .podium{margin-top:4px;}
 
   .round-choice{width:100%; margin-bottom:24px;}
-  .round-choice-title{font-size:12.5px; font-weight:700; color:var(--accent); margin-bottom:10px; text-transform:uppercase; letter-spacing:.05em; text-align:center;}
+  .round-choice-title{font-family:var(--font-display); font-size:15px; font-weight:400; color:var(--accent); margin-bottom:10px; text-transform:uppercase; letter-spacing:.06em; text-align:center;}
   .round-choice-option{display:flex; flex-direction:column;}
   .rc-label{font-family:var(--font-display); font-weight:400; text-transform:uppercase; letter-spacing:.05em; font-size:14px; color:var(--accent); margin-bottom:10px;}
   .rc-lines{display:flex; flex-direction:column; gap:7px; margin-bottom:4px;}
@@ -451,8 +451,12 @@
      opaque surface and a firmer dim so text isn't fighting the starfield */
   :root[data-theme="graphite"] .modal-overlay{background:rgba(8,9,11,.82);}
   :root[data-theme="graphite"] .modal-box{background:#1c1e23; border-color:#3c3f47;}
-  .modal-box h2{margin:0 16px 16px 0; font-size:18px; color:var(--accent); padding-right:78px;}
-  .modal-box h3{margin:20px 0 6px; font-size:12.5px; color:var(--accent); text-transform:uppercase; letter-spacing:.04em;}
+  /* The help / FAQ modal uses a plain proportional sans for its headings —
+     Bebas Neue is condensed enough that at these sizes the headings read as
+     smaller than the body copy. */
+  .modal-box h2, .modal-box h3{font-family:'Calibri','Segoe UI',Manrope,-apple-system,sans-serif;}
+  .modal-box h2{margin:0 16px 16px 0; font-size:21px; font-weight:800; letter-spacing:.02em; color:var(--accent); padding-right:78px;}
+  .modal-box h3{margin:22px 0 6px; font-size:15px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:.03em;}
   .modal-box h3:first-of-type{margin-top:0;}
   .modal-box p{margin:0 0 4px; font-size:13px; color:var(--text); line-height:1.6;}
   .modal-box .modal-close{position:absolute; top:20px; right:20px;}
