@@ -18,7 +18,7 @@
   "name": "Padel Runner",
   "alternateName": "Americano & Mexicano Padel Tournament App",
   "url": "https://lebensvoll.github.io/thu-americano",
-  "description": "Free web app for running Americano and Mexicano padel tournaments and social padel events: automatic schedule generator, live leaderboard, knockout bracket and session timer. Built for padel clubs.",
+  "description": "Free web app for running Americano and Mexicano padel tournaments and social padel events: automatic schedule generator, live leaderboard and knockout bracket. Built for padel clubs.",
   "applicationCategory": "SportsApplication",
   "operatingSystem": "Any (runs in a web browser)",
   "browserRequirements": "Requires JavaScript",
@@ -33,7 +33,6 @@
     "Mexicano standings-based rounds",
     "Live leaderboard",
     "Knockout / elimination bracket",
-    "Session timer",
     "Add or remove players mid-event",
     "Works offline, no sign-up"
   ],
@@ -146,7 +145,7 @@
     --grain:.055;
   }
 
-  /* nebula wash + faint starfield behind the app, on the cosmic themes only */
+  /* nebula wash behind the app on both cosmic themes; the starfield is Sakura-only */
   :root[data-theme="graphite"] body,
   :root[data-theme="sakura"] body{
     background:
@@ -157,13 +156,11 @@
     background-attachment:fixed;
   }
   body::before, body::after{content:""; position:fixed; inset:0; z-index:0; pointer-events:none; opacity:0;}
-  :root[data-theme="graphite"] body::before,
   :root[data-theme="sakura"] body::before{
     opacity:.55;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cg fill='%23ffffff'%3E%3Ccircle cx='16' cy='24' r='.8' opacity='.85'/%3E%3Ccircle cx='58' cy='9' r='.5' opacity='.5'/%3E%3Ccircle cx='104' cy='31' r='.6' opacity='.6'/%3E%3Ccircle cx='150' cy='14' r='.5' opacity='.45'/%3E%3Ccircle cx='183' cy='40' r='.7' opacity='.7'/%3E%3Ccircle cx='33' cy='66' r='.5' opacity='.5'/%3E%3Ccircle cx='78' cy='88' r='.7' opacity='.75'/%3E%3Ccircle cx='125' cy='72' r='.5' opacity='.5'/%3E%3Ccircle cx='168' cy='96' r='.6' opacity='.55'/%3E%3Ccircle cx='11' cy='120' r='.6' opacity='.6'/%3E%3Ccircle cx='52' cy='150' r='.5' opacity='.45'/%3E%3Ccircle cx='96' cy='134' r='.7' opacity='.7'/%3E%3Ccircle cx='142' cy='163' r='.5' opacity='.5'/%3E%3Ccircle cx='188' cy='142' r='.6' opacity='.6'/%3E%3Ccircle cx='24' cy='184' r='.5' opacity='.5'/%3E%3Ccircle cx='118' cy='190' r='.6' opacity='.55'/%3E%3C/g%3E%3C/svg%3E");
     background-repeat:repeat;
   }
-  :root[data-theme="graphite"] body::before{filter:saturate(0);}
   :root[data-theme="graphite"] body::after,
   :root[data-theme="sakura"] body::after{
     opacity:var(--grain); mix-blend-mode:overlay;
@@ -347,8 +344,8 @@
     background:var(--panel2); border:1px solid var(--border); border-radius:10px; padding:14px 16px;
   }
   .format-btn .fmt-name{
-    display:block; font-family:var(--font-display); font-weight:400; text-transform:uppercase;
-    letter-spacing:.04em; font-size:16px; color:var(--text); margin-bottom:5px;
+    display:block; font-family:var(--font-faq); font-weight:700; text-transform:uppercase;
+    letter-spacing:.03em; font-size:15px; color:var(--text); margin-bottom:5px;
   }
   .format-btn .fmt-desc{display:block; font-size:11.5px; color:var(--muted); line-height:1.5; white-space:normal;}
   .format-btn.active{border-color:var(--accent); background:var(--panel);}
@@ -366,6 +363,11 @@
   .lb-main{font-family:var(--font-faq); font-weight:700; font-size:23px; line-height:1; color:var(--accent); font-variant-numeric:tabular-nums;}
   .lb-main.neg{color:var(--danger);}
   .lb-wins{position:absolute; top:0; right:1px; white-space:nowrap; font-size:9px; font-weight:700; letter-spacing:.03em; line-height:1; color:var(--muted);}
+  /* per-row stats revealed by the "Details" toggle — tight, right-aligned, hugs the score */
+  .lb-det{flex:0 0 auto; display:flex; flex-direction:column; align-items:flex-end;
+    white-space:nowrap; font-size:9px; line-height:1.35; color:var(--muted);
+    font-variant-numeric:tabular-nums; margin-right:2px;}
+  .lb-det .lb-det-neg{color:var(--danger);}
   .lb-left{margin-left:5px; font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--muted);}
 
   .leaderboard-card{
@@ -391,7 +393,8 @@
   .del-round{background:transparent; border:1px solid var(--border); color:var(--danger); padding:4px 9px; font-size:10.5px; border-radius:6px;}
   .matches-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
   .match{border:1px solid var(--border); border-radius:11px; padding:12px 14px; background:var(--panel2);}
-  .match .court{font-size:10.5px; color:var(--muted); margin-bottom:8px; font-weight:700; letter-spacing:.03em; text-align:center;}
+  /* court label sits UNDER the teams/score now, centred at the foot of the card */
+  .match .court{font-size:10px; color:var(--muted); margin-top:10px; font-weight:700; letter-spacing:.05em; text-align:center;}
   .teams{display:flex; align-items:center; gap:8px;}
   /* each doubles team = its two players stacked, centred over one another */
   .team{flex:1; font-size:13px; font-weight:500; line-height:1.25; display:flex; flex-direction:column; align-items:center; text-align:center; gap:1px; min-width:0;}
@@ -415,10 +418,11 @@
   }
 
   /* compact status line at the top of the leaderboard:
-     format / points / courts / players — plain small text */
+     format / points / courts / players — plain small text, tucked right under the title */
+  .leaderboard-card .section-title{margin-bottom:6px;}
   .lb-status{
-    font-size:11.5px; color:var(--muted); font-weight:400; line-height:1.6;
-    margin:0 0 12px; padding-bottom:10px; border-bottom:1px solid var(--border);
+    font-size:11.5px; color:var(--muted); font-weight:400; line-height:1.5;
+    margin:0 0 10px; padding-bottom:9px; border-bottom:1px solid var(--border);
   }
 
   /* always-visible finish / podium call-to-action inside the rounds flow */
@@ -474,6 +478,8 @@
     border-radius:16px; padding:22px 16px 20px; text-align:center; position:relative;
     border:1px solid rgba(255,255,255,.12);
   }
+  .pc-mid{display:contents;}   /* transparent on desktop (cards stay vertical); a real column only on mobile */
+  .podium-meta{margin-top:16px;}
   .podium-card .medal{font-size:38px; line-height:1; margin-bottom:8px; display:block;}
   .podium-card .rank-label{font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; font-weight:700; opacity:.85; margin-bottom:6px;}
   .podium-card .name{font-size:16px; font-weight:800; text-transform:uppercase; letter-spacing:.01em; margin-bottom:6px; line-height:1.2;}
@@ -497,7 +503,7 @@
   .lb-name{cursor:pointer; border-bottom:1px dashed transparent;}
   .lb-name:hover{border-bottom-color:var(--muted);}
   .lb-name-input{width:auto; padding:4px 6px; font-size:14px; font-weight:600;}
-  .lb-add-row{margin-top:10px; padding-top:10px; border-top:1px solid var(--border);}
+  .lb-add-row{margin-top:10px; padding-top:10px; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; gap:8px;}
   .lb-remove{background:transparent; border:none; color:var(--muted); font-size:12px; padding:4px 6px; margin-left:2px; cursor:pointer; line-height:1; flex:0 0 auto;}
   .lb-remove:hover{color:var(--danger);}
 
@@ -585,10 +591,24 @@
     .leaderboard-card.lb-collapsed #leaderboard,
     .leaderboard-card.lb-collapsed #restWarnings{display:none;}
     .matches-grid{grid-template-columns:1fr;}
-    .podium{grid-template-columns:1fr; gap:10px;}
-    .podium-gold{transform:none; order:1;}
-    .podium-silver{order:2;}
-    .podium-bronze{order:3;}
+    /* podium fits on one phone screen without scrolling: each place is a compact
+       horizontal strip (medal · name · points) instead of a tall card */
+    .podium-modal .modal-box{padding:20px 16px;}
+    .podium-modal .modal-box h2{font-size:15px; letter-spacing:.02em; padding:0 52px; white-space:nowrap;}
+    .podium{grid-template-columns:1fr; gap:8px; margin-top:2px;}
+    .podium-wrap{margin-bottom:14px;}
+    .podium-card{
+      display:flex; align-items:center; gap:12px;
+      padding:9px 13px; text-align:left; border-radius:12px;
+      transform:none !important; box-shadow:none;
+    }
+    .pc-mid{display:flex; flex-direction:column; flex:1; min-width:0;}
+    .podium-card .medal{font-size:23px; margin:0; flex:0 0 auto;}
+    .podium-card .rank-label{margin:0 0 1px; font-size:8.5px; opacity:.8;}
+    .podium-card .name{margin:0; font-size:14px; line-height:1.15;}
+    .podium-card .pts{margin:0 0 0 auto; font-size:20px; flex:0 0 auto;}
+    .podium-gold{order:1;} .podium-silver{order:2;} .podium-bronze{order:3;}
+    .podium-meta{font-size:11px; margin-top:12px;}
     button{padding:12px 16px; font-size:13px;}
     button.small{padding:10px 14px; font-size:12px;}
     input,select{font-size:16px; padding:12px 12px;} /* 16px avoids iOS auto-zoom on focus */
@@ -664,7 +684,7 @@
   <p>
     <strong>Padel Runner</strong> is a free Americano &amp; Mexicano padel tournament and event tool.
     It builds the schedule automatically, keeps a live leaderboard, runs a knockout
-    bracket and a session timer, and lets you add or drop players mid-event &mdash; all from a phone
+    bracket, and lets you add or drop players mid-event &mdash; all from a phone
     at the court. Made for padel clubs and social padel events: no sign-up, no ads, works offline.
     Developed by <a href="https://instagram.com/olegprachuk" target="_blank" rel="noopener">Oleg Prachuk</a>.
   </p>
@@ -693,6 +713,9 @@ let theme = THEMES.includes(localStorage.getItem(THEME_KEY)) ? localStorage.getI
 // actually entered) aren't pushed below a long player list. Desktop ignores
 // this entirely (sticky sidebar there instead) — see the lb-toggle CSS.
 let lbCollapsedMobile = true;
+// Toggled by the "Details" button in the leaderboard: reveals per-row
+// played / points-for / points-against / differential. Session-only.
+let lbShowDetails = false;
 function applyTheme(){
   document.documentElement.setAttribute('data-theme', theme);
   const metaTheme = document.querySelector('meta[name="theme-color"]');
@@ -989,8 +1012,10 @@ function podiumInnerHtml(){
   const card = (cls, medal, label, p)=>`
     <div class="podium-card ${cls}">
       <span class="medal">${medal}</span>
-      <div class="rank-label">${label}</div>
-      <div class="name">${escapeHtml(p.name)}</div>
+      <div class="pc-mid">
+        <div class="rank-label">${label}</div>
+        <div class="name">${escapeHtml(p.name)}</div>
+      </div>
       <div class="pts">${p.points}</div>
     </div>`;
   return `<div class="podium">
@@ -1005,12 +1030,13 @@ function openPodiumModal(){
   overlay.className = 'modal-overlay podium-modal';
   overlay.id = 'podiumOverlay';
   const venue = state.clubName ? ' &middot; ' + escapeHtml(state.clubName) : '';
+  const when = state.date ? ' &middot; ' + escapeHtml(state.date) : '';
   overlay.innerHTML = `
     <div class="modal-box modal-box-wrap">
       <button class="ghost small modal-close" id="podiumCloseBtn">Close</button>
-      <h2 style="padding-right:78px;">&#127942; Final Podium</h2>
+      <h2>&#127942; Final Podium</h2>
       ${podiumInnerHtml()}
-      <div class="hint" style="margin-top:16px;">${escapeHtml(state.tournamentName)}${venue}</div>
+      <div class="hint podium-meta">${escapeHtml(state.tournamentName)}${venue}${when}</div>
     </div>`;
   document.body.appendChild(overlay);
   const close = ()=> overlay.remove();
@@ -1853,7 +1879,6 @@ function renderKoMatchCard(m){
   }
   const tie = ready && aVal!==null && aVal!=='' && winnerSide===null;
   el.innerHTML = `
-    <div class="court">${escapeHtml(m.id)}</div>
     <div class="teams">
       <div class="team ${winnerSide==='a'?'ko-winner':''}">${teamStackHtml(teamA)}</div>
       <input type="number" min="0" max="${target}" class="score-input" data-koid="${m.id}" value="${aVal===null?'':aVal}" placeholder="&mdash;" ${ready?'':'disabled'} />
@@ -1861,6 +1886,7 @@ function renderKoMatchCard(m){
       <span class="opp-score">${oppVal}</span>
       <div class="team ${winnerSide==='b'?'ko-winner':''}">${teamStackHtml(teamB)}</div>
     </div>
+    <div class="court">${escapeHtml(m.id)}</div>
     ${!ready ? '<div class="hint ko-wait-hint" style="margin-top:8px; margin-bottom:0;">Waiting for previous match result&hellip;</div>' : ''}
     ${tie ? '<div class="hint ko-tie-hint" style="margin-top:8px; margin-bottom:0; color:var(--danger);">Scores are tied &mdash; adjust to declare a winner.</div>' : ''}
   `;
@@ -2139,10 +2165,17 @@ function renderLeaderboard(container){
         const diff = p.points - p.against;
         const mainVal = byDiff ? (diff>0 ? '+'+diff : String(diff)) : String(p.points);
         const negCls = (byDiff && diff<0) ? ' neg' : '';
+        const diffSigned = diff>0 ? '+'+diff : String(diff);
+        const det = lbShowDetails ? `
+          <div class="lb-det">
+            <span>${p.played} pl · <span class="${diff<0?'lb-det-neg':''}">${diffSigned}</span></span>
+            <span>${p.points} / ${p.against}</span>
+          </div>` : '';
         return `
         <div class="lb-row ${cls}" style="${p.removed ? 'opacity:.45;' : ''}">
           <div class="lb-rank">${i+1}</div>
           <div class="lb-name" data-idx="${p.idx}" title="Click to rename">${escapeHtml(p.name)}${p.removed ? '<span class="lb-left">left</span>' : ''}</div>
+          ${det}
           <div class="lb-score">
             <span class="lb-wins" title="${p.played} played">${p.wins} WIN${p.wins===1?'':'S'}</span>
             <span class="lb-main${negCls}">${mainVal}</span>
@@ -2155,6 +2188,7 @@ function renderLeaderboard(container){
     <div id="lbList">${listHtml}</div>
     <div class="lb-add-row">
       <button id="lbAddPlayerBtn" class="small ghost">+ Add player</button>
+      <button id="lbDetailsBtn" class="small ghost" aria-pressed="${lbShowDetails}">${lbShowDetails ? 'Hide details' : 'Details'}</button>
     </div>
   `;
 
@@ -2224,6 +2258,14 @@ function renderLeaderboard(container){
         showToast('✓ Player added — upcoming rounds rebuilt to include them');
         render();
       }
+    });
+  }
+
+  const detBtn = container.querySelector('#lbDetailsBtn');
+  if(detBtn){
+    detBtn.addEventListener('click', ()=>{
+      lbShowDetails = !lbShowDetails;
+      renderLeaderboard(container);
     });
   }
 }
@@ -2401,7 +2443,6 @@ function renderRoundBlock(round, ri){
     el.className = 'match';
     const oppVal = (sc.a===null||sc.a==='') ? '\u2014' : (state.pointsTarget - (+sc.a));
     el.innerHTML = `
-      <div class="court">COURT <span class="court-label" data-court="${m.court}" title="Click to rename this court">${escapeHtml(courtLabel(m.court))}</span></div>
       <div class="teams">
         <div class="team">${teamStackHtml(m.teamA)}</div>
         <input type="number" min="0" max="${state.pointsTarget}" class="score-input" data-ri="${ri}" data-mi="${mi}" value="${sc.a===null?'':sc.a}" placeholder="\u2014" />
@@ -2409,6 +2450,7 @@ function renderRoundBlock(round, ri){
         <span class="opp-score">${oppVal}</span>
         <div class="team">${teamStackHtml(m.teamB)}</div>
       </div>
+      <div class="court">COURT <span class="court-label" data-court="${m.court}" title="Click to rename this court">${escapeHtml(courtLabel(m.court))}</span></div>
     `;
     grid.appendChild(el);
   });
