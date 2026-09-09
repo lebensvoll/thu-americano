@@ -64,6 +64,7 @@
     --sage:var(--sterling-sage);
     --ink:#241400;
     --danger:#d0554a;
+    --placeholder-alert:#ef4444;   /* typical web "error" red — flags an unset title/club; kept distinct from the orange accent */
     --radius:14px;
     /* display / heading face — condensed all-caps */
     --font-display:'Bebas Neue','Arial Narrow',Impact,sans-serif;
@@ -203,12 +204,10 @@
   }
   .hero-edit-title{font-family:var(--font-display); text-transform:uppercase; letter-spacing:.03em; font-weight:400; font-size:32px; width:min(560px,100%);}
   .hero-edit-club{font-size:13px; width:220px; max-width:100%;}
-  .hero-warn{
-    background:var(--panel2); border:1px solid var(--accent); border-left:4px solid var(--accent);
-    color:var(--text); font-size:12.5px; line-height:1.55;
-    padding:11px 14px; border-radius:10px; margin-bottom:18px;
-  }
-  .hero-warn b{color:var(--accent);}
+  /* tournament / club name still on the factory default — flagged in error-red
+     right in the header (replaces the old warning banner); back to normal
+     colour the moment the organizer edits the field */
+  .hero h1.hero-ph, .hero .sub .hero-ph{color:var(--placeholder-alert);}
   .badge{
     background:var(--accent); color:var(--ink); font-weight:700;
     padding:10px 18px; border-radius:10px; font-size:13px; white-space:nowrap; text-transform:uppercase; letter-spacing:.03em;
@@ -983,24 +982,24 @@ function escapeHtml(s){
 }
 
 /* ---------- EDITABLE HERO (tournament name / club name) ---------- */
-function heroSubHtml(){
-  const clubHtml = state.clubName
-    ? `<span id="hClub" class="hero-club-trigger" title="Click to edit">${escapeHtml(state.clubName)}</span>`
-    : `<span id="hClub" class="hero-club-trigger hero-club-empty" title="Click to add a club name">+ Add club name</span>`;
-  return `<span id="hDate">${escapeHtml(state.date)}</span> &nbsp;&middot;&nbsp; ${clubHtml}`;
+// Exact-string checks: a field the organizer has actually edited (or
+// deliberately cleared) never counts as "still the placeholder", so the
+// error-red flag clears itself the moment either field is set — see the
+// .hero-ph rule in the stylesheet.
+const DEFAULT_TOURNAMENT_NAME = 'Tournament Name Here';
+const DEFAULT_CLUB_NAME = 'Enter your Club or Venue Name';
+
+function heroTitleHtml(){
+  const ph = state.tournamentName === DEFAULT_TOURNAMENT_NAME ? ' class="hero-ph"' : '';
+  return `<h1 id="hTitle"${ph} title="Click to rename">${escapeHtml(state.tournamentName)}</h1>`;
 }
 
-// Once a tournament is under way, nudge the organizer if the name or the
-// club/venue is still the untouched default placeholder — an exact-string
-// check, so a field they deliberately cleared or edited never triggers it.
-// The notice re-renders away by itself the moment either field is set.
-function placeholderHeroWarning(){
-  const fields = [];
-  if(state.tournamentName === 'Tournament Name Here') fields.push('tournament name');
-  if(state.clubName === 'Enter your Club or Venue Name') fields.push('club / venue name');
-  if(!fields.length) return '';
-  const many = fields.length > 1;
-  return `<div class="hero-warn">&#9888;&#65039; The <b>${fields.join('</b> and <b>')}</b> ${many ? 'are' : 'is'} still the default placeholder &mdash; tap the ${many ? 'title and the line below it' : (fields[0] === 'tournament name' ? 'title' : 'line under the title')} in the header above to set ${many ? 'them' : 'it'} before sharing this tournament.</div>`;
+function heroSubHtml(){
+  const isPh = state.clubName === DEFAULT_CLUB_NAME;
+  const clubHtml = state.clubName
+    ? `<span id="hClub" class="hero-club-trigger${isPh ? ' hero-ph' : ''}" title="Click to edit">${escapeHtml(state.clubName)}</span>`
+    : `<span id="hClub" class="hero-club-trigger hero-club-empty" title="Click to add a club name">+ Add club name</span>`;
+  return `<span id="hDate">${escapeHtml(state.date)}</span> &nbsp;&middot;&nbsp; ${clubHtml}`;
 }
 
 // Swaps a hero display element for a plain input, focused and pre-filled;
@@ -1065,7 +1064,7 @@ function renderSetup(){
   wrap.innerHTML = `
     <div class="hero">
       <div>
-        <h1 id="hTitle" title="Click to rename">${escapeHtml(state.tournamentName)}</h1>
+        ${heroTitleHtml()}
         <div class="sub">${heroSubHtml()}</div>
       </div>
       <div class="hero-actions-col">
@@ -1896,7 +1895,7 @@ function renderPlaying(){
   wrap.innerHTML = `
     <div class="hero">
       <div>
-        <h1 id="hTitle" title="Click to rename">${escapeHtml(state.tournamentName)}</h1>
+        ${heroTitleHtml()}
         <div class="sub">${heroSubHtml()}</div>
       </div>
       <div class="hero-actions-col">
@@ -1926,7 +1925,6 @@ function renderPlaying(){
       </div>
     </div>
     <div class="container">
-      ${placeholderHeroWarning()}
       <div class="layout">
         <div class="card leaderboard-card${lbCollapsedMobile ? ' lb-collapsed' : ''}">
           <div class="section-title">
