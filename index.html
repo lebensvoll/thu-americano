@@ -292,35 +292,39 @@
   button.accent{background:var(--accent); color:var(--ink); border:none;}
   button.accent:hover{background:var(--accent-light);}
   button.warn{background:var(--danger); color:#2a0906; border:none;}
-  /* "New tournament" — inviting, not alarming: a soft lime neon outline
-     instead of a solid fill (it starts a fresh tournament, not a delete).
-     It breathes like an aviation beacon: ~2.5s to fade, ~2.5s to glow back up. */
+  /* "New tournament" — inviting, not alarming: a soft neon outline instead of a
+     solid fill (it starts a fresh tournament, not a delete). It breathes like an
+     aviation beacon: ~2.5s to fade, ~2.5s to glow back up. The beacon hue tracks
+     the colour theme — lime on Sterling, ice-blue on Graphite, violet on Sakura. */
+  :root{ --beacon:169 224 95; --beacon-fg:#cdf5a6; --beacon-fg-hover:#e6ffcf; }
+  :root[data-theme="graphite"]{ --beacon:132 194 230; --beacon-fg:#d6e9f7; --beacon-fg-hover:#eef7fd; }
+  :root[data-theme="sakura"]{ --beacon:191 130 236; --beacon-fg:#ecd9f8; --beacon-fg-hover:#f7ecff; }
   #newTournament{
-    background:transparent; color:#cdf5a6; border:1px solid rgba(169,224,95,.55);
+    background:transparent; color:var(--beacon-fg); border:1px solid rgb(var(--beacon) / .55);
     transition:box-shadow .3s ease, border-color .3s ease, color .18s ease;
     animation:beaconPulse 5s ease-in-out infinite;
   }
   @keyframes beaconPulse{
     0%, 100%{
-      border-color:rgba(169,224,95,.32);
-      box-shadow:0 0 0 1px rgba(169,224,95,.05), 0 0 7px rgba(169,224,95,.12);
+      border-color:rgb(var(--beacon) / .32);
+      box-shadow:0 0 0 1px rgb(var(--beacon) / .05), 0 0 7px rgb(var(--beacon) / .12);
     }
     50%{
-      border-color:rgba(169,224,95,.95);
-      box-shadow:0 0 0 1px rgba(169,224,95,.30), 0 0 26px rgba(169,224,95,.62), 0 0 48px rgba(169,224,95,.26);
+      border-color:rgb(var(--beacon) / .95);
+      box-shadow:0 0 0 1px rgb(var(--beacon) / .30), 0 0 26px rgb(var(--beacon) / .62), 0 0 48px rgb(var(--beacon) / .26);
     }
   }
   #newTournament:hover{
     animation:none;   /* hold a steady bright glow while hovered, resume breathing on leave */
-    color:#e6ffcf;
-    border-color:rgba(169,224,95,.95);
-    box-shadow:0 0 0 1px rgba(169,224,95,.35), 0 0 30px rgba(169,224,95,.72), 0 0 52px rgba(169,224,95,.34);
+    color:var(--beacon-fg-hover);
+    border-color:rgb(var(--beacon) / .95);
+    box-shadow:0 0 0 1px rgb(var(--beacon) / .35), 0 0 30px rgb(var(--beacon) / .72), 0 0 52px rgb(var(--beacon) / .34);
   }
   @media (prefers-reduced-motion: reduce){
     #newTournament{
       animation:none;
-      border-color:rgba(169,224,95,.6);
-      box-shadow:0 0 0 1px rgba(169,224,95,.14), 0 0 16px rgba(169,224,95,.3);
+      border-color:rgb(var(--beacon) / .6);
+      box-shadow:0 0 0 1px rgb(var(--beacon) / .14), 0 0 16px rgb(var(--beacon) / .3);
     }
   }
   button.small{padding:7px 13px; font-size:12px; font-weight:600;}
