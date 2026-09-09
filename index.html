@@ -18,7 +18,7 @@
   "name": "Padel Runner",
   "alternateName": "Americano & Mexicano Padel Tournament App",
   "url": "https://lebensvoll.github.io/thu-americano",
-  "description": "Free web app for running Americano and Mexicano padel tournaments: round-robin schedule generator, live leaderboard, knockout bracket and session timer. Built for padel clubs and social padel events.",
+  "description": "Free web app for running Americano and Mexicano padel tournaments and social padel events: automatic schedule generator, live leaderboard, knockout bracket and session timer. Built for padel clubs.",
   "applicationCategory": "SportsApplication",
   "operatingSystem": "Any (runs in a web browser)",
   "browserRequirements": "Requires JavaScript",
@@ -332,12 +332,17 @@
 
   .layout{display:grid; grid-template-columns:340px 1fr; gap:24px; align-items:start;}
   .section-title{font-family:var(--font-display); font-size:15px; font-weight:400; color:var(--accent); margin-bottom:14px; letter-spacing:.06em; text-transform:uppercase; display:flex; justify-content:space-between; align-items:center;}
-  .lb-row{display:flex; align-items:center; padding:10px 8px; border-radius:9px; gap:6px;}
+  .lb-row{display:flex; align-items:center; padding:7px 8px; border-radius:9px; gap:8px;}
   .lb-row:nth-child(odd){background:var(--panel2);}
-  .lb-rank{width:20px; color:var(--muted); font-family:var(--font-faq); font-size:14px; font-weight:700;}
-  .lb-name{flex:1; font-weight:600; font-size:13.5px;}
+  .lb-rank{flex:0 0 auto; width:18px; color:var(--muted); font-family:var(--font-faq); font-size:13px; font-weight:700;}
+  .lb-name{flex:1; min-width:0; font-weight:600; font-size:15px;}
   .lb-stats{font-size:11.5px; color:var(--muted); text-align:right; min-width:78px;}
-  .lb-points{font-family:var(--font-faq); font-weight:700; color:var(--accent); font-size:17px; margin-left:6px; min-width:34px; text-align:right;}
+  /* score cell: big points (or +/- differential) with the win count as a small tag above-right */
+  .lb-score{position:relative; flex:0 0 auto; padding-top:9px; min-width:30px; text-align:right;}
+  .lb-main{font-family:var(--font-faq); font-weight:700; font-size:23px; line-height:1; color:var(--accent); font-variant-numeric:tabular-nums;}
+  .lb-main.neg{color:var(--danger);}
+  .lb-wins{position:absolute; top:0; right:1px; font-size:9.5px; font-weight:700; letter-spacing:.02em; line-height:1; color:var(--muted);}
+  .lb-left{margin-left:5px; font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--muted);}
 
   .leaderboard-card{
     position:sticky; top:14px; max-height:calc(100vh - 28px);
@@ -470,12 +475,7 @@
   .lb-row.top3{background:linear-gradient(90deg, rgba(215,154,94,.16), transparent); border-left:3px solid #b06a35;}
   .lb-name{cursor:pointer; border-bottom:1px dashed transparent;}
   .lb-name:hover{border-bottom-color:var(--muted);}
-  .lb-name-input{width:auto; padding:4px 6px; font-size:13.5px; font-weight:600;}
-  .lb-name-col{flex:1; min-width:0;}
-  .lb-points-col{text-align:right;}
-  .lb-sub{font-size:10.5px; color:var(--muted); margin-top:2px; white-space:nowrap;}
-  .lb-sub .diff-pos{color:var(--sage);}
-  .lb-sub .diff-neg{color:var(--danger);}
+  .lb-name-input{width:auto; padding:4px 6px; font-size:14px; font-weight:600;}
   .lb-add-row{margin-top:10px; padding-top:10px; border-top:1px solid var(--border);}
   .lb-remove{background:transparent; border:none; color:var(--muted); font-size:12px; padding:4px 6px; margin-left:2px; cursor:pointer; line-height:1; flex:0 0 auto;}
   .lb-remove:hover{color:var(--danger);}
@@ -572,7 +572,7 @@
     button.small{padding:10px 14px; font-size:12px;}
     input,select{font-size:16px; padding:12px 12px;} /* 16px avoids iOS auto-zoom on focus */
     .score-input{width:56px; padding:10px 4px; font-size:16px;}
-    .lb-row{flex-wrap:wrap; padding:12px 8px;}
+    .lb-row{padding:9px 8px;}
     .lb-stats{min-width:auto;}
     .round-title{flex-wrap:wrap; gap:6px;}
     .del-round{padding:6px 10px;}
@@ -641,8 +641,8 @@
 
 <footer class="site-footer">
   <p>
-    <strong>Padel Runner</strong> is a free Americano &amp; Mexicano padel tournament app.
-    It builds the round-robin schedule automatically, keeps a live leaderboard, runs a knockout
+    <strong>Padel Runner</strong> is a free Americano &amp; Mexicano padel tournament and event tool.
+    It builds the schedule automatically, keeps a live leaderboard, runs a knockout
     bracket and a session timer, and lets you add or drop players mid-event &mdash; all from a phone
     at the court. Made for padel clubs and social padel events: no sign-up, no ads, works offline.
     Developed by <a href="https://instagram.com/olegprachuk" target="_blank" rel="noopener">Oleg Prachuk</a>.
@@ -732,7 +732,7 @@ function openHelpModal(){
       <p>The bar above the rounds shows how long you've been playing (since the schedule was generated) and roughly how much of your planned session is left. Go past the planned time and it flips to <b>Overtime</b>. It freezes when you finish.</p>
 
       <h3>6. Knockout stage</h3>
-      <p>Once enough players have results, pick a starting stage and generate an elimination bracket. Teams are formed by pairing a strong finisher with a weaker one (snake seeding). The round-robin leaderboard keeps running underneath, and knockout standings are tracked separately.</p>
+      <p>Once enough players have results, pick a starting stage and generate an elimination bracket. Teams are formed by pairing a strong finisher with a weaker one (snake seeding). The main leaderboard keeps running underneath, and knockout standings are tracked separately.</p>
 
       <h3>7. Finishing</h3>
       <p><b>Finish tournament</b> (the button under the last round, or in the header) saves a results file to your device and opens the <b>podium</b> as a pop-up. Close it and reopen it any time with <b>Show final podium</b>. <b>Reopen tournament</b> puts you back into play if you need to fix something.</p>
@@ -1814,7 +1814,7 @@ function renderKnockoutSection(container){
   if(!state.knockout){
     wrap.innerHTML = `
       <div class="section-title"><span>KNOCKOUT STAGE</span></div>
-      <div class="hint" style="margin-top:0;">Forms 2-player teams from current individual standings (top finisher paired with the lowest qualifying finisher, and so on) and generates an elimination bracket. The round-robin leaderboard stays as-is &mdash; standings for the bracket are tracked separately below once generated.</div>
+      <div class="hint" style="margin-top:0;">Forms 2-player teams from current individual standings (top finisher paired with the lowest qualifying finisher, and so on) and generates an elimination bracket. The main leaderboard stays as-is &mdash; standings for the bracket are tracked separately below once generated.</div>
       <div class="grid2" style="margin-top:14px;">
         <div class="field" style="margin-bottom:0;">
           <label>Starting stage</label>
@@ -2152,19 +2152,17 @@ function renderLeaderboard(container){
     ? '<div class="empty">Enter round 1 scores to see the leaderboard</div>'
     : lb.map((p,i)=>{
         const cls = i===0?'top1':i===1?'top2':i===2?'top3':'';
+        const byDiff = state.rankBy === 'diff';
         const diff = p.points - p.against;
-        const diffStr = diff>0 ? ('+'+diff) : String(diff);
-        const diffClass = diff>0 ? 'diff-pos' : (diff<0 ? 'diff-neg' : '');
+        const mainVal = byDiff ? (diff>0 ? '+'+diff : String(diff)) : String(p.points);
+        const negCls = (byDiff && diff<0) ? ' neg' : '';
         return `
-        <div class="lb-row ${cls}" style="${p.removed ? 'opacity:.5;' : ''}">
+        <div class="lb-row ${cls}" style="${p.removed ? 'opacity:.45;' : ''}">
           <div class="lb-rank">${i+1}</div>
-          <div class="lb-name-col">
-            <div class="lb-name" data-idx="${p.idx}" title="Click to rename">${escapeHtml(p.name)}</div>
-            <div class="lb-sub">${p.removed ? 'Left rotation &middot; ' : ''}${p.wins}W &middot; ${p.played} played</div>
-          </div>
-          <div class="lb-points-col">
-            <div class="lb-points">${p.points}</div>
-            <div class="lb-sub">W ${p.points} &middot; L ${p.against} &middot; <span class="${diffClass}">${diffStr}</span></div>
+          <div class="lb-name" data-idx="${p.idx}" title="Click to rename">${escapeHtml(p.name)}${p.removed ? '<span class="lb-left">left</span>' : ''}</div>
+          <div class="lb-score">
+            <span class="lb-wins" title="${p.wins} win${p.wins===1?'':'s'} &middot; ${p.played} played">${p.wins}W</span>
+            <span class="lb-main${negCls}">${mainVal}</span>
           </div>
           ${p.removed ? '' : `<button class="lb-remove" data-idx="${p.idx}" title="Remove from rotation">&#10005;</button>`}
         </div>`;
