@@ -7,8 +7,43 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#15201b">
-<title>Padel Runner</title>
+<title>Padel Runner — Free Americano &amp; Mexicano Padel Tournament App</title>
 <meta name="description" content="Free tool for running Americano & Mexicano padel tournaments — live leaderboard, knockout bracket, session timer. By Oleg Prachuk.">
+<meta name="author" content="Oleg Prachuk">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Padel Runner",
+  "alternateName": "Americano & Mexicano Padel Tournament App",
+  "url": "https://lebensvoll.github.io/thu-americano",
+  "description": "Free web app for running Americano and Mexicano padel tournaments: round-robin schedule generator, live leaderboard, knockout bracket and session timer. Built for padel clubs and social padel events.",
+  "applicationCategory": "SportsApplication",
+  "operatingSystem": "Any (runs in a web browser)",
+  "browserRequirements": "Requires JavaScript",
+  "isAccessibleForFree": true,
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "featureList": [
+    "Americano tournament scheduler",
+    "Mexicano standings-based rounds",
+    "Live leaderboard",
+    "Knockout / elimination bracket",
+    "Session timer",
+    "Add or remove players mid-event",
+    "Works offline, no sign-up"
+  ],
+  "author": {
+    "@type": "Person",
+    "name": "Oleg Prachuk",
+    "url": "https://instagram.com/olegprachuk"
+  }
+}
+</script>
 
 <!-- favicons (files sit next to index.html) -->
 <link rel="icon" type="image/png" href="favicon.png">
@@ -68,6 +103,7 @@
     --radius:14px;
     /* display / heading face — condensed all-caps */
     --font-display:'Bebas Neue','Arial Narrow',Impact,sans-serif;
+    --font-faq:'Calibri','Segoe UI',Manrope,-apple-system,sans-serif;   /* FAQ headings + round titles */
   }
   /* ---------- GRAPHITE — deep-space grey, cosmic dust ---------- */
   :root[data-theme="graphite"]{
@@ -239,6 +275,7 @@
   .actions-utils .info-icon{width:28px; height:28px; font-size:14px; margin-left:0; flex:0 0 auto;}
   .actions-utils > *{flex:0 0 auto;}
   .field{margin-bottom:16px;}
+  .field-info{position:relative;}
   .name-field input{max-width:420px;}
   input,select{
     font-family:'Manrope',sans-serif; background:var(--panel2); color:var(--text);
@@ -297,10 +334,10 @@
   .section-title{font-family:var(--font-display); font-size:15px; font-weight:400; color:var(--accent); margin-bottom:14px; letter-spacing:.06em; text-transform:uppercase; display:flex; justify-content:space-between; align-items:center;}
   .lb-row{display:flex; align-items:center; padding:10px 8px; border-radius:9px; gap:6px;}
   .lb-row:nth-child(odd){background:var(--panel2);}
-  .lb-rank{width:20px; color:var(--muted); font-family:var(--font-display); font-size:16px; font-weight:400;}
+  .lb-rank{width:20px; color:var(--muted); font-family:var(--font-faq); font-size:14px; font-weight:700;}
   .lb-name{flex:1; font-weight:600; font-size:13.5px;}
   .lb-stats{font-size:11.5px; color:var(--muted); text-align:right; min-width:78px;}
-  .lb-points{font-family:var(--font-display); font-weight:400; color:var(--accent); font-size:20px; margin-left:6px; min-width:34px; text-align:right;}
+  .lb-points{font-family:var(--font-faq); font-weight:700; color:var(--accent); font-size:17px; margin-left:6px; min-width:34px; text-align:right;}
 
   .leaderboard-card{
     position:sticky; top:14px; max-height:calc(100vh - 28px);
@@ -317,7 +354,7 @@
   .leaderboard-card #leaderboard::-webkit-scrollbar-thumb{background:var(--border); border-radius:6px;}
 
   .round-block{margin-bottom:20px;}
-  .round-title{font-family:var(--font-display); font-size:15px; font-weight:400; color:var(--accent); margin-bottom:10px; text-transform:uppercase; letter-spacing:.06em; display:flex; align-items:center; gap:8px; justify-content:space-between;}
+  .round-title{font-family:var(--font-faq); font-size:15px; font-weight:700; color:var(--accent); margin-bottom:10px; text-transform:uppercase; letter-spacing:.03em; display:flex; align-items:center; gap:8px; justify-content:space-between;}
   .round-title .left{display:flex; align-items:center; gap:8px;}
   .played-badge{font-family:var(--font-display); font-size:12px; letter-spacing:.04em; background:var(--accent); color:var(--ink); padding:2px 8px; border-radius:6px; font-weight:400;}
   /* graphite: "complete" reads better as a fresh lime than the cool accent */
@@ -396,9 +433,13 @@
 
   .podium-modal .modal-box{max-width:640px; text-align:center;}
   .podium-modal .podium{margin-top:4px;}
+  /* this modal is centre-aligned, so the heading needs symmetric side padding
+     (78px each side clears the absolutely-positioned Close button on the right)
+     — the default h2 only pads the right, which pulled the title off-centre */
+  .podium-modal .modal-box h2{margin:0 0 16px; padding:0 78px; text-align:center;}
 
   .round-choice{width:100%; margin-bottom:24px;}
-  .round-choice-title{font-family:var(--font-display); font-size:15px; font-weight:400; color:var(--accent); margin-bottom:10px; text-transform:uppercase; letter-spacing:.06em; text-align:center;}
+  .round-choice-title{font-family:var(--font-faq); font-size:15px; font-weight:700; color:var(--accent); margin-bottom:10px; text-transform:uppercase; letter-spacing:.03em; text-align:center;}
   .round-choice-option{display:flex; flex-direction:column;}
   .rc-label{font-family:var(--font-display); font-weight:400; text-transform:uppercase; letter-spacing:.05em; font-size:14px; color:var(--accent); margin-bottom:10px;}
   .rc-lines{display:flex; flex-direction:column; gap:7px; margin-bottom:4px;}
@@ -455,7 +496,7 @@
   /* The help / FAQ modal uses a plain proportional sans for its headings —
      Bebas Neue is condensed enough that at these sizes the headings read as
      smaller than the body copy. */
-  .modal-box h2, .modal-box h3{font-family:'Calibri','Segoe UI',Manrope,-apple-system,sans-serif;}
+  .modal-box h2, .modal-box h3{font-family:var(--font-faq);}
   .modal-box h2{margin:0 16px 16px 0; font-size:21px; font-weight:800; letter-spacing:.02em; color:var(--accent); padding-right:78px;}
   .modal-box h3{margin:22px 0 6px; font-size:15px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:.03em;}
   .modal-box h3:first-of-type{margin-top:0;}
@@ -514,6 +555,10 @@
     .card{padding:16px 16px; border-radius:12px;}
     .grid2, .grid4{grid-template-columns:1fr 1fr;}
     .player-grid{grid-template-columns:1fr;}
+    /* tight two-up phone layout: park the "i" in the field's top-right corner
+       instead of trailing the (often wrapping) label text */
+    .field-info label{padding-right:30px; min-height:24px;}
+    .field-info .info-icon{position:absolute; top:0; right:0; margin:0; width:26px; height:26px; font-size:13px;}
     .format-toggle{flex-direction:column;}
     .layout{grid-template-columns:1fr;}
     /* Sticky sidebar makes sense side-by-side on desktop, but in this
@@ -581,10 +626,35 @@
     .grid4{grid-template-columns:1fr 1fr;}
     .hero h1{font-size:22px;}
   }
+
+  /* static info / SEO footer — lives in the HTML, not rendered by JS */
+  .site-footer{
+    position:relative; z-index:1;
+    max-width:1260px; margin:0 auto;
+    padding:26px 48px calc(32px + env(safe-area-inset-bottom));
+    border-top:1px solid var(--border);
+    color:var(--muted); font-size:12px; line-height:1.7; text-align:center;
+  }
+  .site-footer p{margin:0 auto; max-width:780px;}
+  .site-footer a{color:var(--sage); text-decoration:none;}
+  .site-footer a:hover{text-decoration:underline;}
+  @media (max-width:680px){
+    .site-footer{padding:22px 16px calc(26px + env(safe-area-inset-bottom)); font-size:11.5px;}
+  }
 </style>
 </head>
 <body>
 <div id="app"></div>
+
+<footer class="site-footer">
+  <p>
+    <strong>Padel Runner</strong> is a free Americano &amp; Mexicano padel tournament app.
+    It builds the round-robin schedule automatically, keeps a live leaderboard, runs a knockout
+    bracket and a session timer, and lets you add or drop players mid-event &mdash; all from a phone
+    at the court. Made for padel clubs and social padel events: no sign-up, no ads, works offline.
+    Developed by <a href="https://instagram.com/olegprachuk" target="_blank" rel="noopener">Oleg Prachuk</a>.
+  </p>
+</footer>
 
 <script>
 const STORAGE_KEY = 'sterling_americano_state_v3';
@@ -688,6 +758,26 @@ function openHelpModal(){
   const close = ()=> overlay.remove();
   overlay.addEventListener('click', e=>{ if(e.target === overlay) close(); });
   overlay.querySelector('#helpCloseBtn').addEventListener('click', close);
+  document.addEventListener('keydown', function onEsc(e){
+    if(e.key === 'Escape'){ close(); document.removeEventListener('keydown', onEsc); }
+  });
+}
+
+// Small dimmed popup for a single inline hint (e.g. the "i" next to a form
+// field). Same overlay/close behaviour as the help & podium modals.
+function openInfoModal(title, bodyHtml){
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal-box modal-box-wrap">
+      <button class="ghost small modal-close" id="infoCloseBtn">Close</button>
+      <h2 style="padding-right:78px;">${title}</h2>
+      <p>${bodyHtml}</p>
+    </div>`;
+  document.body.appendChild(overlay);
+  const close = ()=> overlay.remove();
+  overlay.addEventListener('click', e=>{ if(e.target === overlay) close(); });
+  overlay.querySelector('#infoCloseBtn').addEventListener('click', close);
   document.addEventListener('keydown', function onEsc(e){
     if(e.key === 'Escape'){ close(); document.removeEventListener('keydown', onEsc); }
   });
@@ -1105,7 +1195,7 @@ function renderSetup(){
 
       <div class="card">
         <div class="grid4">
-          <div class="field">
+          <div class="field field-info">
             <label>Points per match (8&ndash;32) <button type="button" class="info-icon" id="schedInfoBtn" aria-label="Format details">i</button></label>
             <input id="pointsTarget" type="number" min="8" max="32" step="1" />
           </div>
@@ -1184,7 +1274,9 @@ function renderSetup(){
   const schedHint = wrap.querySelector('#schedHint');
   const generateBtn = wrap.querySelector('#generateBtn');
   wrap.querySelector('#schedInfoBtn').addEventListener('click', ()=>{
-    schedHint.style.display = schedHint.style.display === 'none' ? 'block' : 'none';
+    // schedHint is a hidden holder kept current by updateFormatUI(); show its
+    // text in the same dimmed modal the other hints use.
+    openInfoModal('How rounds are scheduled', schedHint.innerHTML);
   });
   function updateFormatUI(){
     formatBtns.forEach(b=> b.classList.toggle('active', b.dataset.type === state.tournamentType));
@@ -1731,7 +1823,7 @@ function renderKnockoutSection(container){
       <div class="section-title"><span>KNOCKOUT STAGE</span></div>
       <div class="hint" style="margin-top:0;">Forms 2-player teams from current individual standings (top finisher paired with the lowest qualifying finisher, and so on) and generates an elimination bracket. The round-robin leaderboard stays as-is &mdash; standings for the bracket are tracked separately below once generated.</div>
       <div class="grid2" style="margin-top:14px;">
-        <div class="field">
+        <div class="field" style="margin-bottom:0;">
           <label>Starting stage</label>
           <select id="koStageSelect">
             <option value="quarterfinal">Quarterfinal &mdash; 8 teams (top 16 players)</option>
