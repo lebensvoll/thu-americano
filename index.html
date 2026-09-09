@@ -328,7 +328,9 @@
   .match{border:1px solid var(--border); border-radius:11px; padding:12px 14px; background:var(--panel2);}
   .match .court{font-size:10.5px; color:var(--muted); margin-bottom:8px; font-weight:700; letter-spacing:.03em; text-align:center;}
   .teams{display:flex; align-items:center; gap:8px;}
-  .team{flex:1; font-size:13px; font-weight:500; line-height:1.3;}
+  /* each doubles team = its two players stacked, centred over one another */
+  .team{flex:1; font-size:13px; font-weight:500; line-height:1.25; display:flex; flex-direction:column; align-items:center; text-align:center; gap:1px; min-width:0;}
+  .team .pname{display:block; overflow-wrap:anywhere;}
   .team.ko-winner{color:var(--accent); font-weight:800;}
   .score-input{width:52px; text-align:center; padding:8px 4px; font-weight:700; border-color:var(--border);}
   .score-input:focus{border-color:var(--accent);}
@@ -1703,6 +1705,13 @@ function teamName(team){
   return team.map(idx=>state.players[idx]).join(' + ');
 }
 
+// Renders a doubles team for a match card: the two player names as separate
+// lines, stacked and centred over one another (no " + " between them).
+function teamStackHtml(idxPair){
+  if(!idxPair || !idxPair.length) return '<span class="pname">TBD</span>';
+  return idxPair.map(i=>`<span class="pname">${escapeHtml(state.players[i])}</span>`).join('');
+}
+
 function renderKnockoutStandings(container){
   if(!container) return;
   const tiers = computeKnockoutStandings();
@@ -1768,8 +1777,6 @@ function renderKoMatchCard(m){
   const teamA = resolveTeamRef(m.a);
   const teamB = resolveTeamRef(m.b);
   const ready = teamA !== null && teamB !== null;
-  const nameA = teamName(teamA);
-  const nameB = teamName(teamB);
   const aVal = m.score.a;
   const oppVal = (aVal===null || aVal==='') ? '&mdash;' : (target - (+aVal));
   let winnerSide = null;
@@ -1781,11 +1788,11 @@ function renderKoMatchCard(m){
   el.innerHTML = `
     <div class="court">${escapeHtml(m.id)}</div>
     <div class="teams">
-      <div class="team ${winnerSide==='a'?'ko-winner':''}">${escapeHtml(nameA)}</div>
+      <div class="team ${winnerSide==='a'?'ko-winner':''}">${teamStackHtml(teamA)}</div>
       <input type="number" min="0" max="${target}" class="score-input" data-koid="${m.id}" value="${aVal===null?'':aVal}" placeholder="&mdash;" ${ready?'':'disabled'} />
       <span class="vs">:</span>
       <span class="opp-score">${oppVal}</span>
-      <div class="team ${winnerSide==='b'?'ko-winner':''}" style="text-align:right;">${escapeHtml(nameB)}</div>
+      <div class="team ${winnerSide==='b'?'ko-winner':''}">${teamStackHtml(teamB)}</div>
     </div>
     ${!ready ? '<div class="hint ko-wait-hint" style="margin-top:8px; margin-bottom:0;">Waiting for previous match result&hellip;</div>' : ''}
     ${tie ? '<div class="hint ko-tie-hint" style="margin-top:8px; margin-bottom:0; color:var(--danger);">Scores are tied &mdash; adjust to declare a winner.</div>' : ''}
@@ -2335,11 +2342,11 @@ function renderRoundBlock(round, ri){
     el.innerHTML = `
       <div class="court">COURT <span class="court-label" data-court="${m.court}" title="Click to rename this court">${escapeHtml(courtLabel(m.court))}</span></div>
       <div class="teams">
-        <div class="team">${escapeHtml(state.players[a1])} + ${escapeHtml(state.players[a2])}</div>
+        <div class="team">${teamStackHtml(m.teamA)}</div>
         <input type="number" min="0" max="${state.pointsTarget}" class="score-input" data-ri="${ri}" data-mi="${mi}" value="${sc.a===null?'':sc.a}" placeholder="\u2014" />
         <span class="vs">:</span>
         <span class="opp-score">${oppVal}</span>
-        <div class="team" style="text-align:right;">${escapeHtml(state.players[b1])} + ${escapeHtml(state.players[b2])}</div>
+        <div class="team">${teamStackHtml(m.teamB)}</div>
       </div>
     `;
     grid.appendChild(el);
