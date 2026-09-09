@@ -38,7 +38,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
     /* STERLING brand pantones */
@@ -65,6 +65,8 @@
     --ink:#241400;
     --danger:#d0554a;
     --radius:14px;
+    /* display / heading face — condensed all-caps */
+    --font-display:'Bebas Neue','Arial Narrow',Impact,sans-serif;
   }
   /* ---------- GRAPHITE — deep-space grey, cosmic dust ---------- */
   :root[data-theme="graphite"]{
@@ -176,7 +178,7 @@
     overscroll-behavior-y:none;
   }
   h1,h2,h3,.display{
-    font-family:'Space Grotesk',sans-serif; text-transform:uppercase; letter-spacing:.01em; font-weight:700;
+    font-family:var(--font-display); text-transform:uppercase; letter-spacing:.03em; font-weight:400;
   }
   #app{min-height:100%;}
 
@@ -184,7 +186,7 @@
     background:linear-gradient(135deg, var(--dark2), var(--dark)); padding:32px 48px; display:flex; align-items:center; justify-content:space-between; gap:24px;
     border-bottom:4px solid var(--accent);
   }
-  .hero h1{font-size:30px; margin:0 0 6px; color:var(--text); font-weight:700; line-height:1.1; cursor:pointer; border-bottom:1px dashed transparent;}
+  .hero h1{font-size:36px; margin:0 0 6px; color:var(--text); font-weight:400; line-height:1.02; cursor:pointer; border-bottom:1px dashed transparent;}
   .hero h1:hover{border-bottom-color:var(--muted);}
   .hero .sub{font-size:14px; color:var(--muted); font-weight:400;}
   .hero .actions{display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end;}
@@ -199,7 +201,7 @@
     font-family:'Manrope',sans-serif; background:var(--panel2); color:var(--text);
     border:1px solid var(--accent); border-radius:8px; padding:4px 9px;
   }
-  .hero-edit-title{font-family:'Space Grotesk',sans-serif; text-transform:uppercase; letter-spacing:.01em; font-weight:700; font-size:26px; width:min(560px,100%);}
+  .hero-edit-title{font-family:var(--font-display); text-transform:uppercase; letter-spacing:.03em; font-weight:400; font-size:32px; width:min(560px,100%);}
   .hero-edit-club{font-size:13px; width:220px; max-width:100%;}
   .hero-warn{
     background:var(--panel2); border:1px solid var(--accent); border-left:4px solid var(--accent);
@@ -285,8 +287,8 @@
     background:var(--panel2); border:1px solid var(--border); border-radius:10px; padding:14px 16px;
   }
   .format-btn .fmt-name{
-    display:block; font-family:'Space Grotesk',sans-serif; font-weight:700; text-transform:uppercase;
-    letter-spacing:.02em; font-size:14px; color:var(--text); margin-bottom:5px;
+    display:block; font-family:var(--font-display); font-weight:400; text-transform:uppercase;
+    letter-spacing:.04em; font-size:16px; color:var(--text); margin-bottom:5px;
   }
   .format-btn .fmt-desc{display:block; font-size:11.5px; color:var(--muted); line-height:1.5; white-space:normal;}
   .format-btn.active{border-color:var(--accent); background:var(--panel);}
@@ -397,7 +399,7 @@
   .round-choice{width:100%; margin-bottom:24px;}
   .round-choice-title{font-size:12.5px; font-weight:700; color:var(--accent); margin-bottom:10px; text-transform:uppercase; letter-spacing:.05em; text-align:center;}
   .round-choice-option{display:flex; flex-direction:column;}
-  .rc-label{font-family:'Space Grotesk',sans-serif; font-weight:700; text-transform:uppercase; letter-spacing:.03em; font-size:12px; color:var(--accent); margin-bottom:10px;}
+  .rc-label{font-family:var(--font-display); font-weight:400; text-transform:uppercase; letter-spacing:.05em; font-size:14px; color:var(--accent); margin-bottom:10px;}
   .rc-lines{display:flex; flex-direction:column; gap:7px; margin-bottom:4px;}
   .rc-line{font-size:12.5px; line-height:1.4;}
   .rc-line .court-no{color:var(--muted); font-weight:700; margin-right:6px;}
@@ -473,9 +475,9 @@
       position:relative;
     }
     .hero > div:first-child{padding-right:42px;}   /* clear the corner help icon */
-    .hero h1{font-size:20px;}
+    .hero h1{font-size:25px;}
     .hero .sub{font-size:12.5px;}
-    .hero-edit-title{font-size:18px;}
+    .hero-edit-title{font-size:23px;}
     .hero-edit-club{font-size:16px; width:160px;} /* 16px avoids iOS auto-zoom on focus */
     .hero-actions-col{width:100%; align-items:stretch;}
     /* help "i" tucks into the hero's top-right corner instead of eating a whole
@@ -541,7 +543,7 @@
   @media (max-height: 500px) and (min-width: 620px){
     body{padding-bottom:0;}
     .hero{padding:10px 20px 10px;}
-    .hero h1{font-size:18px; margin-bottom:2px;}
+    .hero h1{font-size:22px; margin-bottom:2px;}
     .hero .sub{font-size:11px;}
     .badge{font-size:10px; padding:6px 12px;}
     .container{padding:14px 20px 78px;}
@@ -572,7 +574,7 @@
   /* Very narrow phones (SE, older models) */
   @media (max-width: 380px){
     .grid4{grid-template-columns:1fr 1fr;}
-    .hero h1{font-size:18px;}
+    .hero h1{font-size:22px;}
   }
 </style>
 </head>
