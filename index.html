@@ -356,7 +356,7 @@
   .round-block{margin-bottom:20px;}
   .round-title{font-family:var(--font-faq); font-size:15px; font-weight:700; color:var(--accent); margin-bottom:10px; text-transform:uppercase; letter-spacing:.03em; display:flex; align-items:center; gap:8px; justify-content:space-between;}
   .round-title .left{display:flex; align-items:center; gap:8px;}
-  .played-badge{font-family:var(--font-display); font-size:12px; letter-spacing:.04em; background:var(--accent); color:var(--ink); padding:2px 8px; border-radius:6px; font-weight:400;}
+  .played-badge{font-family:var(--font-faq); font-size:10.5px; font-weight:700; letter-spacing:.05em; background:var(--accent); color:var(--ink); padding:3px 8px; border-radius:6px;}
   /* graphite: "complete" reads better as a fresh lime than the cool accent */
   :root[data-theme="graphite"] .played-badge{background:#a9e05f; color:#122400;}
   .del-round{background:transparent; border:1px solid var(--border); color:var(--danger); padding:4px 9px; font-size:10.5px; border-radius:6px;}
@@ -385,22 +385,15 @@
     font-size:11px; width:96px; text-transform:none; letter-spacing:normal; font-weight:700;
   }
 
-  /* status strip — sticky at the top of the rounds column:
-     format / points / courts / players on the left, session clock on the right */
-  .timer-bar{
-    position:sticky; top:8px; z-index:20;
-    display:flex; gap:10px 20px; flex-wrap:wrap; align-items:center;
-    background:var(--panel); border:1px solid var(--border); border-radius:10px;
-    padding:10px 14px; margin-bottom:16px; font-size:12.5px;
+  /* compact status line at the top of the leaderboard:
+     format / points / courts / players + the live session clock, plain small text */
+  .lb-status{
+    font-size:11px; color:var(--muted); line-height:1.6;
+    margin:0 0 12px; padding-bottom:10px; border-bottom:1px solid var(--border);
+    font-variant-numeric:tabular-nums;
   }
-  .timer-bar .tb-info{display:flex; flex-wrap:wrap; gap:6px 14px; align-items:center; color:var(--muted);}
-  .timer-bar .tb-seg{white-space:nowrap;}
-  .timer-bar .tb-seg b{color:var(--text); font-weight:800;}
-  .timer-bar .tb-clock{display:flex; gap:18px; flex-wrap:wrap; align-items:center; margin-left:auto;}
-  .timer-bar .timer-k{color:var(--muted); text-transform:uppercase; letter-spacing:.05em; font-size:10.5px; font-weight:700;}
-  .timer-bar b{font-variant-numeric:tabular-nums; font-weight:800;}
-  .timer-bar .timer-over b, .timer-bar .timer-over .timer-k{color:var(--danger);}
-  @media (max-width:680px){ .timer-bar .tb-clock{margin-left:0;} }
+  .lb-status b{color:var(--text); font-weight:700;}
+  .lb-status .lb-status-over{color:var(--danger);}
 
   /* always-visible finish / podium call-to-action inside the rounds flow */
   .finish-cta{display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin:4px 0 26px;}
@@ -917,34 +910,34 @@ function timerParts(){
   const remaining = (state.sessionMinutes || 0) * 60000 - elapsed;
   return {elapsed, remaining, finished: !!state.finishedAt};
 }
-// A single always-visible status strip: what's being played (format, points
-// target, courts, active players) on the left, the session clock on the right.
-function statusInfoHtml(){
+// Compact one-line summary at the top of the leaderboard: what's being played
+// (format, points target, courts, active players) plus the live session clock.
+// Rendered into its own element so a leaderboard-only re-render (score entry)
+// doesn't tear down the ticking clock.
+function renderStatusStrip(container){
+  if(!container) return;
+  if(timerTicker){ clearInterval(timerTicker); timerTicker = null; }
   const fmt = state.tournamentType === 'mexicano' ? 'Mexicano' : 'Americano';
   const players = activePlayerIndices().length;
   const courts = state.numCourts;
-  return `<span class="tb-seg"><b>${fmt}</b></span>`
-    + `<span class="tb-seg">to <b>${state.pointsTarget}</b> pts</span>`
-    + `<span class="tb-seg"><b>${courts}</b> court${courts === 1 ? '' : 's'}</span>`
-    + `<span class="tb-seg"><b>${players}</b> player${players === 1 ? '' : 's'}</span>`;
-}
-function renderTimerBar(container){
-  if(!container) return;
-  if(timerTicker){ clearInterval(timerTicker); timerTicker = null; }
-  container.classList.add('timer-bar');
-  container.innerHTML = `<span class="tb-info">${statusInfoHtml()}</span><span class="tb-clock" id="tbClock"></span>`;
-  const clock = container.querySelector('#tbClock');
+  container.innerHTML =
+    `<b>${fmt}</b> &middot; to <b>${state.pointsTarget}</b> pts &middot; `
+    + `<b>${courts}</b> court${courts === 1 ? '' : 's'} &middot; `
+    + `<b>${players}</b> player${players === 1 ? '' : 's'}`
+    + `<span id="statusClock"></span>`;
+  const clock = container.querySelector('#statusClock');
   const paint = ()=>{
     const p = timerParts();
-    if(!p){ clock.innerHTML = ''; return; }
+    if(!p){ clock.textContent = ''; return; }
     if(p.finished){
-      clock.innerHTML = `<span class="timer-seg"><span class="timer-k">Total played</span> <b>${fmtDur(p.elapsed)}</b></span>`;
+      clock.innerHTML = ` &middot; total played <b>${fmtDur(p.elapsed)}</b>`;
       return;
     }
     const over = p.remaining < 0;
-    clock.innerHTML =
-      `<span class="timer-seg"><span class="timer-k">Elapsed</span> <b>${fmtDur(p.elapsed)}</b></span>` +
-      `<span class="timer-seg ${over ? 'timer-over' : ''}"><span class="timer-k">${over ? 'Overtime' : 'Remaining'}</span> <b>${over ? fmtDur(-p.remaining) + ' over' : '~' + fmtDur(p.remaining) + ' left'}</b></span>`;
+    clock.innerHTML = ` &middot; <b>${fmtDur(p.elapsed)}</b> elapsed &middot; `
+      + (over
+          ? `<b class="lb-status-over">${fmtDur(-p.remaining)} over</b>`
+          : `~<b>${fmtDur(p.remaining)}</b> left`);
   };
   paint();
   if(timerParts() && !state.finishedAt) timerTicker = setInterval(paint, 1000);
@@ -2023,6 +2016,7 @@ function renderPlaying(){
             <span>LEADERBOARD</span>
             <button type="button" class="lb-toggle" id="lbToggleBtn" aria-label="Expand or collapse leaderboard">${lbCollapsedMobile ? '&#9660;' : '&#9650;'}</button>
           </div>
+          <div id="statusStrip" class="lb-status"></div>
           <div id="leaderboard"></div>
           <div id="restWarnings"></div>
         </div>
@@ -2081,6 +2075,7 @@ function renderPlaying(){
   const reopenBtn = wrap.querySelector('#reopenBtn');
   if(reopenBtn) reopenBtn.addEventListener('click', reopenTournament);
 
+  renderStatusStrip(wrap.querySelector('#statusStrip'));
   renderLeaderboard(wrap.querySelector('#leaderboard'));
   renderBenchWarnings(wrap.querySelector('#restWarnings'));
   renderRounds(wrap.querySelector('#roundsCol'));
@@ -2270,11 +2265,6 @@ function commitNewRound(round){
 
 function renderRounds(container){
   container.innerHTML = '';
-
-  const timerBar = document.createElement('div');
-  timerBar.id = 'timerBar';
-  container.appendChild(timerBar);
-  renderTimerBar(timerBar);
 
   state.schedule.forEach((round, ri)=>{
     container.appendChild(renderRoundBlock(round, ri));
