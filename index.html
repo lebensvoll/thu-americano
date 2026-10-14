@@ -1590,24 +1590,37 @@ function generateRelaxedRound(candidates, numCourts, benchCount, partnerCount, o
 // that's possible. Once every partner combination has been used up (the
 // rotation is exhausted), instead of degrading to repeated partners, the
 // exact same rotation is simply replayed from Round 1 onward.
-function buildSchedule(n, numRounds, numCourts){
+// Rounds are picked one at a time at random, so a run can paint itself into a
+// corner early (e.g. 8 players: after 5 rounds the unused partners can form a
+// 3-group + 5-group, which can't be split into pairs). So the fresh rotation
+// is rebuilt from scratch several times and the longest one is kept — for
+// 8 players / 2 courts that's always the full 7-round rotation.
+function buildFreshRotation(n, numRounds, numCourts){
   const benchCount = Array(n).fill(0);
   const partnerCount = Array.from({length:n}, ()=>Array(n).fill(0));
   const opponentCount = Array.from({length:n}, ()=>Array(n).fill(0));
-  const schedule = [];
-  let cycleLength = null;
   const candidates = [...Array(n).keys()];
-
-  for(let r=0; r<numRounds; r++){
-    if(cycleLength === null){
-      const round = generateFreshRound(candidates, numCourts, benchCount, partnerCount, opponentCount);
-      if(round){ schedule.push(round); continue; }
-      cycleLength = schedule.length || 1;
-    }
-    const round = cloneRound(schedule[r % cycleLength]);
-    applyRoundCounts(round, benchCount, partnerCount, opponentCount);
-    schedule.push(round);
+  const rounds = [];
+  while(rounds.length < numRounds){
+    const round = generateFreshRound(candidates, numCourts, benchCount, partnerCount, opponentCount);
+    if(!round) break;
+    rounds.push(round);
   }
+  return rounds;
+}
+
+function buildSchedule(n, numRounds, numCourts){
+  const noBench = n % 4 === 0 && n <= numCourts*4;
+  const perfect = Math.min(numRounds, noBench ? n-1 : Infinity);
+  let fresh = [];
+  for(let attempt=0; attempt<60 && fresh.length<perfect; attempt++){
+    const rounds = buildFreshRotation(n, numRounds, numCourts);
+    if(rounds.length > fresh.length) fresh = rounds;
+  }
+
+  const schedule = fresh;
+  const cycleLength = schedule.length < numRounds ? (schedule.length || 1) : null;
+  for(let r=schedule.length; r<numRounds; r++) schedule.push(cloneRound(schedule[r % cycleLength]));
   return {schedule, cycleLength};
 }
 
