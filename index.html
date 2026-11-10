@@ -350,6 +350,8 @@
   .format-btn .fmt-desc{display:block; font-size:11.5px; color:var(--muted); line-height:1.5; white-space:normal;}
   .format-btn.active{border-color:var(--accent); background:var(--panel);}
   .format-btn.active .fmt-name{color:var(--accent);}
+  .mex-mode{margin-top:14px;}
+  .mex-mode-label{font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin-bottom:8px;}
 
   .layout{display:grid; grid-template-columns:340px 1fr; gap:24px; align-items:start;}
   .section-title{font-family:var(--font-faq); font-size:15px; font-weight:700; color:var(--accent); margin-bottom:14px; letter-spacing:.03em; text-transform:uppercase; display:flex; justify-content:space-between; align-items:center;}
@@ -756,7 +758,7 @@ function openHelpModal(){
       <p>Tap the title and the line under it (date &middot; club) at the top of the page to name your tournament and venue &mdash; do this before sharing the page, or a reminder banner will keep nagging you.</p>
       <p>Choose a <b>format</b>, add your players (8&ndash;12 works best), then set the points per match, number of courts, and how long you want the session to run. The recommendation box suggests how many rounds fit that time &mdash; you can override it.</p>
       <p><b>Americano</b> &mdash; the whole schedule is drawn up front. Partners rotate so everyone plays with everyone before any pairing repeats; once every combination is used it simply loops.</p>
-      <p><b>Mexicano</b> &mdash; only Round&nbsp;1 is random. Each later round is built when you tap <b>+ Add round</b>, using the current standings (1st + 4th vs 2nd + 3rd), so winners climb and losers slide.</p>
+      <p><b>Mexicano</b> &mdash; only Round&nbsp;1 is random. Each later round is built when you tap <b>+ Add round</b>, using the current standings, so winners climb and losers slide. <b>Shuffle mode</b> (default) keeps foursomes close in level but rotates partners &mdash; never the same partner twice in a row, as few repeats as possible. <b>Classic</b> always pairs 1st + 4th vs 2nd + 3rd.</p>
       <p>If the player count isn't a multiple of 4 &times; courts, players sit out on a fair rotation &mdash; the same person is never benched twice in quick succession.</p>
 
       <h3>2. Run the rounds</h3>
@@ -840,6 +842,7 @@ function defaultState(){
     knockout: null,
     cycleLength: null,
     tournamentType: 'americano',
+    mexMode: 'shuffle',     // Mexicano pairing: 'shuffle' (active partner rotation) or 'classic' (1+4 v 2+3)
     removed: [],
     plannedRounds: 8,       // intended round count; roster edits rebuild up to this
     rosterChanged: false,   // true once a player was added/removed mid-tournament
@@ -858,6 +861,7 @@ if(state.sessionMinutes === undefined) state.sessionMinutes = 120;
 if(state.knockout === undefined) state.knockout = null;
 if(state.cycleLength === undefined) state.cycleLength = null;
 if(state.tournamentType === undefined) state.tournamentType = 'americano';
+if(state.mexMode !== 'classic' && state.mexMode !== 'shuffle') state.mexMode = 'shuffle';
 if(state.courtLabels === undefined || state.courtLabels === null) state.courtLabels = {};
 if(state.startedAt === undefined) state.startedAt = null;
 if(state.finishedAt === undefined) state.finishedAt = null;
@@ -942,7 +946,7 @@ function showToast(msg, ms){
 // — format, points target, courts, active players. Plain text, no emphasis.
 function renderStatusStrip(container){
   if(!container) return;
-  const fmt = state.tournamentType === 'mexicano' ? 'Mexicano' : 'Americano';
+  const fmt = state.tournamentType === 'mexicano' ? (state.mexMode === 'classic' ? 'Mexicano Classic' : 'Mexicano Shuffle') : 'Americano';
   const players = activePlayerIndices().length;
   const courts = state.numCourts;
   container.textContent =
@@ -1182,8 +1186,21 @@ function renderSetup(){
           </button>
           <button type="button" class="format-btn" data-type="mexicano">
             <span class="fmt-name">Mexicano</span>
-            <span class="fmt-desc">Round 1 is random. After every round, players are ranked by points and regrouped into new foursomes (1st+4th vs 2nd+3rd) &mdash; winners rise, losers fall.</span>
+            <span class="fmt-desc">Round 1 is random. After every round, players are ranked by points and regrouped into new foursomes by level &mdash; winners rise, losers fall.</span>
           </button>
+        </div>
+        <div class="mex-mode" id="mexModeBox">
+          <div class="mex-mode-label">Mexicano pairing</div>
+          <div class="format-toggle" id="mexModeToggle">
+            <button type="button" class="format-btn" data-mex="shuffle">
+              <span class="fmt-name">Shuffle mode</span>
+              <span class="fmt-desc">Active rotation. Foursomes still follow the standings, but partners change every round &mdash; never the same partner twice in a row, as few repeat partners and opponents as possible.</span>
+            </button>
+            <button type="button" class="format-btn" data-mex="classic">
+              <span class="fmt-name">Classic</span>
+              <span class="fmt-desc">Strict standings: 1st+4th vs 2nd+3rd in every foursome. The same partners can meet again round after round.</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -1271,7 +1288,9 @@ function renderSetup(){
   }
   renderPlayers();
 
-  const formatBtns = wrap.querySelectorAll('.format-btn');
+  const formatBtns = wrap.querySelectorAll('#formatToggle .format-btn');
+  const mexBtns = wrap.querySelectorAll('#mexModeToggle .format-btn');
+  const mexBox = wrap.querySelector('#mexModeBox');
   const roundsLabel = wrap.querySelector('#roundsLabel');
   const schedHint = wrap.querySelector('#schedHint');
   const generateBtn = wrap.querySelector('#generateBtn');
@@ -1282,9 +1301,13 @@ function renderSetup(){
   });
   function updateFormatUI(){
     formatBtns.forEach(b=> b.classList.toggle('active', b.dataset.type === state.tournamentType));
+    mexBtns.forEach(b=> b.classList.toggle('active', b.dataset.mex === state.mexMode));
+    mexBox.style.display = state.tournamentType === 'mexicano' ? '' : 'none';
     if(state.tournamentType === 'mexicano'){
       roundsLabel.textContent = 'Target rounds';
-      schedHint.innerHTML = 'Only Round 1 is generated now, seeded randomly. Every later round is built one at a time from the live leaderboard once you tap &ldquo;+ Add round&rdquo; &mdash; ranked players are grouped into new foursomes (1st+4th vs 2nd+3rd) each time, so winners keep climbing and losers keep sliding down. If the number of players isn&rsquo;t a multiple of 4 &times; courts, players sit out on a fair rotation.';
+      schedHint.innerHTML = state.mexMode === 'classic'
+        ? 'Only Round 1 is generated now, seeded randomly. Every later round is built one at a time from the live leaderboard once you tap &ldquo;+ Add round&rdquo; &mdash; ranked players are grouped into new foursomes (1st+4th vs 2nd+3rd) each time, so winners keep climbing and losers keep sliding down. If the number of players isn&rsquo;t a multiple of 4 &times; courts, players sit out on a fair rotation.'
+        : 'Only Round 1 is generated now, seeded randomly. Every later round is built from the live leaderboard once you tap &ldquo;+ Add round&rdquo;. <b>Shuffle mode</b> keeps each foursome close in level (a player moves at most two places from their spot in the standings), and within that it mixes the groups: nobody plays with the same partner twice in a row, repeat partners are avoided as much as possible, and repeat opponents come next. If the number of players isn&rsquo;t a multiple of 4 &times; courts, players sit out on a fair rotation.';
       generateBtn.textContent = 'Start tournament (Round 1)';
     } else {
       roundsLabel.textContent = 'Rounds';
@@ -1295,6 +1318,13 @@ function renderSetup(){
   formatBtns.forEach(b=>{
     b.addEventListener('click', ()=>{
       state.tournamentType = b.dataset.type;
+      saveState();
+      updateFormatUI();
+    });
+  });
+  mexBtns.forEach(b=>{
+    b.addEventListener('click', ()=>{
+      state.mexMode = b.dataset.mex;
       saveState();
       updateFormatUI();
     });
@@ -1484,6 +1514,145 @@ function generateMexicanoRound(n, numCourts, benchCount, rankOrder){
   const playing = rankOrder.filter(p=>!benchedSet.has(p));
 
   const round = {matches: foursomeMatches(playing), bench: benched};
+  round.bench.forEach(p=> benchCount[p]++);
+  return round;
+}
+
+/* ---------- MEXICANO SHUFFLE MODE ----------
+   Standings still decide the level of every foursome, but each new round
+   mixes who plays with and against whom. Priorities, highest first:
+     1. never the same partner as in either player's previous game;
+     2. as few repeat partners as possible (recent repeats count more);
+     3. fewer repeat opponents and no identical foursome twice in a row;
+     4. stay close to the standings — a player may move at most 2 places
+        out of their natural foursome, and 1st+4th vs 2nd+3rd is preferred. */
+const MEX_SHUFFLE_COST = {
+  partnerLast: 1e6,     // partners in either player's previous game — never
+  partnerRepeat: 60,    // each earlier game together
+  partnerRecent: 40,    // extra when that was within the last 3 rounds
+  oppRepeat: 4,         // grows with the square of earlier games as opponents (1→4, 2→16, 3→36)
+  oppLast: 14,          // extra when opponents in the previous round
+  sameFoursome: 30,     // exactly the same four as the previous round
+  balance: 4,           // per point of rank gap between the two teams (0 / 2 / 4)
+  shift: [0, 10, 28]    // moving 0 / 1 / 2 places out of the natural foursome
+};
+const FOURSOME_SPLITS = [[[0,3],[1,2],0], [[0,2],[1,3],2], [[0,1],[2,3],4]];
+
+// Partner / opponent history of the tournament so far.
+function mexicanoHistory(schedule){
+  const key = (a,b)=> a<b ? a+'-'+b : b+'-'+a;
+  const h = {partners:{}, partnerLastRound:{}, opps:{}, lastPartner:{}, prevOpps:new Set(), prevFoursomes:new Set(), rounds:schedule.length, key};
+  schedule.forEach((round, ri)=>{
+    const last = ri === schedule.length-1;
+    round.matches.forEach(m=>{
+      [m.teamA, m.teamB].forEach(([a,b])=>{
+        const k = key(a,b);
+        h.partners[k] = (h.partners[k]||0) + 1;
+        h.partnerLastRound[k] = ri;
+        h.lastPartner[a] = b; h.lastPartner[b] = a;
+      });
+      m.teamA.forEach(a=> m.teamB.forEach(b=>{
+        const k = key(a,b);
+        h.opps[k] = (h.opps[k]||0) + 1;
+        if(last) h.prevOpps.add(k);
+      }));
+      if(last) h.prevFoursomes.add([...m.teamA, ...m.teamB].sort((x,y)=>x-y).join(','));
+    });
+  });
+  return h;
+}
+
+// Best split of one foursome (players listed best-ranked first) and its cost.
+function scoreFoursome(four, gi, pos, h){
+  const C = MEX_SHUFFLE_COST;
+  let base = 0;
+  for(const p of four){
+    const lo = gi*4, hi = gi*4+3, i = pos.get(p);
+    const d = i<lo ? lo-i : i>hi ? i-hi : 0;
+    if(d >= C.shift.length) return null;
+    base += C.shift[d];
+  }
+  if(h.prevFoursomes.has(four.slice().sort((x,y)=>x-y).join(','))) base += C.sameFoursome;
+
+  let best = null;
+  for(const [ia, ib, gap] of FOURSOME_SPLITS){
+    const A = [four[ia[0]], four[ia[1]]], B = [four[ib[0]], four[ib[1]]];
+    let c = base + C.balance*gap;
+    for(const [a,b] of [A,B]){
+      if(h.lastPartner[a] === b) c += C.partnerLast;
+      const k = h.key(a,b), n = h.partners[k] || 0;
+      if(n){ c += C.partnerRepeat*n; if(h.rounds - h.partnerLastRound[k] <= 3) c += C.partnerRecent; }
+    }
+    for(const a of A) for(const b of B){
+      const k = h.key(a,b);
+      const o = h.opps[k] || 0;
+      c += C.oppRepeat*o*o;
+      if(h.prevOpps.has(k)) c += C.oppLast;
+    }
+    if(!best || c < best.cost) best = {cost:c, teamA:A, teamB:B};
+  }
+  return best;
+}
+
+function scoreGrouping(groups, pos, h){
+  let total = 0; const splits = [];
+  for(let gi=0; gi<groups.length; gi++){
+    const four = groups[gi].slice().sort((x,y)=> pos.get(x)-pos.get(y));
+    const s = scoreFoursome(four, gi, pos, h);
+    if(!s) return null;
+    total += s.cost; splits.push(s);
+  }
+  return {total, splits};
+}
+
+// Hill-climb over swaps between neighbouring foursomes, restarted from a few
+// random shakes of the standings order; keeps the cheapest grouping found.
+function shuffleGroups(playing, h){
+  const pos = new Map(playing.map((p,i)=>[p,i]));
+  const G = playing.length/4;
+  const natural = Array.from({length:G}, (_,g)=> playing.slice(g*4, g*4+4));
+  let best = null;
+  const climb = start=>{
+    let groups = start.map(g=>g.slice());
+    let cur = scoreGrouping(groups, pos, h);
+    if(!cur) return;
+    for(let guard=0; guard<200; guard++){
+      let move = null;
+      for(let g=0; g<G-1; g++) for(let a=0; a<4; a++) for(let b=0; b<4; b++){
+        const t = groups.map(x=>x.slice());
+        [t[g][a], t[g+1][b]] = [t[g+1][b], t[g][a]];
+        const s = scoreGrouping(t, pos, h);
+        if(s && s.total < (move ? move.s.total : cur.total)) move = {t, s};
+      }
+      if(!move) break;
+      groups = move.t; cur = move.s;
+    }
+    if(!best || cur.total < best.score.total) best = {groups, score:cur};
+  };
+  climb(natural);
+  for(let r=0; r<30 && G>1; r++){
+    const t = natural.map(x=>x.slice());
+    for(let k=0; k<1+Math.floor(Math.random()*3); k++){
+      const g = Math.floor(Math.random()*(G-1));
+      const a = Math.floor(Math.random()*4), b = Math.floor(Math.random()*4);
+      [t[g][a], t[g+1][b]] = [t[g+1][b], t[g][a]];
+    }
+    climb(t);
+  }
+  return best.score.splits.map((s,gi)=>({court:gi+1, teamA:s.teamA, teamB:s.teamB}));
+}
+
+function generateShuffleMexicanoRound(n, numCourts, benchCount, rankOrder, schedule){
+  const maxPlayable = numCourts*4;
+  let slots = Math.min(n, maxPlayable);
+  slots = slots - (slots % 4);
+  const benchNeeded = n - slots;
+
+  const benched = pickBenchSubset(rankOrder, benchNeeded, benchCount);
+  const benchedSet = new Set(benched);
+  const playing = rankOrder.filter(p=>!benchedSet.has(p));
+
+  const round = {matches: shuffleGroups(playing, mexicanoHistory(schedule || [])), bench: benched};
   round.bench.forEach(p=> benchCount[p]++);
   return round;
 }
@@ -2137,6 +2306,7 @@ function importStateFromFile(file){
       if(parsed.plannedRounds === undefined) parsed.plannedRounds = (parsed.schedule && parsed.schedule.length) ? parsed.schedule.length : (parsed.numRounds || 8);
       if(parsed.rosterChanged === undefined) parsed.rosterChanged = !!(parsed.removed && parsed.removed.length);
       if(parsed.rankBy === undefined) parsed.rankBy = 'points';
+      if(parsed.mexMode !== 'classic' && parsed.mexMode !== 'shuffle') parsed.mexMode = 'shuffle';
       if(parsed.courtLabels === undefined || parsed.courtLabels === null) parsed.courtLabels = {};
       if(parsed.startedAt === undefined) parsed.startedAt = null;
       if(parsed.finishedAt === undefined) parsed.finishedAt = null;
@@ -2325,7 +2495,9 @@ function renderRounds(container){
       const {benchCount} = replayCounts(n, state.numCourts, state.schedule);
       const rankOrder = computeLeaderboard().map(p=>p.idx).filter(i=>candidates.includes(i));
       seedNewcomerBenchCounts(rankOrder, benchCount, state.schedule);
-      const newRound = generateMexicanoRound(rankOrder.length, state.numCourts, benchCount, rankOrder);
+      const newRound = state.mexMode === 'classic'
+        ? generateMexicanoRound(rankOrder.length, state.numCourts, benchCount, rankOrder)
+        : generateShuffleMexicanoRound(rankOrder.length, state.numCourts, benchCount, rankOrder, state.schedule);
       commitNewRound(newRound);
       return;
     }
