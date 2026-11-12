@@ -408,6 +408,7 @@
   .opp-score{display:inline-block; width:34px; text-align:center; font-weight:700; color:var(--muted);}
   .bench{font-size:11.5px; color:var(--muted); margin-top:10px; padding-top:10px; border-top:1px dashed var(--border);}
   .empty{color:var(--muted); font-size:13px; text-align:center; padding:24px 0;}
+  .reserve-note{text-align:center; margin:0 0 8px;}
   .add-round-row{display:flex; justify-content:center; margin-top:6px; margin-bottom:24px;}
 
   /* editable court number/label — the word COURT stays fixed */
@@ -757,18 +758,18 @@ function openHelpModal(){
       <h3>1. Set up the tournament</h3>
       <p>Tap the title and the line under it (date &middot; club) at the top of the page to name your tournament and venue &mdash; do this before sharing the page, or a reminder banner will keep nagging you.</p>
       <p>Choose a <b>format</b>, add your players (8&ndash;12 works best), then set the points per match, number of courts, and how long you want the session to run. The recommendation box suggests how many rounds fit that time &mdash; you can override it.</p>
-      <p><b>Americano</b> &mdash; the whole schedule is drawn up front. Partners rotate so everyone plays with everyone before any pairing repeats; once every combination is used it simply loops.</p>
+      <p><b>Americano</b> &mdash; the whole schedule is drawn up front. Partners rotate so everyone plays with everyone before any pairing repeats; once every combination is used it simply loops. The rotation is also planned a few rounds <b>beyond</b> the number you chose and kept in reserve, so rounds you add later continue it cleanly.</p>
       <p><b>Mexicano</b> &mdash; only Round&nbsp;1 is random. Each later round is built when you tap <b>+ Add round</b>, using the current standings, so winners climb and losers slide. <b>Shuffle mode</b> (default) keeps foursomes close in level but rotates partners &mdash; never the same partner twice in a row, as few repeats as possible. <b>Classic</b> always pairs 1st + 4th vs 2nd + 3rd.</p>
-      <p>If the player count isn't a multiple of 4 &times; courts, players sit out on a fair rotation &mdash; the same person is never benched twice in quick succession.</p>
+      <p>If the player count isn't a multiple of 4 &times; courts, players sit out on a fair rotation: nobody ever sits out two rounds in a row, everyone rests about equally often, and whoever rested longest ago is next.</p>
 
       <h3>2. Run the rounds</h3>
       <p>Tap a score box and type one team's score &mdash; the other side fills in automatically to reach the points target. The leaderboard updates instantly, and every entry is <b>saved to this device</b> the moment you type it (you'll see a &ldquo;Saved automatically&rdquo; note).</p>
       <p><b>Rank by</b> (set in Setup) decides the leaderboard order: total points scored, or point differential (points won minus points lost).</p>
       <p>Rename a court by tapping the number after the word COURT &mdash; use a letter or a name, it carries across every round.</p>
-      <p><b>+ Add round</b> extends the tournament; <b>Delete round</b> on a card removes it. From round&nbsp;8 on, Americano offers a choice each time: keep rotating partners, or a lineup balanced by current standings (the same players rest either way).</p>
+      <p><b>+ Add round</b> extends the tournament. In Americano the line above the button tells you how many planned rounds are still in reserve (&ldquo;Rotation planned ahead: 3 more rounds ready&rdquo;) &mdash; those come with new partners and fair rests guaranteed. Once the reserve is used up, new rounds are built on the spot by the same rules. <b>Delete round</b> on a card removes it: deleting the last round puts it back into the reserve; deleting one in the middle rebuilds every not-yet-scored round after it, so rests and partners stay fair. From round&nbsp;8 on, Americano offers a choice each time: keep rotating partners, or a lineup balanced by current standings (the same players rest either way).</p>
 
       <h3>3. Players who join or leave</h3>
-      <p>Tap a player's name on the leaderboard to rename them, or <b>+ Add player</b> to bring someone in mid-tournament &mdash; every round that has no score yet is rebuilt to include them, starting from the very next round. Rounds you've already scored don't change, and the number of courts stays the same.</p>
+      <p>Tap a player's name on the leaderboard to rename them, or <b>+ Add player</b> to bring someone in mid-tournament &mdash; every round that has no score yet is rebuilt to include them, starting from the very next round. Rounds you've already scored don't change, the number of rounds stays the same, and so does the number of courts. A newcomer goes on court straight away rather than to the bench.</p>
       <p>The <b>&#10005;</b> next to a name removes that player from the rotation. They keep every point already earned and stay on the leaderboard; every not-yet-scored round is rebuilt without them, while any round that already has a score &mdash; and its results &mdash; is left untouched.</p>
 
       <h3>4. Undo / redo</h3>
@@ -841,6 +842,7 @@ function defaultState(){
     scores: null,
     knockout: null,
     cycleLength: null,
+    reserve: null,          // Americano: planned rounds not shown yet, used by "+ Add round"
     tournamentType: 'americano',
     mexMode: 'shuffle',     // Mexicano pairing: 'shuffle' (active partner rotation) or 'classic' (1+4 v 2+3)
     removed: [],
@@ -860,6 +862,7 @@ if(state.rankBy === undefined) state.rankBy = 'points';
 if(state.sessionMinutes === undefined) state.sessionMinutes = 120;
 if(state.knockout === undefined) state.knockout = null;
 if(state.cycleLength === undefined) state.cycleLength = null;
+if(state.reserve === undefined) state.reserve = null;
 if(state.tournamentType === undefined) state.tournamentType = 'americano';
 if(state.mexMode !== 'classic' && state.mexMode !== 'shuffle') state.mexMode = 'shuffle';
 if(state.courtLabels === undefined || state.courtLabels === null) state.courtLabels = {};
@@ -1385,10 +1388,12 @@ function renderSetup(){
       const round = generateMexicanoRound(names.length, state.numCourts, benchCount, rankOrder);
       state.schedule = [round];
       state.cycleLength = null;
+      state.reserve = null;
     } else {
       const built = buildSchedule(names.length, state.numRounds, state.numCourts);
       state.schedule = built.schedule;
       state.cycleLength = built.cycleLength;
+      state.reserve = built.reserve;
     }
     state.plannedRounds = state.schedule.length;
     state.rosterChanged = false;
@@ -1456,13 +1461,39 @@ function pairUpCourts(pairs, opponentCount, trials){
 // Picks who sits out this round. Players who have rested least are the most
 // likely to rest now (fairness), but the exact tie-break is re-rolled on
 // every call so different attempts can try different rest groups.
-function pickBenchSubset(candidates, benchNeeded, benchCount){
-  const order = shuffle(candidates.slice()).sort((a,b)=> benchCount[a]-benchCount[b]);
+//
+// Among players who have rested equally often, whoever rested longest ago goes
+// first, so nobody sits out two rounds running while someone else keeps playing.
+// `softRecency` (a late fallback when the strict rest groups can't produce fresh
+// partners) still never rests someone two rounds running, but stops caring
+// about a one-round gap.
+function benchRecency(p, benchCount, softRecency){
+  const last = benchCount.lastBench && benchCount.lastBench[p];
+  if(last === undefined) return 0;
+  const gap = (benchCount.rounds || 0) - last;   // 1 = rested in the previous round
+  if(softRecency) return gap === 1 ? 1 : 0;
+  return gap >= MIN_ROUNDS_BETWEEN_SITOUTS ? 0 : MIN_ROUNDS_BETWEEN_SITOUTS - gap;
+}
+// Resting two rounds running is avoided before anything else — even ahead of
+// equal rest counts (that evens out a round later instead).
+function pickBenchSubset(candidates, benchNeeded, benchCount, softRecency){
+  const justRested = p=> benchRecency(p, benchCount, true);
+  const order = shuffle(candidates.slice()).sort((a,b)=> justRested(a)-justRested(b)
+    || benchCount[a]-benchCount[b]
+    || benchRecency(a, benchCount, softRecency) - benchRecency(b, benchCount, softRecency));
   return order.slice(0, benchNeeded);
 }
 
+// Records a round's rest group: how often and when each player last sat out.
+function noteBench(round, benchCount){
+  const r = benchCount.rounds || 0;
+  if(!benchCount.lastBench) benchCount.lastBench = {};
+  round.bench.forEach(p=>{ benchCount[p]++; benchCount.lastBench[p] = r; });
+  benchCount.rounds = r + 1;
+}
+
 function applyRoundCounts(round, benchCount, partnerCount, opponentCount){
-  round.bench.forEach(p=> benchCount[p]++);
+  noteBench(round, benchCount);
   round.matches.forEach(m=>{
     const [a1,a2]=m.teamA, [b1,b2]=m.teamB;
     partnerCount[a1][a2]++; partnerCount[a2][a1]++;
@@ -1472,6 +1503,34 @@ function applyRoundCounts(round, benchCount, partnerCount, opponentCount){
     opponentCount[a2][b1]++; opponentCount[b1][a2]++;
     opponentCount[a2][b2]++; opponentCount[b2][a2]++;
   });
+}
+
+// Once the fresh-partner rotation is used up, its rounds are replayed. Instead
+// of replaying them strictly in order (which can rest the same player in the
+// last round of one pass and the first round of the next), pick the unused
+// round of the current pass whose rest group rested longest ago.
+function roundKey(r){
+  const t = x=> x.slice().sort((a,b)=>a-b).join('+');
+  return t(r.bench)+'|'+r.matches.map(m=>[t(m.teamA),t(m.teamB)].sort().join('v')).sort().join(';');
+}
+function nextCycleRound(schedule, cycleLength){
+  const base = schedule.slice(0, cycleLength);
+  if(!base.length) return null;
+  const passStart = schedule.length - ((schedule.length - cycleLength) % cycleLength);
+  const used = new Set(schedule.slice(passStart).map(roundKey));
+  const last = {};
+  schedule.forEach((r,ri)=> r.bench.forEach(p=> last[p] = ri));
+  let best = null, bestPen = Infinity;
+  base.forEach(r=>{
+    if(used.has(roundKey(r))) return;
+    const pen = r.bench.reduce((s,p)=>{
+      if(last[p] === undefined) return s;
+      const gap = schedule.length - last[p];
+      return gap >= MIN_ROUNDS_BETWEEN_SITOUTS ? s : s + (gap === 1 ? 100 : MIN_ROUNDS_BETWEEN_SITOUTS-gap);
+    }, 0);
+    if(pen < bestPen){ bestPen = pen; best = r; }
+  });
+  return cloneRound(best || base[schedule.length % cycleLength]);
 }
 
 function cloneRound(round){
@@ -1514,7 +1573,7 @@ function generateMexicanoRound(n, numCourts, benchCount, rankOrder){
   const playing = rankOrder.filter(p=>!benchedSet.has(p));
 
   const round = {matches: foursomeMatches(playing), bench: benched};
-  round.bench.forEach(p=> benchCount[p]++);
+  noteBench(round, benchCount);
   return round;
 }
 
@@ -1653,7 +1712,7 @@ function generateShuffleMexicanoRound(n, numCourts, benchCount, rankOrder, sched
   const playing = rankOrder.filter(p=>!benchedSet.has(p));
 
   const round = {matches: shuffleGroups(playing, mexicanoHistory(schedule || [])), bench: benched};
-  round.bench.forEach(p=> benchCount[p]++);
+  noteBench(round, benchCount);
   return round;
 }
 
@@ -1679,8 +1738,9 @@ function generateFreshRound(candidates, numCourts, benchCount, partnerCount, opp
   slots = slots - (slots % 4);
   const benchNeeded = n - slots;
 
-  for(let bt=0; bt<(benchTrials||25); bt++){
-    const benched = pickBenchSubset(candidates, benchNeeded, benchCount);
+  const trials = benchTrials || 25;
+  for(let bt=0; bt<trials; bt++){
+    const benched = pickBenchSubset(candidates, benchNeeded, benchCount, bt >= trials*0.8);
     const benchedSet = new Set(benched);
     const playing = candidates.filter(p=>!benchedSet.has(p));
 
@@ -1737,13 +1797,16 @@ function generateRelaxedRound(candidates, numCourts, benchCount, partnerCount, o
   const benchNeeded = nCand - slots;
 
   let best = null, bestScore = Infinity;
-  for(let bt=0; bt<(benchTrials||25); bt++){
-    const benched = pickBenchSubset(candidates, benchNeeded, benchCount);
+  const trials = benchTrials || 25;
+  for(let bt=0; bt<trials; bt++){
+    const benched = pickBenchSubset(candidates, benchNeeded, benchCount, bt >= trials*0.8);
     const benchedSet = new Set(benched);
     const playing = candidates.filter(p=>!benchedSet.has(p));
     const pairs = findLeastRepeatMatching(playing, partnerCount, 300);
     if(!pairs) continue;
-    const score = pairs.reduce((s,[a,b])=> s + partnerCount[a][b], 0);
+    // Resting two rounds running costs more than any repeated partnership.
+    const score = pairs.reduce((s,[a,b])=> s + partnerCount[a][b], 0)
+      + 100*benched.filter(p=> benchRecency(p, benchCount, true)).length;
     if(score < bestScore){
       bestScore = score;
       const courts = pairUpCourts(pairs, opponentCount, 600);
@@ -1778,19 +1841,43 @@ function buildFreshRotation(n, numRounds, numCourts){
   return rounds;
 }
 
+// The rotation is planned RESERVE_ROUNDS beyond the requested length. The extra
+// rounds are kept as a reserve, so "+ Add round" continues the same clean
+// rotation instead of improvising a round the first rounds never planned for.
+const RESERVE_ROUNDS = 6;
 function buildSchedule(n, numRounds, numCourts){
   const noBench = n % 4 === 0 && n <= numCourts*4;
-  const perfect = Math.min(numRounds, noBench ? n-1 : Infinity);
+  const want = numRounds + RESERVE_ROUNDS;
+  const perfect = Math.min(want, noBench ? n-1 : Infinity);
   let fresh = [];
   for(let attempt=0; attempt<60 && fresh.length<perfect; attempt++){
-    const rounds = buildFreshRotation(n, numRounds, numCourts);
+    const rounds = buildFreshRotation(n, want, numCourts);
     if(rounds.length > fresh.length) fresh = rounds;
   }
 
-  const schedule = fresh;
+  const schedule = fresh.slice(0, numRounds);
+  const reserve = fresh.slice(numRounds);
   const cycleLength = schedule.length < numRounds ? (schedule.length || 1) : null;
-  for(let r=schedule.length; r<numRounds; r++) schedule.push(cloneRound(schedule[r % cycleLength]));
-  return {schedule, cycleLength};
+  while(schedule.length < numRounds && schedule.length) schedule.push(nextCycleRound(schedule, cycleLength));
+  return {schedule, cycleLength, reserve};
+}
+
+// The next reserve round, if it still fits what has actually been played:
+// the same roster, only brand-new partnerships, nobody resting twice running.
+// Anything else (a deleted round, a balanced lineup, a roster change) drops
+// the reserve and rounds are built on the spot again.
+function takeReserveRound(candidates, benchCount, partnerCount){
+  if(!state.reserve || !state.reserve.length) return null;
+  const r = state.reserve[0];
+  const ids = r.bench.slice();
+  r.matches.forEach(m=> ids.push(...m.teamA, ...m.teamB));
+  const fits = ids.length === candidates.length
+    && new Set(ids).size === ids.length
+    && ids.every(p=> candidates.includes(p))
+    && r.matches.every(m=> partnerCount[m.teamA[0]][m.teamA[1]] === 0 && partnerCount[m.teamB[0]][m.teamB[1]] === 0)
+    && r.bench.every(p=> !benchRecency(p, benchCount, true));
+  if(!fits){ state.reserve = null; return null; }
+  return cloneRound(r);
 }
 
 // Replays existing schedule to rebuild count matrices, used when adding a round later
@@ -1815,14 +1902,47 @@ function seedNewcomerBenchCounts(candidateIdxs, benchCount, schedule){
   const known = candidateIdxs.filter(i=>seen.has(i));
   if(!known.length) return;
   const minBench = Math.min(...known.map(i=>benchCount[i]));
-  candidateIdxs.forEach(i=>{ if(!seen.has(i)) benchCount[i] = minBench; });
+  if(!benchCount.lastBench) benchCount.lastBench = {};
+  candidateIdxs.forEach(i=>{
+    if(seen.has(i)) return;
+    benchCount[i] = minBench;
+    // Just arrived = just rested: they go on court first, not to the bench.
+    benchCount.lastBench[i] = (benchCount.rounds || 0) - 1;
+  });
 }
 
-// Shared by "add player" and "remove player". Keeps every round that already has
-// a score (and its results) exactly as-is, drops every not-yet-scored round, then
-// regenerates rounds up to the planned count using the CURRENT roster
-// (state.removed applied, any newcomers included). The court count never changes.
-function rebuildFutureRounds(){
+// Builds the next Americano round for the current roster from every round
+// already in state.schedule: fresh partners first; once that's impossible,
+// replay the rotation (untouched roster) or take the fewest repeats.
+// Rest fairness and spacing come from replayCounts, so this works the same
+// after added, deleted or rebuilt rounds.
+function buildNextAmericanoRound(){
+  const n = state.players.length;
+  const candidates = activePlayerIndices();
+  if(candidates.length < 4) return null;
+  const {benchCount, partnerCount, opponentCount} = replayCounts(n, state.numCourts, state.schedule);
+  seedNewcomerBenchCounts(candidates, benchCount, state.schedule);
+  const reserved = takeReserveRound(candidates, benchCount, partnerCount);
+  if(reserved) return reserved;
+  let round = state.cycleLength ? null : generateFreshRound(candidates, state.numCourts, benchCount, partnerCount, opponentCount);
+  if(!round && !state.rosterChanged && state.schedule.length){
+    // Untouched roster: the fresh-partner rotation is exhausted, so replay it
+    // instead of repeating a partnership early.
+    if(!state.cycleLength) state.cycleLength = state.schedule.length;
+    round = nextCycleRound(state.schedule, state.cycleLength);
+  }
+  // A player joined or left mid-tournament — no clean rotation to replay, so
+  // build the fewest-repeats round for the current roster.
+  if(!round) round = generateRelaxedRound(candidates, state.numCourts, benchCount, partnerCount, opponentCount);
+  return round;
+}
+
+// Shared by "add player", "remove player" and "delete round". Keeps every round
+// that already has a score (and its results) exactly as-is, plus every round
+// before `fromIdx`; drops the not-yet-scored rounds after that, then regenerates
+// them — as many as there were — from the CURRENT roster (state.removed applied,
+// any newcomers included). The court count never changes.
+function rebuildFutureRounds(fromIdx){
   if(!state.schedule || !state.schedule.length) return;
   const scored = v => v !== null && v !== '' && v !== undefined;
   let lastScoredRound = -1;
@@ -1830,10 +1950,12 @@ function rebuildFutureRounds(){
     const row = state.scores[ri] || [];
     if(round.matches.some((m, mi)=> scored(row[mi] && row[mi].a))) lastScoredRound = ri;
   });
-  const keep = lastScoredRound + 1;   // 0 when nothing has been scored yet
+  const target = state.schedule.length;
+  const keep = Math.max(lastScoredRound + 1, fromIdx || 0);   // 0 when nothing has been scored yet
   state.schedule.length = keep;
   state.scores.length = keep;
   state.cycleLength = null;
+  state.reserve = null;
 
   if(state.tournamentType === 'mexicano'){
     // Mexicano rounds are standings-driven and made on demand — just keep the
@@ -1842,16 +1964,9 @@ function rebuildFutureRounds(){
     return;
   }
 
-  const n = state.players.length;
-  const target = Math.max(state.plannedRounds || 0, keep, 1);
   let guard = 0;
-  while(state.schedule.length < target && guard++ < 100){
-    const candidates = activePlayerIndices();
-    if(candidates.length < 4) break;
-    const {benchCount, partnerCount, opponentCount} = replayCounts(n, state.numCourts, state.schedule);
-    seedNewcomerBenchCounts(candidates, benchCount, state.schedule);
-    let round = generateFreshRound(candidates, state.numCourts, benchCount, partnerCount, opponentCount);
-    if(!round) round = generateRelaxedRound(candidates, state.numCourts, benchCount, partnerCount, opponentCount);
+  while(state.schedule.length < Math.max(target, keep, 1) && guard++ < 100){
+    const round = buildNextAmericanoRound();
     if(!round) break;
     state.schedule.push(round);
     state.scores.push(round.matches.map(()=>({a:null})));
@@ -2237,6 +2352,7 @@ function renderPlaying(){
     state.scores = null;
     state.knockout = null;
     state.cycleLength = null;
+    state.reserve = null;
     state.removed = [];
     state.rosterChanged = false;
     state.startedAt = null;
@@ -2305,6 +2421,7 @@ function importStateFromFile(file){
       if(parsed.removed === undefined) parsed.removed = [];
       if(parsed.plannedRounds === undefined) parsed.plannedRounds = (parsed.schedule && parsed.schedule.length) ? parsed.schedule.length : (parsed.numRounds || 8);
       if(parsed.rosterChanged === undefined) parsed.rosterChanged = !!(parsed.removed && parsed.removed.length);
+      if(parsed.reserve === undefined) parsed.reserve = null;
       if(parsed.rankBy === undefined) parsed.rankBy = 'points';
       if(parsed.mexMode !== 'classic' && parsed.mexMode !== 'shuffle') parsed.mexMode = 'shuffle';
       if(parsed.courtLabels === undefined || parsed.courtLabels === null) parsed.courtLabels = {};
@@ -2462,6 +2579,7 @@ const MIN_ROUNDS_BETWEEN_SITOUTS = 3;
 
 function commitNewRound(round){
   pushHistory();
+  if(state.reserve && state.reserve.length && roundKey(state.reserve[0]) === roundKey(round)) state.reserve.shift();
   state.schedule.push(round);
   state.scores.push(round.matches.map(()=>({a:null})));
   state.numRounds = state.schedule.length;
@@ -2483,6 +2601,17 @@ function renderRounds(container){
   addRow.className = 'add-round-row';
   addRow.innerHTML = `<button id="addRoundBtn" class="primary small">+ Add round</button>`;
   container.appendChild(addRow);
+  if(state.tournamentType !== 'mexicano'){
+    const k = state.reserve ? state.reserve.length : 0;
+    const note = document.createElement('div');
+    note.className = 'hint reserve-note';
+    note.textContent = k
+      ? `✓ Rotation planned ahead: ${k} more round${k===1?'':'s'} ready — new partners, no one rests twice in a row.`
+      : state.cycleLength
+        ? 'Every partner combination has been played — new rounds repeat the rotation.'
+        : 'New rounds are built on the spot from what has been played.';
+    container.insertBefore(note, addRow);
+  }
   addRow.querySelector('#addRoundBtn').addEventListener('click', ()=>{
     const n = state.players.length;
     const candidates = activePlayerIndices();
@@ -2502,23 +2631,7 @@ function renderRounds(container){
       return;
     }
 
-    const {benchCount, partnerCount, opponentCount} = replayCounts(n, state.numCourts, state.schedule);
-    seedNewcomerBenchCounts(candidates, benchCount, state.schedule);
-    let freshRound = state.cycleLength ? null : generateFreshRound(candidates, state.numCourts, benchCount, partnerCount, opponentCount);
-    if(!freshRound && !state.rosterChanged){
-      // Untouched roster: the fresh-partner rotation is exhausted, so replay it
-      // from Round 1 instead of repeating a partnership early.
-      if(!state.cycleLength) state.cycleLength = state.schedule.length || 1;
-      freshRound = cloneRound(state.schedule[state.schedule.length % state.cycleLength]);
-      applyRoundCounts(freshRound, benchCount, partnerCount, opponentCount);
-    }
-    if(!freshRound){
-      // A player joined or left mid-tournament — there's no clean rotation to
-      // replay (cloning an old round would drag a removed player back in, or
-      // leave a new one out), so build the fewest-repeats round for the
-      // current roster.
-      freshRound = generateRelaxedRound(candidates, state.numCourts, benchCount, partnerCount, opponentCount);
-    }
+    const freshRound = buildNextAmericanoRound();
     if(!freshRound){ alert('Could not build another round for this group.'); return; }
 
     if(state.schedule.length >= BALANCED_ROUND_FROM){
@@ -2650,10 +2763,20 @@ function renderRoundBlock(round, ri){
   block.querySelector('.del-round').addEventListener('click', ()=>{
     if(!confirm(`Delete Round ${ri+1}? You can undo this with the ↶ button.`)) return;
     pushHistory();
+    const wasLast = ri === state.schedule.length - 1;
+    const removedRound = state.schedule[ri];
     state.schedule.splice(ri,1);
     state.scores.splice(ri,1);
     state.numRounds = state.schedule.length;
     state.cycleLength = null;
+    // Later rounds were planned around the deleted one (who rests, who has
+    // partnered whom), so rebuild the not-yet-scored ones that follow it.
+    if(state.tournamentType !== 'mexicano'){
+      if(ri < state.schedule.length) rebuildFutureRounds(ri);
+      // The last round goes back to the front of the reserve, so adding it again
+      // gives the same clean rotation.
+      else if(wasLast && !state.rosterChanged && (state.reserve || state.schedule.length)) state.reserve = [cloneRound(removedRound), ...(state.reserve || [])];
+    }
     saveState();
     render();
   });
