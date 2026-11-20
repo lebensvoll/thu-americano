@@ -448,8 +448,10 @@
   /* the header help button is a stand-alone control, not an inline label mark */
   .actions-utils .info-icon{width:28px; height:28px; font-size:14px; margin-left:0; flex:0 0 auto;}
   .actions-utils > *{flex:0 0 auto;}
+  /* section info button: top-right corner of its card */
+  .card-has-info{position:relative;}
+  .card-has-info > .card-info{position:absolute; top:12px; right:12px; margin:0; width:24px; height:24px; font-size:12px;}
   .field{margin-bottom:16px;}
-  .field-info{position:relative;}
   .name-field input{max-width:420px;}
   input,select{
     font-family:'Manrope',sans-serif; background:var(--panel2); color:var(--text);
@@ -805,8 +807,6 @@
     .player-grid{grid-template-columns:1fr;}
     /* tight two-up phone layout: park the "i" in the field's top-right corner
        instead of trailing the (often wrapping) label text */
-    .field-info label{padding-right:30px; min-height:24px;}
-    .field-info .info-icon{position:absolute; top:0; right:0; margin:0; width:26px; height:26px; font-size:13px;}
     .format-toggle{flex-direction:column;}
     .fmt-card .fmt-row{grid-template-columns:1fr; gap:6px;}
     #app .fmt-card .format-btn{padding:10px 4px;}
@@ -1034,7 +1034,7 @@
     <strong>Padel Runner</strong> &mdash; free padel tournament web app.
     Americano &middot; Mexicano &middot; Round Robin &middot; fixed teams &middot; groups &middot; playoff bracket &middot; live leaderboard &middot; podium &middot; padel schedule generator.
     Any browser, no sign-up, no ads, works offline.
-    Developed by <a href="https://instagram.com/olegprachuk" target="_blank" rel="noopener">Oleg Prachuk</a> &middot; version 3.0, November 2026.
+    <br>Developed by <a href="https://instagram.com/olegprachuk" target="_blank" rel="noopener">Oleg Prachuk</a> &middot; version 3.0, November 2026.
   </p>
 </footer>
 
@@ -1155,7 +1155,7 @@ function openHelpModal(){
 
       <h4>Set up</h4>
       <p>Tap the title and the line under it (date &middot; club) at the top of the page to name your tournament and venue &mdash; do this before sharing the page, or a reminder banner will keep nagging you.</p>
-      <p>Choose a <b>format</b> &mdash; Americano, Mexicano or Round Robin &mdash; and for Americano and Mexicano choose <b>Players</b>: <b>Individual</b> (partners change) or <b>Fixed teams</b>. Tap <b>More</b> next to the one-line description to jump here. Add players (8&ndash;12 works best for individual play), then set the points per match, number of courts, and how long you want the session to run. The recommendation line suggests how many rounds fit that time &mdash; it&rsquo;s an approximation, you can override it.</p>
+      <p>Choose a <b>format</b> &mdash; Americano, Mexicano or Round Robin &mdash; and for Americano and Mexicano choose <b>Players</b>: <b>Individual</b> (partners change) or <b>Fixed teams</b>. Tap <b>More</b> next to the one-line description to jump here. Add players (8&ndash;12 works best for individual play), then set the total points per match, number of courts, and how long you want the session to run. The recommendation line suggests how many rounds fit that time &mdash; it&rsquo;s an approximation, you can override it.</p>
 
       <h4>Run the rounds</h4>
       <p>Tap a score box and type one team's score &mdash; the other side fills in automatically to reach the points target. The leaderboard updates instantly, and every entry is <b>saved to this device</b> the moment you type it.</p>
@@ -1749,11 +1749,12 @@ ${rrSetupHtml()}
         </div>
       </div>
 
-      <div class="card" id="amSettingsCard">
+      <div class="card card-has-info" id="amSettingsCard">
+        <button type="button" class="info-icon card-info" id="schedInfoBtn" aria-label="How rounds are scheduled">i</button>
         <div class="grid4">
-          <div class="field field-info">
-            <label>Points per match (8&ndash;32) <button type="button" class="info-icon" id="schedInfoBtn" aria-label="Format details">i</button></label>
-            <input id="pointsTarget" type="number" min="8" max="32" step="1" />
+          <div class="field">
+            <label>Total points</label>
+            <select id="pointsTarget">${Array.from({length:25}, (_,i)=> `<option value="${i+8}">${i+8} points</option>`).join('')}</select>
           </div>
           <div class="field">
             <label>Courts</label>
@@ -1761,7 +1762,7 @@ ${rrSetupHtml()}
           </div>
           <div class="field">
             <label id="roundsLabel">Rounds</label>
-            <input id="numRounds" type="number" min="1" max="40" />
+            <select id="numRounds">${Array.from({length:32}, (_,i)=> `<option value="${i+1}">${i+1} round${i?'s':''}</option>`).join('')}</select>
           </div>
           <div class="field">
             <label>Session length (min)</label>
@@ -1907,8 +1908,9 @@ ${rrSetupHtml()}
   });
 
   const ptInp = wrap.querySelector('#pointsTarget');
-  ptInp.value = state.pointsTarget;
-  ptInp.addEventListener('input', e=>{
+  state.pointsTarget = Math.max(8, Math.min(32, Math.round(+state.pointsTarget || 21)));
+  ptInp.value = String(state.pointsTarget);
+  ptInp.addEventListener('change', e=>{
     let v = +e.target.value || 8;
     v = Math.max(8, Math.min(32, v));
     state.pointsTarget = v;
@@ -1920,8 +1922,9 @@ ${rrSetupHtml()}
   courtsInp.addEventListener('change', e=>{ state.numCourts = Math.max(1, Math.min(16, +e.target.value||1)); saveState(); updateRec(); });
 
   const roundsInp = wrap.querySelector('#numRounds');
-  roundsInp.value = state.numRounds;
-  roundsInp.addEventListener('input', e=>{ state.numRounds = Math.max(1, +e.target.value||1); saveState(); });
+  state.numRounds = Math.max(1, Math.min(32, Math.round(+state.numRounds || 8)));
+  roundsInp.value = String(state.numRounds);
+  roundsInp.addEventListener('change', e=>{ state.numRounds = Math.max(1, Math.min(32, +e.target.value||1)); saveState(); });
 
   const sessionInp = wrap.querySelector('#sessionMinutes');
   sessionInp.value = state.sessionMinutes;
