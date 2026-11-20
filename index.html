@@ -200,6 +200,19 @@
   :root[data-theme="graphite"] .rec-box{
     box-shadow:0 4px 20px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.04);
   }
+  /* graphite: the selected card must read as the brightest one — lighter fill,
+     bright border, white title, a light bar on the left; unselected cards stay flat and dim */
+  :root[data-theme="graphite"] .format-btn{background:rgba(0,0,0,.18); border-color:#2c2f36; box-shadow:none;}
+  :root[data-theme="graphite"] .format-btn .fmt-name{color:#9da2ab;}
+  :root[data-theme="graphite"] .format-btn .fmt-desc{color:#6f747d;}
+  :root[data-theme="graphite"] .format-btn.active{
+    background:linear-gradient(135deg, rgba(214,224,236,.30), rgba(214,224,236,.15));
+    border-color:#dfe6ef;
+    box-shadow:0 0 0 1px rgba(223,230,239,.55), 0 8px 26px rgba(0,0,0,.35), inset 3px 0 0 #eef3f9;
+  }
+  :root[data-theme="graphite"] .format-btn.active .fmt-name{color:#ffffff;}
+  :root[data-theme="graphite"] .format-btn.active .fmt-desc{color:#c9ced6;}
+  :root[data-theme="graphite"] .seg-mini button[aria-pressed="true"]{background:#e6ecf3; color:#15181c; font-weight:700;}
   /* ---------- PADEL & BREW — light: white base, navy text (#002F6D), racket red (#FF1010), beer amber (#FFC120), colour logo watermark ---------- */
   :root[data-theme="pnb"]{
     color-scheme:light;
