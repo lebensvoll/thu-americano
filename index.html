@@ -810,6 +810,9 @@
     .score-input.rr-in{width:48px;}
   }
 
+  /* ---------- TEAM MODE ---------- */
+  .tm-lb-name{flex:1; min-width:0; font-weight:700; line-height:1.2;}
+  .tm-lb-name .team-label{font-weight:800;}
   /* ---------- FINISHED BANNER + PODIUM RESULTS ---------- */
   .finished-banner{display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; margin:0 0 18px; padding:14px 18px; border-radius:var(--radius); border:1.5px solid var(--accent); background:linear-gradient(90deg, color-mix(in srgb, var(--accent) 18%, transparent), color-mix(in srgb, var(--accent) 6%, transparent)); box-shadow:0 0 0 4px color-mix(in srgb, var(--accent) 10%, transparent);}
   .finished-banner .fb-text{display:flex; flex-direction:column; gap:2px; min-width:0;}
@@ -933,6 +936,7 @@ function openHelpModal(){
       <p>Choose a <b>format</b> &mdash; Americano, Mexicano or Round Robin. For Americano and Mexicano add your players (8&ndash;12 works best), then set the points per match, number of courts, and how long you want the session to run. The recommendation box suggests how many rounds fit that time &mdash; you can override it.</p>
       <p><b>Americano</b> &mdash; the whole schedule is drawn up front. Partners rotate so everyone plays with everyone before any pairing repeats; once every combination is used it simply loops. The rotation is also planned a few rounds <b>beyond</b> the number you chose and kept in reserve, so rounds you add later continue it cleanly.</p>
       <p><b>Mexicano</b> &mdash; only Round&nbsp;1 is random. Each later round is built when you tap <b>+ Add round</b>, using the current standings, so winners climb and losers slide. <b>Shuffle mode</b> (default) keeps foursomes close in level but rotates partners &mdash; never the same partner twice in a row, as few repeats as possible. <b>Classic</b> always pairs 1st + 4th vs 2nd + 3rd.</p>
+      <p><b>Fixed teams</b> (Americano and Mexicano) &mdash; switch <b>Players</b> to <b>Fixed teams</b> and enter pairs, two players per row. Partners never change. In Team Americano the opponents rotate: every team meets every other team before any match-up repeats, and when not all teams fit on court the ones resting are rotated fairly (nobody rests twice in a row). In Team Mexicano teams are ranked by points and meet teams of a similar level each round (Shuffle also avoids last round&rsquo;s opponent; Classic pairs 1st v 2nd, 3rd v 4th). The leaderboard, knockout and podium then work per team.</p>
       <p><b>Round Robin</b> &mdash; fixed teams: players 1+2 are team 1, 3+4 team 2, and so on (tap a team name to rename it). Pick 1&ndash;4 groups; every team plays every other team in its group once. Scores are games (first to 4&ndash;9, default 7) or points (first to the number you set) &mdash; type one team's score and, if it lost, the winner's score fills in. Tables rank by wins, then head-to-head, then game difference. Afterwards the top teams play quarterfinals, semifinals or go straight to the final, with an optional 3rd-place match. With an odd number of teams one team rests each round.</p>
       <p>If the player count isn't a multiple of 4 &times; courts, players sit out on a fair rotation: nobody ever sits out two rounds in a row, everyone rests about equally often, and whoever rested longest ago is next.</p>
 
@@ -1027,7 +1031,10 @@ function defaultState(){
     courtLabels: {},        // { "1": "A", "2": "Centre", ... } — overrides the number after "COURT"
     startedAt: null,        // ms epoch when rounds were first generated
     finishedAt: null,       // ms epoch when the tournament was finished (freezes the timer)
-    rr: defaultRr()         // Round Robin settings (fixed teams)
+    rr: defaultRr(),        // Round Robin settings (fixed teams)
+    teamMode: false,        // Americano / Mexicano with fixed pairs
+    teamCycle: null,        // Team Americano: circle rotation (rounds of [teamA, teamB])
+    teamQueue: null         // Team Americano: match-ups still to play in the current pass
   };
 }
 
@@ -1045,6 +1052,8 @@ if(state.courtLabels === undefined || state.courtLabels === null) state.courtLab
 if(state.startedAt === undefined) state.startedAt = null;
 if(state.finishedAt === undefined) state.finishedAt = null;
 state.rr = Object.assign(defaultRr(), state.rr || {});
+if(state.teamMode === undefined) state.teamMode = false;
+if(state.teamCycle === undefined) state.teamCycle = null;
 if(state.plannedRounds === undefined) state.plannedRounds = (state.schedule && state.schedule.length) ? state.schedule.length : (state.numRounds || 8);
 if(state.rosterChanged === undefined) state.rosterChanged = !!(state.removed && state.removed.length);
 // A tournament already in progress from before the timer existed: start the
@@ -1127,8 +1136,13 @@ function showToast(msg, ms){
 function renderStatusStrip(container){
   if(!container) return;
   if(state.tournamentType === 'roundrobin'){ container.textContent = rrStatusText(); return; }
-  const fmt = state.tournamentType === 'mexicano' ? (state.mexMode === 'classic' ? 'Mexicano Classic' : 'Mexicano Shuffle') : 'Americano';
+  const fmt = (state.teamMode ? 'Team ' : '') + (state.tournamentType === 'mexicano' ? (state.mexMode === 'classic' ? 'Mexicano Classic' : 'Mexicano Shuffle') : 'Americano');
   const players = activePlayerIndices().length;
+  if(state.teamMode){
+    const T = rrTeamCount(), courts = state.numCourts;
+    container.textContent = `${fmt} · to ${state.pointsTarget} pts · ${courts} court${courts === 1 ? '' : 's'} · ${T} teams`;
+    return;
+  }
   const courts = state.numCourts;
   container.textContent =
     `${fmt} · to ${state.pointsTarget} pts · `
@@ -1192,6 +1206,7 @@ function reopenTournament(){
 }
 function podiumInnerHtml(){
   if(state.tournamentType === 'roundrobin') return rrPodiumHtml();
+  if(state.teamMode) return tmPodiumHtml();
   const top3 = computeLeaderboard().slice(0, 3);
   if(top3.length < 3) return '<div class="empty">Not enough completed matches to determine a podium.</div>';
   const [first, second, third] = top3;
@@ -1261,6 +1276,14 @@ function podiumStandingsHtml(){
         </tbody></table>
       </div>`).join('') + `</div>`;
     return `<div class="ps-wrap">${html}</div>`;
+  }
+  if(state.teamMode){
+    let h = tmStandingsHtml();
+    if(state.knockout){
+      const tiers = computeKnockoutStandings().filter(t=> t.teams.some(Boolean));
+      if(tiers.length) h = `<div class="ps-block"><div class="ps-title">Knockout</div>${tiers.map(t=>`<div class="ps-ko-row ps-tier"><span class="ps-ko-lab">${escapeHtml(t.label)}</span><span>${t.teams.map(teamName).map(escapeHtml).join(' &nbsp;/&nbsp; ')}</span></div>`).join('')}</div>` + h;
+    }
+    return `<div class="ps-wrap">${h}</div>`;
   }
   const lb = computeLeaderboard().filter(p=> p.played > 0);
   if(!lb.length) return '';
@@ -1418,6 +1441,19 @@ function renderSetup(){
             <span class="fmt-desc">Fixed teams of two. Every team plays every other team in its group (1&ndash;4 groups), then the top teams go to a playoff.</span>
           </button>
         </div>
+        <div class="mex-mode" id="teamModeBox">
+          <div class="mex-mode-label">Players</div>
+          <div class="format-toggle" id="teamModeToggle">
+            <button type="button" class="format-btn" data-team="0">
+              <span class="fmt-name">Individual</span>
+              <span class="fmt-desc">Partners change every round &mdash; the classic way.</span>
+            </button>
+            <button type="button" class="format-btn" data-team="1">
+              <span class="fmt-name">Fixed teams</span>
+              <span class="fmt-desc">Pairs stay together all tournament; opponents rotate (Americano) or follow the team standings (Mexicano).</span>
+            </button>
+          </div>
+        </div>
         <div class="mex-mode" id="mexModeBox">
           <div class="mex-mode-label">Mexicano pairing</div>
           <div class="format-toggle" id="mexModeToggle">
@@ -1532,10 +1568,13 @@ ${rrSetupHtml()}
   function updateFormatUI(){
     formatBtns.forEach(b=> b.classList.toggle('active', b.dataset.type === state.tournamentType));
     const isRR = state.tournamentType === 'roundrobin';
-    wrap.querySelector('#amPlayersCard').style.display = isRR ? 'none' : '';
+    const tm = !isRR && state.teamMode;
+    wrap.querySelector('#amPlayersCard').style.display = (isRR || tm) ? 'none' : '';
     wrap.querySelector('#amSettingsCard').style.display = isRR ? 'none' : '';
-    wrap.querySelector('#rrTeamsCard').style.display = isRR ? '' : 'none';
+    wrap.querySelector('#rrTeamsCard').style.display = (isRR || tm) ? '' : 'none';
     wrap.querySelector('#rrSettingsCard').style.display = isRR ? '' : 'none';
+    wrap.querySelector('#teamModeBox').style.display = isRR ? 'none' : '';
+    wrap.querySelectorAll('#teamModeToggle .format-btn').forEach(b=> b.classList.toggle('active', (b.dataset.team === '1') === !!state.teamMode));
     if(isRR){
       mexBox.style.display = 'none';
       generateBtn.textContent = 'Start Round Robin';
@@ -1555,12 +1594,22 @@ ${rrSetupHtml()}
       generateBtn.textContent = 'Generate rounds & start';
     }
   }
+  wrap.querySelectorAll('#teamModeToggle .format-btn').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const v = b.dataset.team === '1';
+      if(v === !!state.teamMode) return;
+      state.teamMode = v;
+      if(v && state.players.length % 2) state.players.push('');
+      saveState();
+      render();
+    });
+  });
   formatBtns.forEach(b=>{
     b.addEventListener('click', ()=>{
       const wasRR = state.tournamentType === 'roundrobin';
       state.tournamentType = b.dataset.type;
       saveState();
-      if(wasRR !== (state.tournamentType === 'roundrobin')){ render(); return; }
+      if(wasRR !== (state.tournamentType === 'roundrobin') || state.teamMode){ render(); return; }
       updateFormatUI();
     });
   });
@@ -1617,6 +1666,7 @@ ${rrSetupHtml()}
 
   wrap.querySelector('#generateBtn').addEventListener('click', ()=>{
     if(state.tournamentType === 'roundrobin'){ rrStart(); return; }
+    if(state.teamMode){ tmStart(); return; }
     const names = state.players.map(n=>n.trim()).filter(n=>n.length>0);
     if(names.length < 4){ alert('You need at least 4 players.'); return; }
     state.players = names;
@@ -2316,6 +2366,11 @@ function generateKnockout(stage){
       ]}
     ];
   }
+  if(state.teamMode){
+    const T = tmLeaderboard().filter(t=> t.played > 0).length;
+    if(T < seeds.length){ alert(`You need at least ${seeds.length} teams with results for this stage.`); return; }
+    seeds = tmKnockoutSeeds(seeds.length);
+  }
   pushHistory();
   state.knockout = {stage, seeds, rounds};
   saveState();
@@ -2344,6 +2399,7 @@ function computeKnockoutStandings(){
 
 function teamName(team){
   if(!team) return 'TBD';
+  if(state.teamMode) return rrTeamName(tmTeamIdx(team));
   return team.map(idx=>state.players[idx]).join(' + ');
 }
 
@@ -2385,6 +2441,11 @@ function renderKnockoutSection(container){
         <button id="koGenerateBtn" class="accent">Generate knockout stage</button>
       </div>
     `;
+    if(state.teamMode){
+      wrap.querySelector('.hint').textContent = 'The top teams of the standings go into an elimination bracket — quarterfinals 1v8, 4v5, 2v7, 3v6, semifinals 1v4 and 2v3. The standings keep running underneath.';
+      const opts = wrap.querySelectorAll('#koStageSelect option');
+      opts[0].textContent = 'Quarterfinal — top 8 teams'; opts[1].textContent = 'Semifinal — top 4 teams'; opts[2].textContent = 'Final stage — top 4 teams';
+    }
     wrap.querySelector('#koGenerateBtn').addEventListener('click', ()=>{
       generateKnockout(wrap.querySelector('#koStageSelect').value);
     });
@@ -2429,11 +2490,11 @@ function renderKoMatchCard(m){
   const tie = ready && aVal!==null && aVal!=='' && winnerSide===null;
   el.innerHTML = `
     <div class="teams">
-      <div class="team ${winnerSide==='a'?'ko-winner':''}">${teamStackHtml(teamA)}</div>
+      <div class="team ${winnerSide==='a'?'ko-winner':''}${state.teamMode ? ' rr-team' : ''}">${state.teamMode && teamA ? tmTeamHtml(teamA) : teamStackHtml(teamA)}</div>
       <input type="number" min="0" max="${target}" class="score-input" data-koid="${m.id}" value="${aVal===null?'':aVal}" placeholder="&mdash;" ${ready?'':'disabled'} />
       <span class="vs">:</span>
       <span class="opp-score">${oppVal}</span>
-      <div class="team ${winnerSide==='b'?'ko-winner':''}">${teamStackHtml(teamB)}</div>
+      <div class="team ${winnerSide==='b'?'ko-winner':''}${state.teamMode ? ' rr-team' : ''}">${state.teamMode && teamB ? tmTeamHtml(teamB) : teamStackHtml(teamB)}</div>
     </div>
     <div class="court">${escapeHtml(m.id)}</div>
     ${!ready ? '<div class="hint ko-wait-hint" style="margin-top:8px; margin-bottom:0;">Waiting for previous match result&hellip;</div>' : ''}
@@ -2645,8 +2706,9 @@ function renderPlaying(){
     return wrap;
   }
   renderStatusStrip(wrap.querySelector('#statusStrip'));
-  renderLeaderboard(wrap.querySelector('#leaderboard'));
-  renderBenchWarnings(wrap.querySelector('#restWarnings'));
+  if(state.teamMode) renderTeamLeaderboard(wrap.querySelector('#leaderboard'));
+  else renderLeaderboard(wrap.querySelector('#leaderboard'));
+  if(!state.teamMode) renderBenchWarnings(wrap.querySelector('#restWarnings'));
   renderRounds(wrap.querySelector('#roundsCol'));
 
   return wrap;
@@ -2690,6 +2752,8 @@ function importStateFromFile(file){
       if(parsed.startedAt === undefined) parsed.startedAt = null;
       if(parsed.finishedAt === undefined) parsed.finishedAt = null;
       parsed.rr = Object.assign(defaultRr(), parsed.rr || {});
+      if(parsed.teamMode === undefined) parsed.teamMode = false;
+      if(parsed.teamCycle === undefined) parsed.teamCycle = null;
       if(parsed.startedAt === null && parsed.schedule && parsed.schedule.length) parsed.startedAt = Date.now();
       if(parsed.knockout && !(Array.isArray(parsed.knockout.seeds) && parsed.knockout.seeds.every(s=>Array.isArray(s) && s.length===2))){
         parsed.knockout = null;
@@ -2864,7 +2928,7 @@ function renderRounds(container){
   addRow.className = 'add-round-row';
   addRow.innerHTML = `<button id="addRoundBtn" class="primary small">+ Add round</button>`;
   container.appendChild(addRow);
-  if(state.tournamentType !== 'mexicano'){
+  if(state.tournamentType !== 'mexicano' && !state.teamMode){
     const k = state.reserve ? state.reserve.length : 0;
     const note = document.createElement('div');
     note.className = 'hint reserve-note';
@@ -2876,6 +2940,7 @@ function renderRounds(container){
     container.insertBefore(note, addRow);
   }
   addRow.querySelector('#addRoundBtn').addEventListener('click', ()=>{
+    if(state.teamMode){ tmAddRound(); return; }
     const n = state.players.length;
     const candidates = activePlayerIndices();
     if(candidates.length < 4){ alert('You need at least 4 active players to build a round.'); return; }
@@ -3005,11 +3070,11 @@ function renderRoundBlock(round, ri){
     const oppVal = (sc.a===null||sc.a==='') ? '\u2014' : (state.pointsTarget - (+sc.a));
     el.innerHTML = `
       <div class="teams">
-        <div class="team">${teamStackHtml(m.teamA)}</div>
+        <div class="team${state.teamMode ? ' rr-team' : ''}">${state.teamMode ? tmTeamHtml(m.teamA) : teamStackHtml(m.teamA)}</div>
         <input type="number" min="0" max="${state.pointsTarget}" class="score-input" data-ri="${ri}" data-mi="${mi}" value="${sc.a===null?'':sc.a}" placeholder="\u2014" />
         <span class="vs">:</span>
         <span class="opp-score">${oppVal}</span>
-        <div class="team">${teamStackHtml(m.teamB)}</div>
+        <div class="team${state.teamMode ? ' rr-team' : ''}">${state.teamMode ? tmTeamHtml(m.teamB) : teamStackHtml(m.teamB)}</div>
       </div>
       <div class="court">COURT <span class="court-label" data-court="${m.court}" title="Click to rename this court">${escapeHtml(courtLabel(m.court))}</span></div>
     `;
@@ -3019,7 +3084,7 @@ function renderRoundBlock(round, ri){
   if(round.bench.length){
     const b = document.createElement('div');
     b.className = 'bench';
-    b.textContent = 'Resting: ' + round.bench.map(i=>state.players[i]).join(', ');
+    b.textContent = 'Resting: ' + (state.teamMode && round.restTeams ? round.restTeams.map(rrTeamName) : round.bench.map(i=>state.players[i])).join(', ');
     block.appendChild(b);
   }
 
@@ -3034,7 +3099,12 @@ function renderRoundBlock(round, ri){
     state.cycleLength = null;
     // Later rounds were planned around the deleted one (who rests, who has
     // partnered whom), so rebuild the not-yet-scored ones that follow it.
-    if(state.tournamentType !== 'mexicano'){
+    if(state.teamMode && state.tournamentType !== 'mexicano' && Array.isArray(state.teamQueue)){
+      const minPass = state.teamQueue.reduce((m,q)=> Math.min(m, q.pass), Infinity);
+      const pass = isFinite(minPass) ? minPass : 1;
+      state.teamQueue = removedRound.matches.map(m=>({p:[tmTeamIdx(m.teamA), tmTeamIdx(m.teamB)], pass})).concat(state.teamQueue);
+    }
+    if(state.tournamentType !== 'mexicano' && !state.teamMode){
       if(ri < state.schedule.length) rebuildFutureRounds(ri);
       // The last round goes back to the front of the reserve, so adding it again
       // gives the same clean rotation.
@@ -3057,6 +3127,7 @@ function renderRoundBlock(round, ri){
   });
 
   wireCourtLabelEdit(block);
+  if(state.teamMode) wireTeamLabelEdit(block);
   return block;
 }
 
@@ -3074,7 +3145,7 @@ function updateAfterScoreChange(ri, mi, inputEl){
   leftDiv.innerHTML = `<span>Round ${rIdx+1}</span>${allPlayed ? '<span class="played-badge">complete</span>' : ''}`;
 
   const lbContainer = document.getElementById('leaderboard');
-  if(lbContainer) renderLeaderboard(lbContainer);
+  if(lbContainer) state.teamMode ? renderTeamLeaderboard(lbContainer) : renderLeaderboard(lbContainer);
   // NB: deliberately no full re-render of the rounds column here — that would
   // tear down the <input> mid-typing (couldn't enter a 2nd digit on mobile).
 }
@@ -3395,7 +3466,7 @@ function wireRrSetup(wrap){
   }
   function updatePlan(){
     const T = filledTeams() || rrTeamCount();
-    const G = Math.min(state.rr.groups, Math.max(1, Math.floor(T/2)));
+    const G = state.tournamentType === 'roundrobin' ? Math.min(state.rr.groups, Math.max(1, Math.floor(T/2))) : 1;
     const odd = T % 2 === 1;
     const sizes = rrGroupSizes(T, G);
     const oddGroup = !odd && sizes.some(s=> s%2);
@@ -3416,7 +3487,7 @@ function wireRrSetup(wrap){
 
   function renderTeams(){
     const T = rrTeamCount();
-    const G = state.rr.groups;
+    const G = state.tournamentType === 'roundrobin' ? state.rr.groups : 1;
     const assign = rrAssignGroups(T, G);
     list.innerHTML = '';
     for(let k=0; k<T; k++){
@@ -3828,6 +3899,283 @@ function rrPodiumHtml(){
     ${card('podium-gold', '&#129351;', '1st place', [first])}
     ${card('podium-bronze', '&#129353;', '3rd place', third)}
   </div>`;
+}
+
+/* ---------- TEAM MODE (Americano / Mexicano with fixed pairs) ----------
+   Same pairs all tournament: players 1+2 = team 1, 3+4 = team 2, ...
+   Americano: opponents rotate — while every team fits on court (or one
+   rests), a circle rotation makes every team meet every other before any
+   repeat; with fewer courts a greedy builder picks who rests (never twice
+   running, fewest games first) and pairs the rest with the fewest repeat
+   opponents. Mexicano: teams ranked by the leaderboard meet neighbours
+   (1v2, 3v4…); Shuffle also avoids last round's opponent and repeats. */
+function tmTeamIdx(pair){ return Math.floor(pair[0]/2); }
+function tmPair(k){ return [2*k, 2*k+1]; }
+function tmTeamHtml(pair){
+  const k = tmTeamIdx(pair);
+  return `<span class="pname rr-ko-name">${rrTeamLabelHtml(k)}</span><span class="rr-pl">${escapeHtml(rrTeamPlayers(k).join(' · '))}</span>`;
+}
+
+function tmHistory(T, schedule){
+  const opp = Array.from({length:T}, ()=> Array(T).fill(0));
+  const games = Array(T).fill(0), rests = Array(T).fill(0), lastRest = Array(T).fill(-99), lastOpp = Array(T).fill(-1);
+  (schedule||[]).forEach((r, ri)=>{
+    const playing = new Set();
+    r.matches.forEach(m=>{
+      const a = tmTeamIdx(m.teamA), b = tmTeamIdx(m.teamB);
+      opp[a][b]++; opp[b][a]++; games[a]++; games[b]++;
+      lastOpp[a] = b; lastOpp[b] = a; playing.add(a); playing.add(b);
+    });
+    for(let k=0; k<T; k++) if(!playing.has(k)){ rests[k]++; lastRest[k] = ri; }
+  });
+  return {opp, games, rests, lastRest, lastOpp, rounds:(schedule||[]).length};
+}
+
+function tmRound(pairs, T){
+  const playing = new Set(pairs.flat());
+  const restTeams = [...Array(T).keys()].filter(k=> !playing.has(k));
+  return {
+    matches: pairs.map(([a,b], i)=>({court:i+1, teamA:tmPair(a), teamB:tmPair(b)})),
+    bench: restTeams.flatMap(tmPair),
+    restTeams
+  };
+}
+
+// Who rests: never the team that rested last round (if avoidable), then the
+// teams with the most games, then whoever rested longest ago.
+function tmPickRest(T, restNeeded, h){
+  const order = shuffle([...Array(T).keys()]).sort((x,y)=>
+    ((h.lastRest[x] === h.rounds-1) - (h.lastRest[y] === h.rounds-1))
+    || (h.games[y] - h.games[x])
+    || (h.lastRest[x] - h.lastRest[y]));
+  return new Set(order.slice(0, restNeeded));
+}
+
+// Pairs the playing teams with as few repeat opponents as possible.
+function tmPairLeastRepeat(teams, h, trials){
+  let best = null, bestCost = Infinity;
+  for(let t=0; t<(trials||300); t++){
+    const avail = shuffle(teams.slice()), pairs = [];
+    let cost = 0;
+    while(avail.length){
+      const a = avail.shift();
+      let pick = null, pc = Infinity;
+      for(const b of shuffle(avail.slice())){
+        const c = 10*h.opp[a][b]*h.opp[a][b] + (h.lastOpp[a] === b ? 50 : 0);
+        if(c < pc){ pc = c; pick = b; }
+      }
+      cost += pc; pairs.push([a, pick]); avail.splice(avail.indexOf(pick), 1);
+    }
+    if(cost < bestCost){ bestCost = cost; best = pairs; }
+    if(bestCost === 0) break;
+  }
+  return best;
+}
+
+function tmCircleRounds(T){
+  const order = shuffle([...Array(T).keys()]);
+  return rrCircle(order);   // list of rounds, each a list of [a,b]
+}
+
+// Team Americano: a circle rotation — every team meets every other team
+// once per pass — played in order. When there are fewer courts than
+// match-ups in a circle round, the round is spread over several rounds,
+// teams that rested last round going first. This keeps everyone meeting
+// everyone (no repeat before all opponents are met) and match counts within
+// one or two of each other; with few courts a team may now and then rest
+// two rounds running. state.teamQueue = match-ups still to play.
+function tmBuildAmericano(T, numRounds, courts){
+  const schedule = [];
+  const cycle = tmCircleRounds(T);
+  const st = {cycle, queue: []};
+  for(let r=0; r<numRounds; r++) schedule.push(tmTakeRound(T, courts, schedule, st));
+  return {schedule, cycle, queue: st.queue};
+}
+function tmTakeRound(T, courts, schedule, st){
+  const M = Math.min(courts, Math.floor(T/2));
+  const h = tmHistory(T, schedule);
+  const rl = k=> h.rounds > 0 && h.lastRest[k] === h.rounds-1;
+  const passOf = ()=> new Set(st.queue.map(q=> q.pass));
+  let maxPass = st.queue.reduce((m,q)=> Math.max(m, q.pass), 0);
+  while(passOf().size < 2){ maxPass++; st.cycle.forEach(r=> r.forEach(p=> st.queue.push({p:p.slice(), pass:maxPass}))); }
+  const cand = st.queue.map((q,i)=>({q, i, pr:(rl(q.p[0])?1:0) + (rl(q.p[1])?1:0)}));
+  const gm = c=> h.games[c.q.p[0]] + h.games[c.q.p[1]];
+  cand.sort((x,y)=> x.q.pass-y.q.pass || y.pr-x.pr || gm(x)-gm(y) || x.i-y.i);
+  const picked = [], used = new Set();
+  for(const c of cand){
+    if(picked.length >= M) break;
+    if(used.has(c.q.p[0]) || used.has(c.q.p[1])) continue;
+    picked.push(c); used.add(c.q.p[0]); used.add(c.q.p[1]);
+  }
+  picked.map(c=> c.i).sort((a,b)=> b-a).forEach(i=> st.queue.splice(i,1));
+  return tmRound(picked.map(c=> c.q.p), T);
+}
+function tmNextAmericanoRound(T, courts, schedule, cycle){
+  if(!cycle || !cycle.length){ cycle = tmCircleRounds(T); state.teamCycle = cycle; }
+  const st = {cycle, queue: Array.isArray(state.teamQueue) ? state.teamQueue.map(q=>({p:q.p.slice(), pass:q.pass})) : []};
+  const r = tmTakeRound(T, courts, schedule, st);
+  r._queue = st.queue;
+  return r;
+}
+
+// Team Mexicano: rank order in, neighbours meet.
+function tmNextMexicanoRound(T, courts, schedule, rankOrder, mode){
+  const M = Math.min(courts, Math.floor(T/2));
+  const h = tmHistory(T, schedule);
+  // resting teams: fair rotation, ties broken towards the bottom of the table
+  const pos = new Map(rankOrder.map((k,i)=>[k,i]));
+  const order = rankOrder.slice().sort((x,y)=>
+    ((h.lastRest[x] === h.rounds-1) - (h.lastRest[y] === h.rounds-1))
+    || (h.games[y] - h.games[x])
+    || (h.lastRest[x] - h.lastRest[y])
+    || (pos.get(y) - pos.get(x)));
+  const rest = new Set(order.slice(0, T - 2*M));
+  const playing = rankOrder.filter(k=> !rest.has(k));
+  let pairs = [];
+  for(let i=0; i<playing.length; i+=2) pairs.push([playing[i], playing[i+1]]);
+  if(mode !== 'classic' && pairs.length > 1){
+    const cost = ps=> ps.reduce((s,[a,b])=> s + (h.lastOpp[a] === b ? 1000 : 0) + 60*h.opp[a][b] + 4*Math.abs(pos.get(a)-pos.get(b)), 0);
+    let improved = true, guard = 0;
+    while(improved && guard++ < 50){
+      improved = false;
+      for(let i=0; i<pairs.length-1; i++){
+        const [a,b] = pairs[i], [c,d] = pairs[i+1];
+        const options = [[[a,c],[b,d]], [[a,d],[b,c]]];
+        for(const opt of options){
+          const before = cost([pairs[i], pairs[i+1]]), after = cost(opt);
+          if(after < before){ pairs[i] = opt[0]; pairs[i+1] = opt[1]; improved = true; break; }
+        }
+      }
+    }
+  }
+  return tmRound(pairs, T);
+}
+
+function tmLeaderboard(){
+  const T = rrTeamCount();
+  const st = Array.from({length:T}, (_,k)=>({k, points:0, against:0, wins:0, played:0}));
+  (state.schedule||[]).forEach((round, ri)=> round.matches.forEach((m, mi)=>{
+    const sc = state.scores[ri][mi];
+    if(sc.a === null || sc.a === undefined || sc.a === '') return;
+    const a = +sc.a, b = state.pointsTarget - a, A = st[tmTeamIdx(m.teamA)], B = st[tmTeamIdx(m.teamB)];
+    A.points += a; A.against += b; B.points += b; B.against += a; A.played++; B.played++;
+    if(a > b) A.wins++; else if(b > a) B.wins++;
+  }));
+  return st.sort((x,y)=> state.rankBy === 'diff'
+    ? (y.points-y.against)-(x.points-x.against) || y.points-x.points || y.wins-x.wins
+    : y.points-x.points || y.wins-x.wins || (y.points-y.against)-(x.points-x.against));
+}
+
+function renderTeamLeaderboard(container){
+  const lb = tmLeaderboard();
+  const hasData = lb.some(t=> t.played > 0);
+  container.innerHTML = !hasData
+    ? '<div class="empty">Enter round 1 scores to see the standings</div>'
+    : lb.map((t,i)=>{
+        const cls = i===0?'top1':i===1?'top2':i===2?'top3':'';
+        const d = t.points - t.against, byDiff = state.rankBy === 'diff';
+        const main = byDiff ? (d>0?'+'+d:String(d)) : String(t.points);
+        return `<div class="lb-row ${cls}">
+          <div class="lb-rank">${i+1}</div>
+          <div class="tm-lb-name">${rrTeamLabelHtml(t.k)}<span class="rr-pl">${escapeHtml(rrTeamPlayers(t.k).join(' · '))}</span></div>
+          ${lbShowDetails ? `<div class="lb-det"><span>${t.played} pl · <span class="${d<0?'lb-det-neg':''}">${d>0?'+'+d:d}</span></span><span>${t.points} / ${t.against}</span></div>` : ''}
+          <div class="lb-score"><span class="lb-wins">${t.wins} WIN${t.wins===1?'':'S'}</span><span class="lb-main${byDiff&&d<0?' neg':''}">${main}</span></div>
+        </div>`;
+      }).join('');
+  container.innerHTML += `<div class="lb-add-row"><span class="hint" style="margin:0;">Fixed teams</span><button id="lbDetailsBtn" class="small ghost" aria-pressed="${lbShowDetails}">${lbShowDetails ? 'Hide details' : 'Details'}</button></div>`;
+  container.querySelector('#lbDetailsBtn').addEventListener('click', ()=>{ lbShowDetails = !lbShowDetails; renderTeamLeaderboard(container); });
+  wireTeamLabelEdit(container);
+}
+
+function tmStart(){
+  const T0 = rrTeamCount();
+  const keep = [], names = {};
+  for(let k=0; k<T0; k++){
+    const [a,b] = rrTeamPlayers(k);
+    if(!a.trim() && !b.trim()) continue;
+    if(!a.trim() || !b.trim()){ alert(`${rrTeamName(k)} has only one player. Add the second player or remove the team.`); return; }
+    if(state.rr.teamNames[k] !== undefined) names[keep.length/2] = state.rr.teamNames[k];
+    keep.push(a.trim(), b.trim());
+  }
+  const T = keep.length/2;
+  if(T < 2){ alert('You need at least 2 teams.'); return; }
+  state.players = keep;
+  state.rr.teamNames = names;
+  if(state.tournamentType === 'mexicano'){
+    state.schedule = [tmNextMexicanoRound(T, state.numCourts, [], shuffle([...Array(T).keys()]), state.mexMode)];
+    state.teamCycle = null;
+    state.teamQueue = null;
+  } else {
+    const built = tmBuildAmericano(T, state.numRounds, state.numCourts);
+    state.schedule = built.schedule;
+    state.teamCycle = built.cycle;
+    state.teamQueue = built.queue;
+  }
+  state.cycleLength = null;
+  state.reserve = null;
+  state.removed = [];
+  state.knockout = null;
+  state.plannedRounds = state.schedule.length;
+  state.rosterChanged = false;
+  state.scores = state.schedule.map(r=> r.matches.map(()=>({a:null})));
+  state.stage = 'playing';
+  state.startedAt = Date.now();
+  state.finishedAt = null;
+  saveState();
+  render();
+}
+
+function tmAddRound(){
+  const T = rrTeamCount();
+  if(state.tournamentType === 'mexicano'){
+    const last = state.scores[state.scores.length-1];
+    if(last && last.some(sc=> sc.a === null || sc.a === '') && !confirm('Not every score in the last round has been entered yet, so standings are incomplete. Add the next round anyway?')) return;
+    commitNewRound(tmNextMexicanoRound(T, state.numCourts, state.schedule, tmLeaderboard().map(t=>t.k), state.mexMode));
+  } else {
+    const r = tmNextAmericanoRound(T, state.numCourts, state.schedule, state.teamCycle);
+    const q = r._queue; delete r._queue;
+    pushHistory();            // snapshot before the queue moves, so undo restores it
+    state.teamQueue = q;
+    state.schedule.push(r);
+    state.scores.push(r.matches.map(()=>({a:null})));
+    state.numRounds = state.schedule.length;
+    saveState();
+    render();
+  }
+}
+
+// Knockout seeds from the team table, ordered for the existing bracket shape
+// (QF: 1v8, 4v5, 2v7, 3v6 · SF / final stage: 1v4, 2v3).
+function tmKnockoutSeeds(count){
+  const r = tmLeaderboard().filter(t=> t.played > 0).map(t=> tmPair(t.k));
+  if(count === 8) return [r[0], r[3], r[7], r[4], r[1], r[2], r[6], r[5]];
+  return r.slice(0, 4);
+}
+
+function tmPodiumHtml(){
+  const top = tmLeaderboard().filter(t=> t.played > 0).slice(0,3);
+  if(top.length < 3) return '<div class="empty">Not enough completed matches to determine a podium.</div>';
+  const card = (cls, medal, label, t)=>`
+    <div class="podium-card ${cls}">
+      <span class="medal">${medal}</span>
+      <div class="pc-mid">
+        <div class="rank-label">${label}</div>
+        <div class="name">${escapeHtml(rrTeamName(t.k))}</div>
+        <div class="meta">${escapeHtml(rrTeamPlayers(t.k).join(' · '))}</div>
+      </div>
+      <div class="pts">${t.points}</div>
+    </div>`;
+  return `<div class="podium">${card('podium-silver','&#129352;','2nd place',top[1])}${card('podium-gold','&#129351;','1st place',top[0])}${card('podium-bronze','&#129353;','3rd place',top[2])}</div>`;
+}
+function tmStandingsHtml(){
+  const lb = tmLeaderboard().filter(t=> t.played > 0);
+  if(!lb.length) return '';
+  const rowCls = i=> i===0 ? 'top1' : i===1 ? 'top2' : i===2 ? 'top3' : '';
+  const sign = d=> d>0 ? '+'+d : String(d);
+  return `<div class="ps-block"><div class="ps-title">Final team standings</div>
+    <table class="ps-table"><thead><tr><th></th><th class="l">Team</th><th>Pl</th><th>W</th><th>+/&minus;</th><th>Pts</th></tr></thead><tbody>
+    ${lb.map((t,i)=>{ const d=t.points-t.against; return `<tr class="${rowCls(i)}"><td class="ps-pos">${i+1}</td><td class="l"><b>${escapeHtml(rrTeamName(t.k))}</b><span class="ps-sub">${escapeHtml(rrTeamPlayers(t.k).join(' · '))}</span></td><td>${t.played}</td><td>${t.wins}</td><td class="${d<0?'ps-neg':''}">${sign(d)}</td><td class="ps-main">${t.points}</td></tr>`; }).join('')}
+    </tbody></table></div>`;
 }
 
 render();
