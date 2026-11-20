@@ -452,6 +452,8 @@
     border:1px solid var(--border); border-radius:9px; padding:10px 12px; font-size:14px; width:100%;
   }
   input:focus, select:focus{outline:none; border-color:var(--accent);}
+  /* setup fields: number boxes and dropdowns share one height so a row lines up */
+  .field select, .field input:not([type=checkbox]){box-sizing:border-box; height:43px;}
   button{
     font-family:'Manrope',-apple-system,BlinkMacSystemFont,sans-serif; border:none; border-radius:9px; padding:11px 18px;
     font-size:13.5px; font-weight:700; letter-spacing:0; text-transform:none; cursor:pointer;
@@ -813,6 +815,7 @@
     button{padding:12px 16px; font-size:13px;}
     button.small{padding:10px 14px; font-size:12px;}
     input,select{font-size:16px; padding:12px 12px;} /* 16px avoids iOS auto-zoom on focus */
+    .field select, .field input:not([type=checkbox]){height:46px;}
     .score-input{width:56px; padding:10px 4px; font-size:16px;}
     .lb-row{padding:9px 8px;}
     .lb-stats{min-width:auto;}
@@ -1713,7 +1716,7 @@ ${rrSetupHtml()}
           </div>
           <div class="field">
             <label>Courts</label>
-            <input id="numCourts" type="number" min="1" max="6" />
+            <select id="numCourts">${courtOptionsHtml()}</select>
           </div>
           <div class="field">
             <label id="roundsLabel">Rounds</label>
@@ -1870,8 +1873,8 @@ ${rrSetupHtml()}
   });
 
   const courtsInp = wrap.querySelector('#numCourts');
-  courtsInp.value = state.numCourts;
-  courtsInp.addEventListener('input', e=>{ state.numCourts = Math.max(1, +e.target.value||1); saveState(); updateRec(); });
+  courtsInp.value = String(Math.min(16, Math.max(1, state.numCourts||1)));
+  courtsInp.addEventListener('change', e=>{ state.numCourts = Math.max(1, Math.min(16, +e.target.value||1)); saveState(); updateRec(); });
 
   const roundsInp = wrap.querySelector('#numRounds');
   roundsInp.value = state.numRounds;
@@ -3678,7 +3681,7 @@ function rrSetupHtml(){
           </div>
           <div class="field">
             <label>Courts</label>
-            <input id="rrCourts" type="number" min="1" max="8" />
+            <select id="rrCourts">${courtOptionsHtml()}</select>
           </div>
           <div class="field">
             <label>Groups</label>
@@ -3804,8 +3807,8 @@ function wireRrSetup(wrap){
   paintMode();
 
   const cInp = wrap.querySelector('#rrCourts');
-  cInp.value = state.numCourts;
-  cInp.addEventListener('input', e=>{ state.numCourts = Math.max(1, Math.min(8, +e.target.value || 1)); saveState(); updatePlan(); });
+  cInp.value = String(Math.min(16, Math.max(1, state.numCourts||1)));
+  cInp.addEventListener('change', e=>{ state.numCourts = Math.max(1, Math.min(16, +e.target.value || 1)); saveState(); updatePlan(); });
 
   const gSel = wrap.querySelector('#rrGroups');
   gSel.value = String(state.rr.groups);
@@ -3821,6 +3824,13 @@ function wireRrSetup(wrap){
   thirdBox.addEventListener('change', e=>{ state.rr.third = e.target.checked; saveState(); });
   paintThird();
   updatePlan();
+}
+
+// Courts picker (both setup cards): a dropdown with 1–16 courts, same look as Groups.
+function courtOptionsHtml(){
+  let h = '';
+  for(let c=1; c<=16; c++) h += `<option value="${c}">${c} court${c===1?'':'s'}</option>`;
+  return h;
 }
 
 function rrStart(){
