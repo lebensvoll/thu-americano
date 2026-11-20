@@ -913,18 +913,20 @@
   .format-btn{padding:10px 12px;}
   .format-btn .fmt-name{font-size:13.5px; margin-bottom:3px;}
   .format-btn .fmt-desc{font-size:10.8px; line-height:1.45;}
-  .rr-teams{display:flex; flex-direction:column; gap:8px;}
-  .rr-team-row{display:grid; grid-template-columns:24px 1fr 1fr 260px auto; gap:8px; align-items:center; padding:5px 6px; border-radius:11px; border:1px solid transparent; transition:background .2s, border-color .2s;}
+  .rr-teams{display:flex; flex-direction:column; gap:6px;}
+  .rr-team-row{display:grid; grid-template-columns:150px 1fr 1fr 40px; gap:6px; align-items:center; padding:4px 4px 4px 12px; border-radius:11px; border:1px solid var(--border); transition:background .2s, border-color .2s;}
+  .rr-team-head{display:flex; align-items:center; gap:6px; min-width:0; font-size:13px; font-weight:700; color:var(--muted);}
+  .rr-team-head .team-label{overflow:hidden; text-overflow:ellipsis; white-space:nowrap; cursor:pointer;}
+  .rr-team-row.formed .rr-team-head{color:var(--accent);}
+  .rr-team-ok{font-size:12px;}
+  .rr-team-head .rr-gtag{margin-left:0; flex:none;}
   .rr-team-row.formed{background:color-mix(in srgb, var(--accent) 11%, transparent); border-color:color-mix(in srgb, var(--accent) 38%, transparent);}
-  .rr-team-no{font-family:var(--font-faq); font-weight:700; color:var(--muted); text-align:center; font-size:13px;}
-  .rr-team-tag{font-size:12px; color:var(--accent); font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-  .rr-team-wait{color:var(--muted); font-weight:500;}
   .team-label{cursor:pointer; border-bottom:1px dashed transparent; padding-bottom:1px;}
   .team-label:hover{border-bottom-color:var(--muted);}
   .team-label-input{width:120px; font-size:12px;}
-  .rr-gtag{display:inline-block; margin-left:6px; font-size:10px; font-weight:700; padding:1px 6px; border-radius:6px; background:var(--panel2); color:var(--muted); border:1px solid var(--border);}
+  .rr-gtag{display:inline-block; margin-left:6px; text-transform:uppercase; font-size:10px; font-weight:700; padding:1px 6px; border-radius:6px; background:var(--panel2); color:var(--muted); border:1px solid var(--border);}
   .rr-odd-warn{margin-top:12px; padding:12px 14px; border-radius:10px; border:1.5px solid var(--danger); background:color-mix(in srgb, var(--danger) 14%, transparent); color:var(--text); font-size:12.5px; line-height:1.5;}
-  .rr-odd-warn b{display:block; color:var(--danger); letter-spacing:.05em; margin-bottom:3px; font-size:13px;}
+  .rr-odd-warn b{color:var(--danger); letter-spacing:.03em; font-size:13px;}
   .rr-grid{grid-template-columns:repeat(3, 1fr);}
   .seg-mini{display:flex; border:1px solid var(--border); border-radius:9px; overflow:hidden;}
   .seg-mini button{flex:1; border:0; border-radius:0; background:var(--panel2); color:var(--muted); padding:10px 8px; font-size:13px;}
@@ -963,9 +965,13 @@
   .rr-hint-bad{color:var(--danger);}
   .rr-ko-places{display:flex; flex-wrap:wrap; gap:6px 18px; font-size:13px; font-weight:700; margin:-4px 0 12px;}
   @media (max-width: 680px){
-    .rr-team-row{grid-template-columns:22px 1fr 1fr auto;}
-    .rr-team-tag{grid-column:2 / 4; white-space:normal;}
-    .rr-team-row .rm{grid-row:1; grid-column:4;}
+    .rr-teams{gap:5px;}
+    select:not(#themeSelect){padding-right:28px; background-position:calc(100% - 16px) 52%, calc(100% - 11px) 52%;}
+    .rr-team-row{grid-template-columns:1fr 1fr 36px; grid-template-rows:auto 40px; gap:3px 5px; padding:4px 4px 4px 4px;}
+    .rr-team-head{grid-column:1 / 3; grid-row:1; font-size:11px; line-height:14px; gap:5px; padding:1px 0 0 6px;}
+    .rr-team-head .rr-gtag{font-size:9px; padding:0 5px;}
+    .rr-team-row .rm{width:36px;}
+    .rr-team-row .rm{grid-column:3; grid-row:1 / 3; align-self:end;}
     .rr-grid{grid-template-columns:1fr 1fr;}
     .score-input.rr-in{width:48px;}
   }
@@ -3700,7 +3706,7 @@ function rrSetupHtml(){
   return `
       <div class="card" id="rrTeamsCard">
         <div class="section-title"><span>TEAMS (4 &middot; 6 &middot; 8 &middot; 12 &middot; 16)</span></div>
-        <div class="hint" style="margin:-6px 0 12px;">Two players per row make a team. Tap a team name to rename it.</div>
+        <div class="hint" style="margin:-6px 0 10px;">Two players per team &middot; tap a team name to rename it.</div>
         <div id="rrTeamsList" class="rr-teams"></div>
         <div style="margin-top:12px;"><button id="rrAddTeam" class="small">+ Add team</button></div>
         <div id="rrOddWarn"></div>
@@ -3716,6 +3722,7 @@ function rrSetupHtml(){
           </div>
           <div class="field">
             <label id="rrTargetLabel">First to (games)</label>
+            <select id="rrTargetSel">${[4,5,6,7,8,9].map(n=> `<option value="${n}">${n} games</option>`).join('')}</select>
             <input id="rrTarget" type="number" />
           </div>
           <div class="field">
@@ -3732,9 +3739,9 @@ function rrSetupHtml(){
           <div class="field">
             <label>Playoff (optional)</label>
             <select id="rrPlayoff">
-              <option value="quarterfinal">Quarterfinals (8 teams)</option>
-              <option value="semifinal">Semifinals (4 teams)</option>
-              <option value="final">Straight to the final (2 teams)</option>
+              <option value="quarterfinal" data-n="8">1/4 Final</option>
+              <option value="semifinal" data-n="4">1/2 Final</option>
+              <option value="final" data-n="2">Final</option>
             </select>
           </div>
           <div class="field rr-third-field">
@@ -3783,10 +3790,9 @@ function wireRrSetup(wrap){
       const row = document.createElement('div');
       row.className = 'rr-team-row' + (formed ? ' formed' : '');
       row.innerHTML = `
-        <span class="rr-team-no">${k+1}</span>
-        <input type="text" placeholder="Player ${2*k+1}" value="${escapeHtml(a)}" data-p="${2*k}" />
-        <input type="text" placeholder="Player ${2*k+2}" value="${escapeHtml(b)}" data-p="${2*k+1}" />
-        <span class="rr-team-tag">${formed ? `&#10003; ${rrTeamLabelHtml(k)} formed${G>1 ? ` <span class="rr-gtag">Group ${RR_GROUP_LETTERS[assign[k]]}</span>` : ''}` : `<span class="rr-team-wait">${escapeHtml(rrTeamName(k))} &mdash; add 2 players</span>`}</span>
+        <span class="rr-team-head">${formed ? '<span class="rr-team-ok">&#10003;</span>' : ''}${rrTeamLabelHtml(k)}${G>1 ? `<span class="rr-gtag">${RR_GROUP_LETTERS[assign[k]]}</span>` : ''}</span>
+        <input type="text" placeholder="Player 1" value="${escapeHtml(a)}" data-p="${2*k}" aria-label="${escapeHtml(rrTeamName(k))}, player 1" />
+        <input type="text" placeholder="Player 2" value="${escapeHtml(b)}" data-p="${2*k+1}" aria-label="${escapeHtml(rrTeamName(k))}, player 2" />
         <button class="rm" data-team="${k}" title="Remove team">&#10005;</button>`;
       list.appendChild(row);
     }
@@ -3825,11 +3831,16 @@ function wireRrSetup(wrap){
   const modeBtns = wrap.querySelectorAll('#rrScoreMode button');
   const tInp = wrap.querySelector('#rrTarget');
   const tLab = wrap.querySelector('#rrTargetLabel');
+  const tSel = wrap.querySelector('#rrTargetSel');
   function paintMode(){
     modeBtns.forEach(b=> b.setAttribute('aria-pressed', String(b.dataset.mode === state.rr.scoreMode)));
-    if(state.rr.scoreMode === 'games'){ tLab.textContent = 'First to (games, 4–9)'; tInp.min = 4; tInp.max = 9; tInp.value = state.rr.gamesTarget; }
+    const games = state.rr.scoreMode === 'games';
+    tSel.style.display = games ? '' : 'none';
+    tInp.style.display = games ? 'none' : '';
+    if(games){ tLab.textContent = 'First to (games)'; tSel.value = String(state.rr.gamesTarget); }
     else { tLab.textContent = 'First to (points)'; tInp.min = 5; tInp.max = 50; tInp.value = state.rr.pointsTarget; }
   }
+  tSel.addEventListener('change', e=>{ state.rr.gamesTarget = Math.max(4, Math.min(9, +e.target.value || 7)); saveState(); updatePlan(); });
   modeBtns.forEach(b=> b.addEventListener('click', ()=>{ state.rr.scoreMode = b.dataset.mode; saveState(); paintMode(); updatePlan(); }));
   tInp.addEventListener('change', e=>{
     let v = Math.round(+e.target.value || 0);
@@ -3839,6 +3850,12 @@ function wireRrSetup(wrap){
   });
   paintMode();
 
+  // playoff list: team counts only on wider screens
+  const poSel = wrap.querySelector('#rrPlayoff');
+  const poLabels = ()=>{ const narrow = window.matchMedia('(max-width: 680px)').matches;
+    poSel.querySelectorAll('option').forEach(o=>{ const base = {quarterfinal:'1/4 Final', semifinal:'1/2 Final', final:'Final'}[o.value]; o.textContent = narrow ? base : `${base} (${o.dataset.n} teams)`; }); };
+  poLabels();
+  window.matchMedia('(max-width: 680px)').addEventListener('change', ()=>{ if(document.body.contains(poSel)) poLabels(); });
   const cInp = wrap.querySelector('#rrCourts');
   cInp.value = String(Math.min(16, Math.max(1, state.numCourts||1)));
   cInp.addEventListener('change', e=>{ state.numCourts = Math.max(1, Math.min(16, +e.target.value || 1)); saveState(); updatePlan(); });
