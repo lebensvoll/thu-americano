@@ -1045,7 +1045,22 @@ function wireThemeSwitch(root){
     applyTheme();
     const nm = root.querySelector('#themeToggle .tp-name');
     if(nm) nm.textContent = THEME_LABELS[theme];
+    repaintAfterTheme();
   });
+}
+// Some browsers (Safari on iPhone in particular) only repaint the parts of
+// the page they think changed, so after a theme switch a patch of the old
+// background could stay on screen between the cards. Rebuild the page and
+// force one full layout + paint so every pixel takes the new theme.
+function repaintAfterTheme(){
+  const y = window.scrollY;
+  render();
+  const h = document.documentElement;
+  h.style.display = 'none';
+  void h.offsetHeight;
+  h.style.display = '';
+  window.scrollTo(0, y);
+  requestAnimationFrame(()=>{ document.body.style.transform = 'translateZ(0)'; requestAnimationFrame(()=>{ document.body.style.transform = ''; }); });
 }
 // One compact pill showing the current theme; tapping it opens the device's
 // own picker (a native <select>, so iPhone shows the standard iOS wheel).
