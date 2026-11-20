@@ -8,7 +8,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#15201b">
 <title>Padel Runner — Free Americano &amp; Mexicano Padel Tournament App</title>
-<meta name="description" content="Free tool for running Americano & Mexicano padel tournaments — live leaderboard, knockout bracket, session timer. By Oleg Prachuk.">
+<meta name="description" content="Free tool for running Americano, Mexicano & Round Robin padel tournaments — live leaderboard, group tables, knockout bracket, session timer. By Oleg Prachuk.">
 <meta name="author" content="Oleg Prachuk">
 
 <script type="application/ld+json">
@@ -16,9 +16,9 @@
   "@context": "https://schema.org",
   "@type": "WebApplication",
   "name": "Padel Runner",
-  "alternateName": "Americano & Mexicano Padel Tournament App",
+  "alternateName": "Americano, Mexicano & Round Robin Padel Tournament App",
   "url": "https://lebensvoll.github.io/thu-americano",
-  "description": "Free web app for running Americano and Mexicano padel tournaments and social padel events: automatic schedule generator, live leaderboard and knockout bracket. Built for padel clubs.",
+  "description": "Free web app for running Americano, Mexicano and Round Robin padel tournaments and social padel events: automatic schedule generator, live leaderboard, group tables and knockout bracket. Built for padel clubs.",
   "applicationCategory": "SportsApplication",
   "operatingSystem": "Any (runs in a web browser)",
   "browserRequirements": "Requires JavaScript",
@@ -31,6 +31,7 @@
   "featureList": [
     "Americano tournament scheduler",
     "Mexicano standings-based rounds",
+    "Round Robin with fixed teams, 1-4 groups and a playoff",
     "Live leaderboard",
     "Knockout / elimination bracket",
     "Add or remove players mid-event",
@@ -324,6 +325,12 @@
     padding:6px 10px; cursor:pointer; white-space:nowrap;
   }
   .theme-seg button[aria-pressed="true"]{ color:var(--dark); background:var(--accent); }
+  .theme-pick{position:relative; align-items:center; gap:7px; padding:6px 12px 6px 10px; cursor:pointer; font-family:'Manrope',sans-serif; font-size:11px; font-weight:700; color:var(--text); white-space:nowrap;}
+  .theme-pick:hover{border-color:var(--accent);}
+  .theme-pick .tp-dot{width:10px; height:10px; border-radius:50%; background:var(--accent); box-shadow:0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent);}
+  .theme-pick .tp-caret{color:var(--muted); font-size:10px;}
+  .theme-pick select{position:absolute; inset:0; width:100%; height:100%; opacity:0; cursor:pointer; font-size:16px; border:0; padding:0; margin:0; appearance:none; -webkit-appearance:none;}
+  .theme-pick:focus-within{border-color:var(--accent);}
   .container{max-width:1260px; margin:0 auto; padding:28px 48px 60px;}
   .card{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:22px 24px; margin-bottom:18px;}
   label{font-size:11.5px; color:var(--muted); display:block; margin-bottom:6px; letter-spacing:.04em; text-transform:uppercase; font-weight:600;}
@@ -627,8 +634,8 @@
       display:flex; flex-wrap:wrap; gap:8px; align-items:center; grid-column:1 / -1;
       order:1;
     }
-    .hero .actions .theme-seg{flex:1 1 auto;}
-    .hero .actions .theme-seg button{flex:1; text-align:center; padding:8px 4px;}
+    .hero .actions .theme-seg{flex:0 0 auto;}
+    .hero .actions .theme-pick{padding:8px 14px 8px 12px; font-size:12px;}
     .hero .actions .hist-group{flex:0 0 auto;}
     .hero .actions > button{width:100%; margin:0;}  /* only the direct text buttons stretch */
     /* "New tournament" sits right under the theme row — the obvious place to
@@ -745,6 +752,105 @@
   @media (max-width:680px){
     .site-footer{padding:22px 16px calc(26px + env(safe-area-inset-bottom)); font-size:11.5px;}
   }
+
+  /* ---------- ROUND ROBIN ---------- */
+  /* three format cards in one row: tighter cards */
+  .format-btn{padding:10px 12px;}
+  .format-btn .fmt-name{font-size:13.5px; margin-bottom:3px;}
+  .format-btn .fmt-desc{font-size:10.8px; line-height:1.45;}
+  .rr-teams{display:flex; flex-direction:column; gap:8px;}
+  .rr-team-row{display:grid; grid-template-columns:24px 1fr 1fr 260px auto; gap:8px; align-items:center; padding:5px 6px; border-radius:11px; border:1px solid transparent; transition:background .2s, border-color .2s;}
+  .rr-team-row.formed{background:color-mix(in srgb, var(--accent) 11%, transparent); border-color:color-mix(in srgb, var(--accent) 38%, transparent);}
+  .rr-team-no{font-family:var(--font-faq); font-weight:700; color:var(--muted); text-align:center; font-size:13px;}
+  .rr-team-tag{font-size:12px; color:var(--accent); font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .rr-team-wait{color:var(--muted); font-weight:500;}
+  .team-label{cursor:pointer; border-bottom:1px dashed transparent; padding-bottom:1px;}
+  .team-label:hover{border-bottom-color:var(--muted);}
+  .team-label-input{width:120px; font-size:12px;}
+  .rr-gtag{display:inline-block; margin-left:6px; font-size:10px; font-weight:700; padding:1px 6px; border-radius:6px; background:var(--panel2); color:var(--muted); border:1px solid var(--border);}
+  .rr-odd-warn{margin-top:12px; padding:12px 14px; border-radius:10px; border:1.5px solid var(--danger); background:color-mix(in srgb, var(--danger) 14%, transparent); color:var(--text); font-size:12.5px; line-height:1.5;}
+  .rr-odd-warn b{display:block; color:var(--danger); letter-spacing:.05em; margin-bottom:3px; font-size:13px;}
+  .rr-grid{grid-template-columns:repeat(3, 1fr);}
+  .seg-mini{display:flex; border:1px solid var(--border); border-radius:9px; overflow:hidden;}
+  .seg-mini button{flex:1; border:0; border-radius:0; background:var(--panel2); color:var(--muted); padding:10px 8px; font-size:13px;}
+  .seg-mini button[aria-pressed="true"]{background:var(--accent); color:var(--ink);}
+  .rr-check{display:flex; align-items:center; gap:8px; text-transform:none; letter-spacing:0; font-size:13px; font-weight:500; color:var(--text); margin:0; padding:10px 0; cursor:pointer;}
+  .rr-check input{width:auto; margin:0;}
+  .rr-plan-note{margin-top:6px; font-size:11.5px; color:var(--muted);}
+  .rr-plan-err{margin-top:6px; color:var(--danger); font-weight:700;}
+  /* group tables */
+  .rr-group{margin-bottom:12px;}
+  .rr-group-title{font-family:var(--font-faq); font-size:12px; font-weight:700; color:var(--accent); letter-spacing:.06em; text-transform:uppercase; margin:2px 0 4px;}
+  .rr-table{width:100%; border-collapse:collapse; font-size:12.5px; font-variant-numeric:tabular-nums;}
+  .rr-table th{font-size:9.5px; color:var(--muted); font-weight:700; letter-spacing:.05em; text-align:center; padding:3px 2px; border-bottom:1px solid var(--border);}
+  .rr-table td{text-align:center; padding:5px 2px; border-bottom:1px solid var(--border);}
+  .rr-table .rr-tn{text-align:left;}
+  .rr-table td.rr-tn{font-weight:700; line-height:1.2; padding-left:4px;}
+  .rr-pl{display:block; font-size:10.5px; font-weight:500; color:var(--muted); overflow-wrap:anywhere;}
+  .rr-pos{color:var(--muted); width:18px;}
+  .rr-w{font-weight:800; color:var(--accent);}
+  .rr-neg{color:var(--danger);}
+  .rr-table tr.rr-q td:first-child{box-shadow:inset 3px 0 0 var(--accent);}
+  .rr-legend{font-size:10.5px; color:var(--muted); margin-top:4px; line-height:1.45;}
+  .rr-q-dot{display:inline-block; width:8px; height:8px; border-radius:2px; background:var(--accent); margin-right:3px;}
+  /* match cards */
+  .rr-match .teams{gap:6px;}
+  .rr-team .team-label{font-weight:700;}
+  .rr-team.ko-winner .rr-pl{color:var(--accent); opacity:.8;}
+  .rr-mgroup{font-size:9.5px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--muted); text-align:center; margin:-3px 0 7px;}
+  .score-input.rr-in{width:46px;}
+  .rr-hint{text-align:center; margin:6px 0 0; font-size:11px;}
+  .rr-hint-bad{color:var(--danger);}
+  .rr-ko-places{display:flex; flex-wrap:wrap; gap:6px 18px; font-size:13px; font-weight:700; margin:-4px 0 12px;}
+  @media (max-width: 680px){
+    .rr-team-row{grid-template-columns:22px 1fr 1fr auto;}
+    .rr-team-tag{grid-column:2 / 4; white-space:normal;}
+    .rr-team-row .rm{grid-row:1; grid-column:4;}
+    .rr-grid{grid-template-columns:1fr 1fr;}
+    .score-input.rr-in{width:48px;}
+  }
+
+  /* ---------- FINISHED BANNER + PODIUM RESULTS ---------- */
+  .finished-banner{display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; margin:0 0 18px; padding:14px 18px; border-radius:var(--radius); border:1.5px solid var(--accent); background:linear-gradient(90deg, color-mix(in srgb, var(--accent) 18%, transparent), color-mix(in srgb, var(--accent) 6%, transparent)); box-shadow:0 0 0 4px color-mix(in srgb, var(--accent) 10%, transparent);}
+  .finished-banner .fb-text{display:flex; flex-direction:column; gap:2px; min-width:0;}
+  .finished-banner .fb-text b{font-family:var(--font-faq); font-size:16px; color:var(--accent); letter-spacing:.02em; text-transform:uppercase;}
+  .finished-banner .fb-text span{font-size:12.5px; color:var(--muted);}
+  .finished-banner button{padding:12px 22px; font-size:14px; font-weight:800;}
+  .podium-modal .modal-box{max-width:780px;}
+  .ps-wrap{margin-top:22px; display:flex; flex-direction:column; gap:14px;}
+  .ps-groups{display:grid; gap:14px; grid-template-columns:1fr;}
+  .ps-groups.ps-g2, .ps-groups.ps-g4{grid-template-columns:1fr 1fr;}
+  .ps-groups.ps-g3{grid-template-columns:1fr 1fr 1fr;}
+  .ps-block{text-align:left; background:var(--panel2); border:1px solid var(--border); border-radius:12px; padding:12px 14px;}
+  .ps-title{text-align:center; font-family:var(--font-faq); font-size:12px; font-weight:800; color:var(--accent); letter-spacing:.07em; text-transform:uppercase; margin-bottom:8px;}
+  .ps-table{width:100%; border-collapse:collapse; font-size:12.5px; font-variant-numeric:tabular-nums;}
+  .ps-table th{font-size:9.5px; color:var(--muted); font-weight:700; letter-spacing:.05em; text-align:center; padding:2px 4px 5px; border-bottom:1px solid var(--border);}
+  .ps-table td{text-align:center; padding:5px 4px; border-bottom:1px solid var(--border);}
+  .ps-table tr:last-child td{border-bottom:0;}
+  .ps-table .l{text-align:left;}
+  .ps-table td.l b{font-weight:700;}
+  .ps-sub{display:block; font-size:10.5px; color:var(--muted); font-weight:500;}
+  .ps-pos{color:var(--muted); width:20px; font-weight:700;}
+  .ps-main{font-weight:800; color:var(--accent);}
+  .ps-neg{color:var(--danger);}
+  .ps-table tr.top1 td:first-child{box-shadow:inset 3px 0 0 #d4af37;} .ps-table tr.top1 .ps-pos{color:#d4af37;}
+  .ps-table tr.top2 td:first-child{box-shadow:inset 3px 0 0 #b9c1c9;} .ps-table tr.top2 .ps-pos{color:#b9c1c9;}
+  .ps-table tr.top3 td:first-child{box-shadow:inset 3px 0 0 #b06a35;} .ps-table tr.top3 .ps-pos{color:#c27c45;}
+  .ps-ko-row{display:grid; grid-template-columns:96px 1fr auto 1fr; gap:8px; align-items:center; font-size:12.5px; padding:5px 0; border-bottom:1px solid var(--border);}
+  .ps-ko-row:last-child{border-bottom:0;}
+  .ps-ko-row > span:nth-child(2){text-align:right;}
+  .ps-ko-row b{font-variant-numeric:tabular-nums; color:var(--text); min-width:44px; text-align:center;}
+  .ps-ko-row.ps-tier{grid-template-columns:110px 1fr;}
+  .ps-ko-row.ps-tier > span:nth-child(2){text-align:left;}
+  .ps-ko-lab{font-size:10px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--muted);}
+  .ps-win{color:var(--accent); font-weight:800;}
+  @media (max-width: 680px){
+    .finished-banner{padding:12px 14px;}
+    .finished-banner button{width:100%;}
+    .ps-groups.ps-g2, .ps-groups.ps-g3, .ps-groups.ps-g4{grid-template-columns:1fr;}
+    .ps-ko-row{grid-template-columns:70px 1fr auto 1fr; font-size:12px;}
+    .podium-modal .modal-box{max-height:92vh;}
+  }
 </style>
 </head>
 <body>
@@ -752,7 +858,7 @@
 
 <footer class="site-footer">
   <p>
-    <strong>Padel Runner</strong> is a free Americano &amp; Mexicano padel tournament and event tool.
+    <strong>Padel Runner</strong> is a free Americano, Mexicano &amp; Round Robin padel tournament and event tool.
     It builds the schedule automatically, keeps a live leaderboard, runs a knockout
     bracket, and lets you add or drop players mid-event &mdash; all from a phone
     at the court. Made for padel clubs and social padel events: no sign-up, no ads, works offline.
@@ -793,25 +899,25 @@ function applyTheme(){
 }
 applyTheme();
 function wireThemeSwitch(root){
-  const seg = root.querySelector('#themeToggle');
-  if(!seg) return;
-  const paint = ()=> seg.querySelectorAll('button').forEach(b=>{
-    b.setAttribute('aria-pressed', String(b.dataset.themeOpt === theme));
-  });
-  paint();
-  seg.querySelectorAll('button').forEach(b=>{
-    b.addEventListener('click', ()=>{
-      theme = b.dataset.themeOpt;
-      localStorage.setItem(THEME_KEY, theme);
-      applyTheme();
-      paint();
-    });
+  const sel = root.querySelector('#themeSelect');
+  if(!sel) return;
+  sel.value = theme;
+  sel.addEventListener('change', ()=>{
+    theme = sel.value;
+    localStorage.setItem(THEME_KEY, theme);
+    applyTheme();
+    const nm = root.querySelector('#themeToggle .tp-name');
+    if(nm) nm.textContent = THEME_LABELS[theme];
   });
 }
+// One compact pill showing the current theme; tapping it opens the device's
+// own picker (a native <select>, so iPhone shows the standard iOS wheel).
 function themeSegHtml(){
-  return `<div class="theme-seg" id="themeToggle" role="group" aria-label="Colour theme">`
-    + THEMES.map(t=>`<button type="button" data-theme-opt="${t}">${THEME_LABELS[t]}</button>`).join('')
-    + `</div>`;
+  return `<label class="theme-seg theme-pick" id="themeToggle" title="Colour theme">`
+    + `<span class="tp-dot" aria-hidden="true"></span><span class="tp-name">${THEME_LABELS[theme]}</span><span class="tp-caret" aria-hidden="true">&#9662;</span>`
+    + `<select id="themeSelect" aria-label="Colour theme">`
+    + THEMES.map(t=>`<option value="${t}">${THEME_LABELS[t]}</option>`).join('')
+    + `</select></label>`;
 }
 
 function openHelpModal(){
@@ -824,9 +930,10 @@ function openHelpModal(){
 
       <h3>1. Set up the tournament</h3>
       <p>Tap the title and the line under it (date &middot; club) at the top of the page to name your tournament and venue &mdash; do this before sharing the page, or a reminder banner will keep nagging you.</p>
-      <p>Choose a <b>format</b>, add your players (8&ndash;12 works best), then set the points per match, number of courts, and how long you want the session to run. The recommendation box suggests how many rounds fit that time &mdash; you can override it.</p>
+      <p>Choose a <b>format</b> &mdash; Americano, Mexicano or Round Robin. For Americano and Mexicano add your players (8&ndash;12 works best), then set the points per match, number of courts, and how long you want the session to run. The recommendation box suggests how many rounds fit that time &mdash; you can override it.</p>
       <p><b>Americano</b> &mdash; the whole schedule is drawn up front. Partners rotate so everyone plays with everyone before any pairing repeats; once every combination is used it simply loops. The rotation is also planned a few rounds <b>beyond</b> the number you chose and kept in reserve, so rounds you add later continue it cleanly.</p>
       <p><b>Mexicano</b> &mdash; only Round&nbsp;1 is random. Each later round is built when you tap <b>+ Add round</b>, using the current standings, so winners climb and losers slide. <b>Shuffle mode</b> (default) keeps foursomes close in level but rotates partners &mdash; never the same partner twice in a row, as few repeats as possible. <b>Classic</b> always pairs 1st + 4th vs 2nd + 3rd.</p>
+      <p><b>Round Robin</b> &mdash; fixed teams: players 1+2 are team 1, 3+4 team 2, and so on (tap a team name to rename it). Pick 1&ndash;4 groups; every team plays every other team in its group once. Scores are games (first to 4&ndash;9, default 7) or points (first to the number you set) &mdash; type one team's score and, if it lost, the winner's score fills in. Tables rank by wins, then head-to-head, then game difference. Afterwards the top teams play quarterfinals, semifinals or go straight to the final, with an optional 3rd-place match. With an odd number of teams one team rests each round.</p>
       <p>If the player count isn't a multiple of 4 &times; courts, players sit out on a fair rotation: nobody ever sits out two rounds in a row, everyone rests about equally often, and whoever rested longest ago is next.</p>
 
       <h3>2. Run the rounds</h3>
@@ -847,6 +954,7 @@ function openHelpModal(){
 
       <h3>6. Knockout stage</h3>
       <p>Once enough players have results, pick a starting stage and generate an elimination bracket. Teams are formed by pairing a strong finisher with a weaker one (snake seeding). The main leaderboard keeps running underneath, and knockout standings are tracked separately.</p>
+      <p>In <b>Round Robin</b> the teams stay as entered. Under the last group round, <b>Start quarterfinals / semifinals / final</b> seeds the top teams from the group tables &mdash; with two groups it crosses them (A1 v B2, B1 v A2), with one group it pairs 1st v 4th and 2nd v 3rd. Winners move on automatically; the optional 3rd-place match is played by the two semifinal losers.</p>
 
       <h3>7. Finishing</h3>
       <p><b>Finish tournament</b> (the button under the last round, or in the header) saves a results file to your device and opens the <b>podium</b> as a pop-up. Close it and reopen it any time with <b>Show final podium</b>. <b>Reopen tournament</b> puts you back into play if you need to fix something.</p>
@@ -856,7 +964,7 @@ function openHelpModal(){
       <p>It is <b>not</b> shared or synced: a friend opening the same link gets their own separate copy, and clearing your browser data (or using a private window) wipes it. To keep a backup or move a running tournament to another device, use <b>Export</b> (downloads a JSON file) and <b>Import</b> (loads one back).</p>
 
       <h3>Colour theme</h3>
-      <p>Three looks, from the switch at the top of the page: <b>Sterling</b> (the club&rsquo;s Sport &amp; Wellness palette), <b>Graphite</b> (deep-space grey with a dust of stars) and <b>Sakura</b> (dark cherry blossom over a magenta nebula). Your choice is remembered on this device.</p>
+      <p>Tap the theme button at the top of the page (it shows the current theme) and pick from the list: <b>Sterling</b> (the club&rsquo;s Sport &amp; Wellness palette), <b>Graphite</b> (deep-space grey with a dust of stars), <b>Sakura</b> (dark cherry blossom over a magenta nebula) or <b>Padel Pa</b> (midnight cobalt with the community&rsquo;s logo). Your choice is remembered on this device.</p>
 
       <p style="margin-top:20px;">This tool is free for everyone to use. If you'd like to say thanks, message the developer on Instagram: <a href="https://instagram.com/olegprachuk" target="_blank" rel="noopener" style="color:var(--accent); text-decoration:none;">instagram.com/olegprachuk</a></p>
     </div>
@@ -918,7 +1026,8 @@ function defaultState(){
     rankBy: 'points',
     courtLabels: {},        // { "1": "A", "2": "Centre", ... } — overrides the number after "COURT"
     startedAt: null,        // ms epoch when rounds were first generated
-    finishedAt: null        // ms epoch when the tournament was finished (freezes the timer)
+    finishedAt: null,       // ms epoch when the tournament was finished (freezes the timer)
+    rr: defaultRr()         // Round Robin settings (fixed teams)
   };
 }
 
@@ -935,6 +1044,7 @@ if(state.mexMode !== 'classic' && state.mexMode !== 'shuffle') state.mexMode = '
 if(state.courtLabels === undefined || state.courtLabels === null) state.courtLabels = {};
 if(state.startedAt === undefined) state.startedAt = null;
 if(state.finishedAt === undefined) state.finishedAt = null;
+state.rr = Object.assign(defaultRr(), state.rr || {});
 if(state.plannedRounds === undefined) state.plannedRounds = (state.schedule && state.schedule.length) ? state.schedule.length : (state.numRounds || 8);
 if(state.rosterChanged === undefined) state.rosterChanged = !!(state.removed && state.removed.length);
 // A tournament already in progress from before the timer existed: start the
@@ -1016,6 +1126,7 @@ function showToast(msg, ms){
 // — format, points target, courts, active players. Plain text, no emphasis.
 function renderStatusStrip(container){
   if(!container) return;
+  if(state.tournamentType === 'roundrobin'){ container.textContent = rrStatusText(); return; }
   const fmt = state.tournamentType === 'mexicano' ? (state.mexMode === 'classic' ? 'Mexicano Classic' : 'Mexicano Shuffle') : 'Americano';
   const players = activePlayerIndices().length;
   const courts = state.numCourts;
@@ -1080,6 +1191,7 @@ function reopenTournament(){
   render();
 }
 function podiumInnerHtml(){
+  if(state.tournamentType === 'roundrobin') return rrPodiumHtml();
   const top3 = computeLeaderboard().slice(0, 3);
   if(top3.length < 3) return '<div class="empty">Not enough completed matches to determine a podium.</div>';
   const [first, second, third] = top3;
@@ -1111,6 +1223,7 @@ function openPodiumModal(){
       <h2>&#127942; Final Podium</h2>
       ${podiumInnerHtml()}
       <div class="hint podium-meta">${escapeHtml(state.tournamentName)}${venue}${when}</div>
+      ${podiumStandingsHtml()}
     </div>`;
   document.body.appendChild(overlay);
   const close = ()=> overlay.remove();
@@ -1120,11 +1233,53 @@ function openPodiumModal(){
     if(e.key === 'Escape'){ close(); document.removeEventListener('keydown', onEsc); }
   });
 }
+// Full results under the podium: the individual leaderboard (Americano /
+// Mexicano, plus knockout places if a bracket was played) or the Round Robin
+// group tables with the playoff result.
+function podiumStandingsHtml(){
+  const rowCls = i=> i===0 ? 'top1' : i===1 ? 'top2' : i===2 ? 'top3' : '';
+  const sign = d=> d>0 ? '+'+d : String(d);
+  if(state.tournamentType === 'roundrobin'){
+    const groups = rrStandings();
+    let html = '';
+    const pl = rrKoPlaces();
+    if(pl && state.knockout){
+      const nm = pair=> pair ? escapeHtml(rrTeamName(rrTeamOfPair(pair))) : '&mdash;';
+      const rows = [];
+      state.knockout.rounds.forEach(r=> r.matches.forEach(m=>{
+        const A = resolveTeamRef(m.a), B = resolveTeamRef(m.b), side = rrScoreSide(m.score);
+        if(!A || !B) return;
+        rows.push(`<div class="ps-ko-row"><span class="ps-ko-lab">${escapeHtml(RR_KO_LABEL[m.id] || m.id)}</span><span class="${side==='a'?'ps-win':''}">${nm(A)}</span><b>${rrScored(m.score) ? m.score.a+' : '+m.score.b : '&ndash;'}</b><span class="${side==='b'?'ps-win':''}">${nm(B)}</span></div>`);
+      }));
+      if(rows.length) html += `<div class="ps-block"><div class="ps-title">Playoff</div>${rows.join('')}</div>`;
+    }
+    html += `<div class="ps-groups ps-g${groups.length}">` + groups.map((g,gi)=>`
+      <div class="ps-block">
+        <div class="ps-title">${groups.length > 1 ? 'Group '+RR_GROUP_LETTERS[gi] : 'Group table'}</div>
+        <table class="ps-table"><thead><tr><th></th><th class="l">Team</th><th>P</th><th>W</th><th>L</th><th>+/&minus;</th></tr></thead><tbody>
+        ${g.map((s,i)=>`<tr class="${rowCls(i)}"><td class="ps-pos">${i+1}</td><td class="l"><b>${escapeHtml(rrTeamName(s.k))}</b><span class="ps-sub">${escapeHtml(rrTeamPlayers(s.k).join(' · '))}</span></td><td>${s.p}</td><td class="ps-main">${s.w}</td><td>${s.l}</td><td class="${s.f-s.a<0?'ps-neg':''}">${sign(s.f-s.a)}</td></tr>`).join('')}
+        </tbody></table>
+      </div>`).join('') + `</div>`;
+    return `<div class="ps-wrap">${html}</div>`;
+  }
+  const lb = computeLeaderboard().filter(p=> p.played > 0);
+  if(!lb.length) return '';
+  const byDiff = state.rankBy === 'diff';
+  let html = `<div class="ps-block"><div class="ps-title">Final leaderboard</div>
+    <table class="ps-table"><thead><tr><th></th><th class="l">Player</th><th>Pl</th><th>W</th><th>+/&minus;</th><th>${byDiff ? 'Pts' : 'Pts'}</th></tr></thead><tbody>
+    ${lb.map((p,i)=>{ const d = p.points - p.against; return `<tr class="${rowCls(i)}"><td class="ps-pos">${i+1}</td><td class="l"><b>${escapeHtml(p.name)}</b>${p.removed ? '<span class="ps-sub">left</span>' : ''}</td><td>${p.played}</td><td>${p.wins}</td><td class="${d<0?'ps-neg':''}${byDiff?' ps-main':''}">${sign(d)}</td><td class="${byDiff?'':'ps-main'}">${p.points}</td></tr>`; }).join('')}
+    </tbody></table></div>`;
+  if(state.knockout){
+    const tiers = computeKnockoutStandings().filter(t=> t.teams.some(Boolean));
+    if(tiers.length) html = `<div class="ps-block"><div class="ps-title">Knockout</div>${tiers.map(t=>`<div class="ps-ko-row ps-tier"><span class="ps-ko-lab">${escapeHtml(t.label)}</span><span>${t.teams.map(teamName).map(escapeHtml).join(' &nbsp;/&nbsp; ')}</span></div>`).join('')}</div>` + html;
+  }
+  return `<div class="ps-wrap">${html}</div>`;
+}
 function renderFinishCta(){
   const el = document.createElement('div');
   el.className = 'finish-cta';
   el.innerHTML = state.stage === 'finished'
-    ? `<button type="button" class="accent" id="showPodiumCta">&#127942; Show final podium</button>
+    ? `<button type="button" class="accent" id="showPodiumCta">&#127942; Show podium &amp; results</button>
        <button type="button" class="ghost small" id="reopenCta">Reopen tournament</button>`
     : `<button type="button" class="primary" id="finishCta">Finish tournament &amp; show podium</button>`;
   el.addEventListener('click', e=>{
@@ -1258,6 +1413,10 @@ function renderSetup(){
             <span class="fmt-name">Mexicano</span>
             <span class="fmt-desc">Round 1 is random. After every round, players are ranked by points and regrouped into new foursomes by level &mdash; winners rise, losers fall.</span>
           </button>
+          <button type="button" class="format-btn" data-type="roundrobin">
+            <span class="fmt-name">Round Robin</span>
+            <span class="fmt-desc">Fixed teams of two. Every team plays every other team in its group (1&ndash;4 groups), then the top teams go to a playoff.</span>
+          </button>
         </div>
         <div class="mex-mode" id="mexModeBox">
           <div class="mex-mode-label">Mexicano pairing</div>
@@ -1274,7 +1433,8 @@ function renderSetup(){
         </div>
       </div>
 
-      <div class="card">
+${rrSetupHtml()}
+      <div class="card" id="amPlayersCard">
         <div class="section-title"><span>PLAYERS (8&ndash;12 RECOMMENDED)</span></div>
         <div class="player-grid" id="playersList"></div>
         <div style="margin-top:12px;">
@@ -1282,7 +1442,7 @@ function renderSetup(){
         </div>
       </div>
 
-      <div class="card">
+      <div class="card" id="amSettingsCard">
         <div class="grid4">
           <div class="field field-info">
             <label>Points per match (8&ndash;32) <button type="button" class="info-icon" id="schedInfoBtn" aria-label="Format details">i</button></label>
@@ -1371,6 +1531,16 @@ function renderSetup(){
   });
   function updateFormatUI(){
     formatBtns.forEach(b=> b.classList.toggle('active', b.dataset.type === state.tournamentType));
+    const isRR = state.tournamentType === 'roundrobin';
+    wrap.querySelector('#amPlayersCard').style.display = isRR ? 'none' : '';
+    wrap.querySelector('#amSettingsCard').style.display = isRR ? 'none' : '';
+    wrap.querySelector('#rrTeamsCard').style.display = isRR ? '' : 'none';
+    wrap.querySelector('#rrSettingsCard').style.display = isRR ? '' : 'none';
+    if(isRR){
+      mexBox.style.display = 'none';
+      generateBtn.textContent = 'Start Round Robin';
+      return;
+    }
     mexBtns.forEach(b=> b.classList.toggle('active', b.dataset.mex === state.mexMode));
     mexBox.style.display = state.tournamentType === 'mexicano' ? '' : 'none';
     if(state.tournamentType === 'mexicano'){
@@ -1387,8 +1557,10 @@ function renderSetup(){
   }
   formatBtns.forEach(b=>{
     b.addEventListener('click', ()=>{
+      const wasRR = state.tournamentType === 'roundrobin';
       state.tournamentType = b.dataset.type;
       saveState();
+      if(wasRR !== (state.tournamentType === 'roundrobin')){ render(); return; }
       updateFormatUI();
     });
   });
@@ -1399,6 +1571,7 @@ function renderSetup(){
       updateFormatUI();
     });
   });
+  wireRrSetup(wrap);
   updateFormatUI();
 
   wrap.querySelector('#addPlayer').addEventListener('click', ()=>{
@@ -1443,6 +1616,7 @@ function renderSetup(){
   updateRec();
 
   wrap.querySelector('#generateBtn').addEventListener('click', ()=>{
+    if(state.tournamentType === 'roundrobin'){ rrStart(); return; }
     const names = state.players.map(n=>n.trim()).filter(n=>n.length>0);
     if(names.length < 4){ alert('You need at least 4 players.'); return; }
     state.players = names;
@@ -2055,6 +2229,12 @@ function findKoMatch(id){
 function resolveTeamRef(ref){
   if(!ref) return null;
   if(ref.type === 'seed') return state.knockout.seeds[ref.n];
+  if(ref.type === 'loser') return resolveLoserTeam(ref.id);
+  if(ref.type === 'winner' && state.tournamentType === 'roundrobin'){
+    const m = findKoMatch(ref.id);
+    const side = m ? rrScoreSide(m.score) : null;
+    return side ? resolveTeamRef(side === 'a' ? m.a : m.b) : null;
+  }
   if(ref.type === 'winner'){
     const m = findKoMatch(ref.id);
     if(!m || m.score.a === null || m.score.a === '') return null;
@@ -2066,6 +2246,11 @@ function resolveTeamRef(ref){
   return null;
 }
 function resolveLoserTeam(matchId){
+  if(state.tournamentType === 'roundrobin'){
+    const mm = findKoMatch(matchId);
+    const side = mm ? rrScoreSide(mm.score) : null;
+    return side ? resolveTeamRef(side === 'a' ? mm.b : mm.a) : null;
+  }
   const m = findKoMatch(matchId);
   if(!m || m.score.a === null || m.score.a === '') return null;
   const target = state.pointsTarget;
@@ -2374,7 +2559,7 @@ function renderPlaying(){
           <button id="importBtn" class="small ghost">Import</button>
           <input type="file" id="importFile" accept="application/json" style="display:none;" />
           ${state.stage === 'finished'
-            ? '<button id="reopenBtn" class="small ghost">Reopen tournament</button>'
+            ? '<button id="podiumTopBtn" class="accent small">&#127942; Podium &amp; results</button><button id="reopenBtn" class="small ghost">Reopen tournament</button>'
             : '<button id="finishBtn" class="primary small">Finish tournament</button>'}
           <button id="resetResultsBtn" class="small ghost">Reset results</button>
           <button id="newTournament" class="warn small">New tournament</button>
@@ -2383,6 +2568,7 @@ function renderPlaying(){
       </div>
     </div>
     <div class="container">
+      ${state.stage === 'finished' ? `<div class="finished-banner"><div class="fb-text"><b>&#127937; Tournament finished</b><span>The podium, ${state.tournamentType === 'roundrobin' ? 'group tables' : 'final leaderboard'}${state.knockout ? ' and playoff results' : ''} &mdash; one tap away.</span></div><button type="button" class="accent" id="podiumBannerBtn">&#127942; Show podium &amp; results</button></div>` : ''}
       <div class="layout">
         <div class="card leaderboard-card${lbCollapsedMobile ? ' lb-collapsed' : ''}">
           <div class="section-title">
@@ -2448,7 +2634,16 @@ function renderPlaying(){
   if(finishBtn) finishBtn.addEventListener('click', finishTournament);
   const reopenBtn = wrap.querySelector('#reopenBtn');
   if(reopenBtn) reopenBtn.addEventListener('click', reopenTournament);
+  ['#podiumTopBtn', '#podiumBannerBtn'].forEach(id=>{ const b = wrap.querySelector(id); if(b) b.addEventListener('click', openPodiumModal); });
 
+  if(state.tournamentType === 'roundrobin'){
+    wrap.querySelector('.leaderboard-card .section-title span').textContent = 'STANDINGS';
+    wrap.querySelector('.leaderboard-card').classList.add('rr-standings-card');
+    wrap.querySelector('#statusStrip').textContent = rrStatusText();
+    renderRrStandings(wrap.querySelector('#leaderboard'));
+    renderRrRounds(wrap.querySelector('#roundsCol'));
+    return wrap;
+  }
   renderStatusStrip(wrap.querySelector('#statusStrip'));
   renderLeaderboard(wrap.querySelector('#leaderboard'));
   renderBenchWarnings(wrap.querySelector('#restWarnings'));
@@ -2494,6 +2689,7 @@ function importStateFromFile(file){
       if(parsed.courtLabels === undefined || parsed.courtLabels === null) parsed.courtLabels = {};
       if(parsed.startedAt === undefined) parsed.startedAt = null;
       if(parsed.finishedAt === undefined) parsed.finishedAt = null;
+      parsed.rr = Object.assign(defaultRr(), parsed.rr || {});
       if(parsed.startedAt === null && parsed.schedule && parsed.schedule.length) parsed.startedAt = Date.now();
       if(parsed.knockout && !(Array.isArray(parsed.knockout.seeds) && parsed.knockout.seeds.every(s=>Array.isArray(s) && s.length===2))){
         parsed.knockout = null;
@@ -2881,6 +3077,757 @@ function updateAfterScoreChange(ri, mi, inputEl){
   if(lbContainer) renderLeaderboard(lbContainer);
   // NB: deliberately no full re-render of the rounds column here — that would
   // tear down the <input> mid-typing (couldn't enter a 2nd digit on mobile).
+}
+
+/* ---------- ROUND ROBIN (fixed teams) ----------
+   Teams are fixed pairs: players 1+2 = team 1, 3+4 = team 2, and so on.
+   Every team plays every other team in its group once; matches are packed
+   onto the courts round by round. After the group stage a playoff
+   (quarterfinal / semifinal / final, optional 3rd-place match) is seeded
+   from the group tables. Scores are games (first to N, 4–9) or points
+   (first to N), entered for both teams. */
+const RR_GROUP_LETTERS = ['A','B','C','D'];
+function defaultRr(){
+  return {groups:1, scoreMode:'games', gamesTarget:7, pointsTarget:21, playoff:'semifinal', third:false, teamNames:{}, assign:null};
+}
+function rrTarget(){
+  const r = state.rr || defaultRr();
+  return r.scoreMode === 'points' ? r.pointsTarget : r.gamesTarget;
+}
+function rrUnit(){ return (state.rr && state.rr.scoreMode === 'points') ? 'points' : 'games'; }
+function rrTeamCount(){ return Math.floor(state.players.length/2); }
+function rrTeamName(k){
+  const n = state.rr && state.rr.teamNames && state.rr.teamNames[k];
+  return (n === undefined || n === null || n === '') ? `Team ${k+1}` : String(n);
+}
+function rrTeamPlayers(k){ return [state.players[2*k] || '', state.players[2*k+1] || '']; }
+function rrTeamOfPair(pair){ return pair ? Math.floor(pair[0]/2) : null; }
+
+// Snake split of the team order into groups: A B C D D C B A ...
+function rrAssignGroups(T, G){
+  const out = Array(T).fill(0);
+  for(let i=0; i<T; i++){
+    const lap = Math.floor(i/G), pos = i%G;
+    out[i] = lap%2 === 0 ? pos : G-1-pos;
+  }
+  return out;
+}
+function rrGroupSizes(T, G){
+  const a = rrAssignGroups(T, G), s = Array(G).fill(0);
+  a.forEach(g=> s[g]++);
+  return s;
+}
+
+// Circle method: every team meets every other team once.
+function rrCircle(teams){
+  const L = teams.slice();
+  if(L.length % 2) L.push(null);
+  const n = L.length, rounds = [];
+  for(let r=0; r<n-1; r++){
+    const ms = [];
+    for(let i=0; i<n/2; i++){
+      const a = L[i], b = L[n-1-i];
+      if(a !== null && b !== null) ms.push(r%2 ? [b,a] : [a,b]);
+    }
+    rounds.push(ms);
+    L.splice(1, 0, L.pop());
+  }
+  return rounds;
+}
+
+// Packs group matches onto the courts. Matches are taken in circle order
+// (all groups' round 1, then round 2, ...); a round never has a team twice,
+// and a team never plays a later match before an earlier one of its own.
+function rrBuildSchedule(T, G, courts){
+  const assign = rrAssignGroups(T, G);
+  const queue = [];
+  const perGroup = [];
+  for(let g=0; g<G; g++) perGroup.push(rrCircle([...Array(T).keys()].filter(k=>assign[k]===g)));
+  const maxR = Math.max(...perGroup.map(r=>r.length));
+  for(let r=0; r<maxR; r++) for(let g=0; g<G; g++) (perGroup[g][r]||[]).forEach(([a,b])=> queue.push({a,b,g}));
+  const rounds = [];
+  while(queue.length){
+    const wave = [], used = new Set(), blocked = new Set();
+    for(let i=0; i<queue.length && wave.length<courts; i++){
+      const m = queue[i];
+      if(used.has(m.a) || used.has(m.b) || blocked.has(m.a) || blocked.has(m.b)){ blocked.add(m.a); blocked.add(m.b); continue; }
+      wave.push(i); used.add(m.a); used.add(m.b);
+    }
+    const ms = wave.map(i=> queue[i]);
+    for(let j=wave.length-1; j>=0; j--) queue.splice(wave[j], 1);
+    rounds.push({
+      matches: ms.map((m,ci)=>({court: ci+1, ta:m.a, tb:m.b, g:m.g, teamA:[2*m.a, 2*m.a+1], teamB:[2*m.b, 2*m.b+1]})),
+      bench: [],
+      rest: [...Array(T).keys()].filter(k=> !used.has(k))
+    });
+  }
+  return {rounds, assign};
+}
+
+// Winner of one RR score {a,b}: higher score wins; equal or missing = none.
+function rrScoreSide(sc){
+  if(!sc || sc.a === null || sc.a === undefined || sc.a === '' || sc.b === null || sc.b === undefined || sc.b === '') return null;
+  const a = +sc.a, b = +sc.b;
+  return a > b ? 'a' : b > a ? 'b' : null;
+}
+function rrScored(sc){ return !!sc && sc.a !== null && sc.a !== undefined && sc.a !== '' && sc.b !== null && sc.b !== undefined && sc.b !== ''; }
+
+// Group tables. Ranking: wins, then head-to-head among the tied teams,
+// then game/point difference, then games/points won.
+function rrStandings(){
+  const T = rrTeamCount(), G = state.rr.groups, assign = state.rr.assign || rrAssignGroups(T, G);
+  const st = Array.from({length:T}, (_,k)=>({k, g:assign[k], p:0, w:0, l:0, f:0, a:0}));
+  const res = [];   // [winner, loser]
+  (state.schedule||[]).forEach((round, ri)=> round.matches.forEach((m, mi)=>{
+    const sc = state.scores[ri][mi];
+    if(!rrScored(sc)) return;
+    const A = st[m.ta], B = st[m.tb], a = +sc.a, b = +sc.b;
+    A.p++; B.p++; A.f += a; A.a += b; B.f += b; B.a += a;
+    const side = rrScoreSide(sc);
+    if(side === 'a'){ A.w++; B.l++; res.push([m.ta, m.tb]); }
+    else if(side === 'b'){ B.w++; A.l++; res.push([m.tb, m.ta]); }
+  }));
+  const groups = [];
+  for(let g=0; g<G; g++){
+    const list = st.filter(s=> s.g === g);
+    const byWins = {};
+    list.forEach(s=> (byWins[s.w] = byWins[s.w] || []).push(s));
+    Object.values(byWins).forEach(tied=>{
+      const set = new Set(tied.map(s=>s.k));
+      tied.forEach(s=> s.h2h = res.filter(([w,l])=> w===s.k && set.has(l)).length);
+    });
+    list.sort((x,y)=> y.w-x.w || y.h2h-x.h2h || (y.f-y.a)-(x.f-x.a) || y.f-x.f || x.k-y.k);
+    list.forEach((s,i)=> s.pos = i);
+    groups.push(list);
+  }
+  return groups;
+}
+
+// Qualifiers in seeding order: all group winners (best first), then all
+// runners-up, and so on — compared by win rate, then difference per match.
+function rrQualifierOrder(groups){
+  const out = [];
+  const maxLen = Math.max(...groups.map(g=>g.length));
+  for(let pos=0; pos<maxLen; pos++){
+    const layer = groups.map(g=> g[pos]).filter(Boolean);
+    layer.sort((x,y)=>{
+      const wx = x.p ? x.w/x.p : 0, wy = y.p ? y.w/y.p : 0;
+      const dx = x.p ? (x.f-x.a)/x.p : 0, dy = y.p ? (y.f-y.a)/y.p : 0;
+      return wy-wx || dy-dx || y.f-x.f || x.g-y.g;
+    });
+    out.push(...layer);
+  }
+  return out;
+}
+function rrPlayoffSize(){ return {quarterfinal:8, semifinal:4, final:2}[state.rr.playoff] || 4; }
+
+// Seeded pairs for the first playoff round, as team indices.
+function rrPlayoffPairs(){
+  const groups = rrStandings(), G = groups.length, K = rrPlayoffSize();
+  const at = (g,p)=> groups[g] && groups[g][p] ? groups[g][p].k : null;
+  if(G === 1){
+    const s = groups[0].map(x=>x.k);
+    if(K === 2) return [[s[0], s[1]]];
+    if(K === 4) return [[s[0], s[3]], [s[1], s[2]]];
+    return [[s[0], s[7]], [s[3], s[4]], [s[1], s[6]], [s[2], s[5]]];
+  }
+  if(G === 2){
+    if(K === 2) return [[at(0,0), at(1,0)]];
+    if(K === 4) return [[at(0,0), at(1,1)], [at(1,0), at(0,1)]];
+    return [[at(0,0), at(1,3)], [at(1,1), at(0,2)], [at(1,0), at(0,3)], [at(0,1), at(1,2)]];
+  }
+  if(G === 4 && K === 8) return [[at(0,0), at(1,1)], [at(2,0), at(3,1)], [at(1,0), at(0,1)], [at(3,0), at(2,1)]];
+  const q = rrQualifierOrder(groups).slice(0, K);
+  const pairsIdx = K === 2 ? [[0,1]] : K === 4 ? [[0,3],[1,2]] : [[0,7],[3,4],[1,6],[2,5]];
+  const pairs = pairsIdx.map(([i,j])=> [q[i], q[j]]);
+  // avoid two teams from the same group meeting straight away where a swap fixes it
+  for(let i=0; i<pairs.length; i++){
+    if(pairs[i][0] && pairs[i][1] && pairs[i][0].g === pairs[i][1].g){
+      for(let j=0; j<pairs.length; j++){
+        if(j === i) continue;
+        const x = pairs[i][1], y = pairs[j][1];
+        if(y && pairs[i][0].g !== y.g && pairs[j][0].g !== x.g){ pairs[i][1] = y; pairs[j][1] = x; break; }
+      }
+    }
+  }
+  return pairs.map(p=> p.map(x=> x ? x.k : null));
+}
+
+function rrBuildKnockout(){
+  const firstPairs = rrPlayoffPairs();
+  if(firstPairs.some(p=> p[0] === null || p[1] === null || p[0] === undefined || p[1] === undefined)) return null;
+  const seeds = [];
+  const seedOf = k=>{ seeds.push([2*k, 2*k+1]); return {type:'seed', n:seeds.length-1}; };
+  const K = rrPlayoffSize();
+  const rounds = [];
+  if(K === 8){
+    rounds.push({name:'Quarterfinal', matches: firstPairs.map((p,i)=>({id:'QF'+(i+1), a:seedOf(p[0]), b:seedOf(p[1]), score:{a:null,b:null}}))});
+    rounds.push({name:'Semifinal', matches:[
+      {id:'SF1', a:{type:'winner',id:'QF1'}, b:{type:'winner',id:'QF2'}, score:{a:null,b:null}},
+      {id:'SF2', a:{type:'winner',id:'QF3'}, b:{type:'winner',id:'QF4'}, score:{a:null,b:null}}]});
+  } else if(K === 4){
+    rounds.push({name:'Semifinal', matches: firstPairs.map((p,i)=>({id:'SF'+(i+1), a:seedOf(p[0]), b:seedOf(p[1]), score:{a:null,b:null}}))});
+  }
+  const fin = K === 2
+    ? {id:'F1', a:seedOf(firstPairs[0][0]), b:seedOf(firstPairs[0][1]), score:{a:null,b:null}}
+    : {id:'F1', a:{type:'winner',id:'SF1'}, b:{type:'winner',id:'SF2'}, score:{a:null,b:null}};
+  const finalRound = {name:'Final', matches:[fin]};
+  if(K >= 4 && state.rr.third) finalRound.matches.push({id:'3P', a:{type:'loser',id:'SF1'}, b:{type:'loser',id:'SF2'}, score:{a:null,b:null}});
+  rounds.push(finalRound);
+  return {seeds, rounds, rr:true};
+}
+
+// Rough match length: a padel game ~3.5 min; points ~0.68 min each.
+// The loser usually reaches ~60% of the target.
+function rrMinutesPerMatch(){
+  const t = rrTarget();
+  return rrUnit() === 'games' ? t*1.6*3.5 : t*1.6*0.68;
+}
+function rrPlan(T, G, courts){
+  const sizes = rrGroupSizes(T, G);
+  const matches = sizes.reduce((s,n)=> s + n*(n-1)/2, 0);
+  const {rounds} = rrBuildSchedule(T, G, courts);
+  const per = rrMinutesPerMatch();
+  const K = rrPlayoffSize();
+  const koRounds = K === 8 ? 3 : K === 4 ? 2 : 1;
+  return {sizes, matches, rounds: rounds.length, per, groupMin: rounds.length*per, koMin: koRounds*per};
+}
+
+/* ---------- ROUND ROBIN: UI ---------- */
+
+// Inline rename for a team label (same feel as court labels).
+function wireTeamLabelEdit(root, after){
+  root.querySelectorAll('.team-label').forEach(el=>{
+    el.addEventListener('click', e=>{
+      e.stopPropagation();
+      const k = +el.dataset.team;
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'court-label-input team-label-input';
+      input.value = rrTeamName(k);
+      el.replaceWith(input);
+      input.focus(); input.select();
+      let done = false;
+      const commit = ()=>{
+        if(done) return;
+        done = true;
+        const raw = input.value.trim();
+        if(state.stage !== 'setup') pushHistory();
+        if(raw === '' || raw === `Team ${k+1}`) delete state.rr.teamNames[k];
+        else state.rr.teamNames[k] = raw;
+        saveState();
+        after ? after() : render();
+      };
+      input.addEventListener('blur', ()=> setTimeout(commit, 120));
+      input.addEventListener('keydown', ev=>{
+        if(ev.key === 'Enter') commit();
+        if(ev.key === 'Escape'){ done = true; after ? after() : render(); }
+      });
+    });
+  });
+}
+
+function rrTeamLabelHtml(k){
+  return `<span class="team-label" data-team="${k}" title="Click to rename this team">${escapeHtml(rrTeamName(k))}</span>`;
+}
+
+// Setup: team rows (two players per row) + Round Robin settings.
+function rrSetupHtml(){
+  return `
+      <div class="card" id="rrTeamsCard">
+        <div class="section-title"><span>TEAMS (4 &middot; 6 &middot; 8 &middot; 12 &middot; 16)</span></div>
+        <div class="hint" style="margin:-6px 0 12px;">Two players per row make a team. Tap a team name to rename it.</div>
+        <div id="rrTeamsList" class="rr-teams"></div>
+        <div style="margin-top:12px;"><button id="rrAddTeam" class="small">+ Add team</button></div>
+        <div id="rrOddWarn"></div>
+      </div>
+      <div class="card" id="rrSettingsCard">
+        <div class="grid4 rr-grid">
+          <div class="field">
+            <label>Score by</label>
+            <div class="seg-mini" id="rrScoreMode">
+              <button type="button" data-mode="games">Games</button>
+              <button type="button" data-mode="points">Points</button>
+            </div>
+          </div>
+          <div class="field">
+            <label id="rrTargetLabel">First to (games)</label>
+            <input id="rrTarget" type="number" />
+          </div>
+          <div class="field">
+            <label>Courts</label>
+            <input id="rrCourts" type="number" min="1" max="8" />
+          </div>
+          <div class="field">
+            <label>Groups</label>
+            <select id="rrGroups">
+              <option value="1">1 group</option><option value="2">2 groups</option>
+              <option value="3">3 groups</option><option value="4">4 groups</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Playoff</label>
+            <select id="rrPlayoff">
+              <option value="quarterfinal">Quarterfinals (8 teams)</option>
+              <option value="semifinal">Semifinals (4 teams)</option>
+              <option value="final">Straight to the final (2 teams)</option>
+            </select>
+          </div>
+          <div class="field rr-third-field">
+            <label>3rd-place match</label>
+            <label class="rr-check"><input type="checkbox" id="rrThird" /> <span>Play for 3rd place</span></label>
+          </div>
+        </div>
+        <div class="rec-box" id="rrPlanBox"></div>
+      </div>`;
+}
+
+function wireRrSetup(wrap){
+  const list = wrap.querySelector('#rrTeamsList');
+  const oddBox = wrap.querySelector('#rrOddWarn');
+  const planBox = wrap.querySelector('#rrPlanBox');
+  if(state.players.length % 2) state.players.push('');
+
+  function filledTeams(){
+    let n = 0;
+    for(let k=0; k<rrTeamCount(); k++){ const [a,b] = rrTeamPlayers(k); if(a.trim() && b.trim()) n++; }
+    return n;
+  }
+  function updatePlan(){
+    const T = filledTeams() || rrTeamCount();
+    const G = Math.min(state.rr.groups, Math.max(1, Math.floor(T/2)));
+    const odd = T % 2 === 1;
+    const sizes = rrGroupSizes(T, G);
+    const oddGroup = !odd && sizes.some(s=> s%2);
+    oddBox.innerHTML = (odd || oddGroup) ? `<div class="rr-odd-warn">
+        <b>&#9888; ${odd ? 'ODD NUMBER OF TEAMS' : 'A GROUP HAS AN ODD NUMBER OF TEAMS'}</b>
+        Some teams will rest in some rounds &mdash; and depending on the time available, some teams may end up playing fewer matches.
+      </div>` : '';
+    if(T < 3){ planBox.innerHTML = 'Add at least 3 teams to see the plan.'; return; }
+    const p = rrPlan(T, G, state.numCourts);
+    const K = rrPlayoffSize();
+    const sz = sizes.map((s,i)=> (G>1 ? 'Group '+RR_GROUP_LETTERS[i]+': ' : '')+s+' teams').join(' · ');
+    const tooFew = T < K ? `<div class="rr-plan-err">Not enough teams for this playoff: it needs ${K}.</div>` : '';
+    planBox.innerHTML = `${sz} &mdash; <b>${p.matches} group matches</b> in <b>${p.rounds} rounds</b> on ${state.numCourts} court${state.numCourts===1?'':'s'}. `
+      + `Estimated <b>~${Math.round(p.groupMin)} min</b> for the groups (~${Math.round(p.per)} min per match, first to ${rrTarget()} ${rrUnit()}) `
+      + `+ <b>~${Math.round(p.koMin)} min</b> playoff.${tooFew}`
+      + `<div class="rr-plan-note">A round has at most one match per court. When a group round has more matches than courts, it is played over two or more rounds.</div>`;
+  }
+
+  function renderTeams(){
+    const T = rrTeamCount();
+    const G = state.rr.groups;
+    const assign = rrAssignGroups(T, G);
+    list.innerHTML = '';
+    for(let k=0; k<T; k++){
+      const [a,b] = rrTeamPlayers(k);
+      const formed = a.trim() && b.trim();
+      const row = document.createElement('div');
+      row.className = 'rr-team-row' + (formed ? ' formed' : '');
+      row.innerHTML = `
+        <span class="rr-team-no">${k+1}</span>
+        <input type="text" placeholder="Player ${2*k+1}" value="${escapeHtml(a)}" data-p="${2*k}" />
+        <input type="text" placeholder="Player ${2*k+2}" value="${escapeHtml(b)}" data-p="${2*k+1}" />
+        <span class="rr-team-tag">${formed ? `&#10003; ${rrTeamLabelHtml(k)} formed${G>1 ? ` <span class="rr-gtag">Group ${RR_GROUP_LETTERS[assign[k]]}</span>` : ''}` : `<span class="rr-team-wait">${escapeHtml(rrTeamName(k))} &mdash; add 2 players</span>`}</span>
+        <button class="rm" data-team="${k}" title="Remove team">&#10005;</button>`;
+      list.appendChild(row);
+    }
+    list.querySelectorAll('input[data-p]').forEach(inp=>{
+      inp.addEventListener('input', e=>{
+        state.players[+e.target.dataset.p] = e.target.value;
+        saveState();
+        const k = Math.floor(+e.target.dataset.p/2);
+        const row = e.target.closest('.rr-team-row');
+        const [x,y] = rrTeamPlayers(k);
+        const formedNow = !!(x.trim() && y.trim());
+        if(formedNow !== row.classList.contains('formed')){ renderTeams(); const again = list.querySelector(`input[data-p="${e.target.dataset.p}"]`); if(again){ again.focus(); const v = again.value; again.setSelectionRange(v.length, v.length); } }
+        updatePlan();
+      });
+    });
+    list.querySelectorAll('.rm').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const k = +btn.dataset.team;
+        state.players.splice(2*k, 2);
+        const names = {};
+        Object.keys(state.rr.teamNames).forEach(key=>{ const n = +key; if(n < k) names[n] = state.rr.teamNames[key]; else if(n > k) names[n-1] = state.rr.teamNames[key]; });
+        state.rr.teamNames = names;
+        saveState(); renderTeams(); updatePlan();
+      });
+    });
+    wireTeamLabelEdit(list, ()=>{ renderTeams(); });
+  }
+  renderTeams();
+
+  wrap.querySelector('#rrAddTeam').addEventListener('click', ()=>{
+    if(rrTeamCount() >= 16){ alert('Round Robin supports up to 16 teams.'); return; }
+    state.players.push('', '');
+    saveState(); renderTeams(); updatePlan();
+  });
+
+  const modeBtns = wrap.querySelectorAll('#rrScoreMode button');
+  const tInp = wrap.querySelector('#rrTarget');
+  const tLab = wrap.querySelector('#rrTargetLabel');
+  function paintMode(){
+    modeBtns.forEach(b=> b.setAttribute('aria-pressed', String(b.dataset.mode === state.rr.scoreMode)));
+    if(state.rr.scoreMode === 'games'){ tLab.textContent = 'First to (games, 4–9)'; tInp.min = 4; tInp.max = 9; tInp.value = state.rr.gamesTarget; }
+    else { tLab.textContent = 'First to (points)'; tInp.min = 5; tInp.max = 50; tInp.value = state.rr.pointsTarget; }
+  }
+  modeBtns.forEach(b=> b.addEventListener('click', ()=>{ state.rr.scoreMode = b.dataset.mode; saveState(); paintMode(); updatePlan(); }));
+  tInp.addEventListener('change', e=>{
+    let v = Math.round(+e.target.value || 0);
+    if(state.rr.scoreMode === 'games'){ v = Math.max(4, Math.min(9, v || 7)); state.rr.gamesTarget = v; }
+    else { v = Math.max(5, Math.min(50, v || 21)); state.rr.pointsTarget = v; }
+    e.target.value = v; saveState(); updatePlan();
+  });
+  paintMode();
+
+  const cInp = wrap.querySelector('#rrCourts');
+  cInp.value = state.numCourts;
+  cInp.addEventListener('input', e=>{ state.numCourts = Math.max(1, Math.min(8, +e.target.value || 1)); saveState(); updatePlan(); });
+
+  const gSel = wrap.querySelector('#rrGroups');
+  gSel.value = String(state.rr.groups);
+  gSel.addEventListener('change', e=>{ state.rr.groups = +e.target.value; saveState(); renderTeams(); updatePlan(); });
+
+  const pSel = wrap.querySelector('#rrPlayoff');
+  const thirdField = wrap.querySelector('.rr-third-field');
+  const thirdBox = wrap.querySelector('#rrThird');
+  pSel.value = state.rr.playoff;
+  thirdBox.checked = !!state.rr.third;
+  const paintThird = ()=>{ thirdField.style.opacity = state.rr.playoff === 'final' ? '.4' : ''; thirdBox.disabled = state.rr.playoff === 'final'; };
+  pSel.addEventListener('change', e=>{ state.rr.playoff = e.target.value; saveState(); paintThird(); updatePlan(); });
+  thirdBox.addEventListener('change', e=>{ state.rr.third = e.target.checked; saveState(); });
+  paintThird();
+  updatePlan();
+}
+
+function rrStart(){
+  // keep only complete teams; a half-filled row stops the start
+  const T0 = rrTeamCount();
+  const keep = [], names = {};
+  for(let k=0; k<T0; k++){
+    const [a,b] = rrTeamPlayers(k);
+    if(!a.trim() && !b.trim()) continue;
+    if(!a.trim() || !b.trim()){ alert(`${rrTeamName(k)} has only one player. Add the second player or remove the team.`); return; }
+    if(state.rr.teamNames[k] !== undefined) names[keep.length] = state.rr.teamNames[k];
+    keep.push(a.trim(), b.trim());
+  }
+  const T = keep.length/2;
+  if(T < 3){ alert('You need at least 3 teams.'); return; }
+  const G = state.rr.groups;
+  if(T < 2*G){ alert(`${G} groups need at least ${2*G} teams.`); return; }
+  const K = rrPlayoffSize();
+  if(T < K){ alert(`This playoff needs at least ${K} teams. Choose a smaller playoff or add teams.`); return; }
+  state.players = keep;
+  state.rr.teamNames = names;
+  const built = rrBuildSchedule(T, G, state.numCourts);
+  state.schedule = built.rounds;
+  state.rr.assign = built.assign;
+  state.scores = state.schedule.map(r=> r.matches.map(()=>({a:null, b:null})));
+  state.knockout = null;
+  state.removed = [];
+  state.cycleLength = null;
+  state.reserve = null;
+  state.plannedRounds = state.schedule.length;
+  state.numRounds = state.schedule.length;
+  state.rosterChanged = false;
+  state.stage = 'playing';
+  state.startedAt = Date.now();
+  state.finishedAt = null;
+  saveState();
+  render();
+}
+
+/* ---- playing view ---- */
+function rrStatusText(){
+  const T = rrTeamCount(), G = state.rr.groups;
+  return `Round Robin · first to ${rrTarget()} ${rrUnit()} · ${state.numCourts} court${state.numCourts===1?'':'s'} · ${T} teams${G>1 ? ' · '+G+' groups' : ''}`;
+}
+
+function rrQualifySet(groups){
+  const K = rrPlayoffSize(), G = groups.length;
+  if(G === 1 || (G === 2) || (G === 4 && K === 8)){
+    const per = Math.ceil(K / G);
+    return new Set(groups.flatMap(g=> g.slice(0, per).map(s=>s.k)));
+  }
+  return new Set(rrQualifierOrder(groups).slice(0, K).map(s=>s.k));
+}
+
+function renderRrStandings(container){
+  const groups = rrStandings();
+  const anyPlayed = groups.some(g=> g.some(s=> s.p > 0));
+  const q = rrQualifySet(groups);
+  container.innerHTML = groups.map((g, gi)=>`
+    <div class="rr-group">
+      ${groups.length > 1 ? `<div class="rr-group-title">Group ${RR_GROUP_LETTERS[gi]}</div>` : ''}
+      <table class="rr-table">
+        <thead><tr><th></th><th class="rr-tn">Team</th><th title="Played">P</th><th title="Won">W</th><th title="Lost">L</th><th title="${rrUnit()} difference">+/&minus;</th></tr></thead>
+        <tbody>${g.map((s,i)=>{
+          const d = s.f - s.a;
+          const [p1,p2] = rrTeamPlayers(s.k);
+          return `<tr class="${anyPlayed && q.has(s.k) ? 'rr-q' : ''}">
+            <td class="rr-pos">${i+1}</td>
+            <td class="rr-tn">${rrTeamLabelHtml(s.k)}<span class="rr-pl">${escapeHtml(p1)} · ${escapeHtml(p2)}</span></td>
+            <td>${s.p}</td><td class="rr-w">${s.w}</td><td>${s.l}</td>
+            <td class="${d<0?'rr-neg':''}">${d>0?'+'+d:d}</td>
+          </tr>`;}).join('')}</tbody>
+      </table>
+    </div>`).join('')
+    + `<div class="rr-legend">${anyPlayed ? '<span class="rr-q-dot"></span> playoff place now · ' : ''}Ranked by wins, then head-to-head, then ${rrUnit()} difference.</div>`;
+  wireTeamLabelEdit(container);
+}
+
+function rrScoreInputs(sc, attrs, disabled){
+  const t = rrTarget();
+  const v = x=> (x === null || x === undefined) ? '' : x;
+  return `<input type="number" min="0" max="${t}" class="score-input rr-in" data-side="a" ${attrs} value="${v(sc.a)}" placeholder="&mdash;" ${disabled?'disabled':''} />
+        <span class="vs">:</span>
+        <input type="number" min="0" max="${t}" class="score-input rr-in" data-side="b" ${attrs} value="${v(sc.b)}" placeholder="&mdash;" ${disabled?'disabled':''} />`;
+}
+
+// Typing one side: the value is clamped to the target; if the other side is
+// still empty and this team clearly lost (below target), the other side gets
+// the target automatically.
+function rrApplyInput(sc, side, raw, inputEl){
+  const t = rrTarget();
+  const other = side === 'a' ? 'b' : 'a';
+  sc[side] = raw === '' ? null : Math.max(0, Math.min(t, Math.round(+raw)));
+  if(sc[side] !== null && sc[side] < t && (sc[other] === null || sc[other] === undefined || sc[other] === '')){
+    sc[other] = t;
+    const o = inputEl.closest('.match').querySelector(`.rr-in[data-side="${other}"]`);
+    if(o) o.value = t;
+  }
+}
+
+function rrMatchHint(sc){
+  if(!rrScored(sc)) return '';
+  const a = +sc.a, b = +sc.b, t = rrTarget();
+  if(a === b) return `<div class="hint rr-hint rr-hint-bad">Scores are level &mdash; adjust to declare a winner.</div>`;
+  if(Math.max(a,b) !== t) return `<div class="hint rr-hint">Neither team reached ${t} &mdash; counted as played.</div>`;
+  return '';
+}
+
+function renderRrRoundBlock(round, ri){
+  const block = document.createElement('div');
+  block.className = 'round-block';
+  block.dataset.ri = ri;
+  const done = ()=> round.matches.every((m,mi)=> rrScored(state.scores[ri][mi]));
+  const titleHtml = ()=> `<div class="left"><span>Round ${ri+1}</span>${done() ? '<span class="played-badge">complete</span>' : ''}</div>`;
+  block.innerHTML = `<div class="round-title">${titleHtml()}</div>`;
+  const grid = document.createElement('div');
+  grid.className = 'matches-grid';
+  round.matches.forEach((m, mi)=>{
+    const sc = state.scores[ri][mi];
+    const side = rrScoreSide(sc);
+    const el = document.createElement('div');
+    el.className = 'match rr-match';
+    el.innerHTML = `
+      ${state.rr.groups > 1 ? `<div class="rr-mgroup">Group ${RR_GROUP_LETTERS[m.g]}</div>` : ''}
+      <div class="teams">
+        <div class="team rr-team ${side==='a'?'ko-winner':''}">${rrTeamLabelHtml(m.ta)}<span class="rr-pl">${escapeHtml(rrTeamPlayers(m.ta).join(' · '))}</span></div>
+        ${rrScoreInputs(sc, `data-ri="${ri}" data-mi="${mi}"`, false)}
+        <div class="team rr-team ${side==='b'?'ko-winner':''}">${rrTeamLabelHtml(m.tb)}<span class="rr-pl">${escapeHtml(rrTeamPlayers(m.tb).join(' · '))}</span></div>
+      </div>
+      <div class="rr-hint-holder">${rrMatchHint(sc)}</div>
+      <div class="court">COURT <span class="court-label" data-court="${m.court}" title="Click to rename this court">${escapeHtml(courtLabel(m.court))}</span></div>`;
+    grid.appendChild(el);
+  });
+  block.appendChild(grid);
+  if(round.rest && round.rest.length){
+    const b = document.createElement('div');
+    b.className = 'bench';
+    const names = round.rest.map(k=> rrTeamName(k));
+    b.textContent = round.rest.length <= 4 ? 'Resting: ' + names.join(', ') : `Waiting: ${round.rest.length} teams`;
+    block.appendChild(b);
+  }
+  block.querySelectorAll('.rr-in').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      const _ri = +e.target.dataset.ri, mi = +e.target.dataset.mi;
+      beginScoreEdit(_ri);
+      const sc = state.scores[_ri][mi];
+      rrApplyInput(sc, e.target.dataset.side, e.target.value, e.target);
+      saveState();
+      showToast('✓ Saved automatically', 8000);
+      const matchEl = e.target.closest('.match');
+      const s = rrScoreSide(sc);
+      const teamEls = matchEl.querySelectorAll('.rr-team');
+      teamEls[0].classList.toggle('ko-winner', s === 'a');
+      teamEls[1].classList.toggle('ko-winner', s === 'b');
+      matchEl.querySelector('.rr-hint-holder').innerHTML = rrMatchHint(sc);
+      block.querySelector('.round-title').innerHTML = titleHtml();
+      const lb = document.getElementById('leaderboard');
+      if(lb) renderRrStandings(lb);
+      const ko = document.getElementById('rrKoHolder');
+      if(ko && !state.knockout) renderRrKnockoutSection(ko);
+    });
+  });
+  wireCourtLabelEdit(block);
+  wireTeamLabelEdit(block);
+  return block;
+}
+
+function renderRrRounds(container){
+  container.innerHTML = '';
+  state.schedule.forEach((round, ri)=> container.appendChild(renderRrRoundBlock(round, ri)));
+  const ko = document.createElement('div');
+  ko.id = 'rrKoHolder';
+  container.appendChild(ko);
+  renderRrKnockoutSection(ko);
+  container.appendChild(renderFinishCta());
+}
+
+/* ---- playoff ---- */
+function rrKoTeamHtml(pair){
+  if(!pair) return '<span class="pname">TBD</span>';
+  const k = rrTeamOfPair(pair);
+  return `<span class="pname rr-ko-name">${escapeHtml(rrTeamName(k))}</span><span class="rr-pl">${escapeHtml(rrTeamPlayers(k).join(' · '))}</span>`;
+}
+const RR_KO_LABEL = {QF1:'Quarterfinal 1', QF2:'Quarterfinal 2', QF3:'Quarterfinal 3', QF4:'Quarterfinal 4', SF1:'Semifinal 1', SF2:'Semifinal 2', F1:'Final', '3P':'3rd place'};
+
+function renderRrKoMatchCard(m){
+  const el = document.createElement('div');
+  el.className = 'match rr-match';
+  const A = resolveTeamRef(m.a), B = resolveTeamRef(m.b);
+  const ready = A !== null && B !== null;
+  const side = rrScoreSide(m.score);
+  el.innerHTML = `
+    <div class="teams">
+      <div class="team rr-team ${side==='a'?'ko-winner':''}">${rrKoTeamHtml(A)}</div>
+      ${rrScoreInputs(m.score, `data-koid="${m.id}"`, !ready)}
+      <div class="team rr-team ${side==='b'?'ko-winner':''}">${rrKoTeamHtml(B)}</div>
+    </div>
+    <div class="rr-hint-holder">${ready ? rrMatchHint(m.score) : ''}</div>
+    <div class="court">${escapeHtml(RR_KO_LABEL[m.id] || m.id)}</div>
+    ${!ready ? '<div class="hint ko-wait-hint" style="margin-top:8px; margin-bottom:0;">Waiting for previous match result&hellip;</div>' : ''}`;
+  el.querySelectorAll('.rr-in').forEach(inp=>{
+    if(inp.disabled) return;
+    inp.addEventListener('input', e=>{
+      beginScoreEdit('ko');
+      rrApplyInput(m.score, e.target.dataset.side, e.target.value, e.target);
+      saveState();
+      showToast('✓ Saved automatically', 8000);
+      const s = rrScoreSide(m.score);
+      const teamEls = el.querySelectorAll('.rr-team');
+      teamEls[0].classList.toggle('ko-winner', s === 'a');
+      teamEls[1].classList.toggle('ko-winner', s === 'b');
+      el.querySelector('.rr-hint-holder').innerHTML = rrMatchHint(m.score);
+      rrRefreshKoDownstream(m.id);
+    });
+  });
+  return el;
+}
+
+function rrRefreshKoDownstream(matchId){
+  const rounds = state.knockout.rounds;
+  const ri = rounds.findIndex(r=> r.matches.some(x=> x.id === matchId));
+  const els = document.querySelectorAll('.rr-ko-round');
+  for(let i=ri+1; i<rounds.length; i++){
+    const grid = els[i] && els[i].querySelector('.matches-grid');
+    if(!grid) continue;
+    grid.innerHTML = '';
+    rounds[i].matches.forEach(m=> grid.appendChild(renderRrKoMatchCard(m)));
+  }
+  const st = document.getElementById('rrKoStandings');
+  if(st) st.innerHTML = rrKoStandingsHtml();
+}
+
+function rrKoPlaces(){
+  if(!state.knockout) return null;
+  const fin = findKoMatch('F1');
+  const out = {first:null, second:null, third:[]};
+  if(fin && rrScoreSide(fin.score)){ out.first = resolveTeamRef({type:'winner', id:'F1'}); out.second = resolveLoserTeam('F1'); }
+  const tp = findKoMatch('3P');
+  if(tp){ if(rrScoreSide(tp.score)) out.third = [resolveTeamRef({type:'winner', id:'3P'})]; }
+  else ['SF1','SF2'].forEach(id=>{ const x = findKoMatch(id); if(x && rrScoreSide(x.score)) out.third.push(resolveLoserTeam(id)); });
+  return out;
+}
+function rrKoStandingsHtml(){
+  const p = rrKoPlaces();
+  if(!p) return '';
+  const nm = pair=> pair ? escapeHtml(rrTeamName(rrTeamOfPair(pair))) : '&mdash;';
+  const third = p.third.filter(Boolean);
+  return `<div class="rr-ko-places">
+    <span>&#129351; ${nm(p.first)}</span><span>&#129352; ${nm(p.second)}</span><span>&#129353; ${third.length ? third.map(nm).join(' / ') : '&mdash;'}</span>
+  </div>`;
+}
+
+function renderRrKnockoutSection(holder){
+  holder.innerHTML = '';
+  const wrap = document.createElement('div');
+  wrap.className = 'card ko-card';
+  if(!state.knockout){
+    const total = state.scores.reduce((s,r)=> s + r.length, 0);
+    const played = state.scores.reduce((s,r)=> s + r.filter(rrScored).length, 0);
+    const K = rrPlayoffSize();
+    const label = {quarterfinal:'Quarterfinals', semifinal:'Semifinals', final:'Final'}[state.rr.playoff];
+    wrap.innerHTML = `
+      <div class="section-title"><span>PLAYOFF</span></div>
+      <div class="hint" style="margin-top:0;">Group matches played: <b>${played} of ${total}</b>. The top ${K} teams go to the ${label.toLowerCase()}${state.rr.third && K>=4 ? ' (with a 3rd-place match)' : ''}, seeded from the group tables.</div>
+      <div style="margin-top:12px;"><button id="rrKoBtn" class="accent">Start ${label.toLowerCase()}</button></div>`;
+    wrap.querySelector('#rrKoBtn').addEventListener('click', ()=>{
+      if(played < total && !confirm(`${total-played} group match${total-played===1?' is':'es are'} still without a score, so the tables may change. Start the playoff anyway?`)) return;
+      const ko = rrBuildKnockout();
+      if(!ko){ alert('Not enough teams with results to fill the playoff yet.'); return; }
+      pushHistory();
+      state.knockout = ko;
+      saveState();
+      render();
+    });
+  } else {
+    wrap.innerHTML = `<div class="section-title"><span>PLAYOFF</span><button id="rrKoReset" class="small ghost">Reset</button></div><div id="rrKoStandings">${rrKoStandingsHtml()}</div>`;
+    state.knockout.rounds.forEach(round=>{
+      const rd = document.createElement('div');
+      rd.className = 'round-block ko-round-block rr-ko-round';
+      rd.innerHTML = `<div class="round-title"><div class="left"><span>${escapeHtml(round.name)}</span></div></div>`;
+      const grid = document.createElement('div');
+      grid.className = 'matches-grid';
+      round.matches.forEach(m=> grid.appendChild(renderRrKoMatchCard(m)));
+      rd.appendChild(grid);
+      wrap.appendChild(rd);
+    });
+    wrap.querySelector('#rrKoReset').addEventListener('click', ()=>{
+      if(!confirm('Reset the playoff? You can undo this with the ↶ button.')) return;
+      pushHistory();
+      state.knockout = null;
+      saveState();
+      render();
+    });
+  }
+  holder.appendChild(wrap);
+}
+
+function rrPodiumHtml(){
+  const pl = rrKoPlaces();
+  let first, second, third;
+  if(pl && pl.first){
+    first = rrTeamOfPair(pl.first); second = rrTeamOfPair(pl.second);
+    third = pl.third.filter(Boolean).map(rrTeamOfPair);
+    if(!third.length && state.rr.playoff === 'final'){
+      const nxt = rrQualifierOrder(rrStandings()).map(x=>x.k).find(k=> k !== first && k !== second);
+      if(nxt !== undefined) third = [nxt];
+    }
+  } else {
+    const order = rrQualifierOrder(rrStandings()).map(s=>s.k);
+    if(order.length < 3) return '<div class="empty">Not enough completed matches to determine a podium.</div>';
+    [first, second] = order; third = [order[2]];
+  }
+  const groups = rrStandings().flat();
+  const wins = k=> { const s = groups.find(x=> x.k === k); return s ? s.w : 0; };
+  const card = (cls, medal, label, ks)=>`
+    <div class="podium-card ${cls}">
+      <span class="medal">${medal}</span>
+      <div class="pc-mid">
+        <div class="rank-label">${label}</div>
+        <div class="name">${ks.length ? ks.map(k=> escapeHtml(rrTeamName(k))).join(' / ') : '&mdash;'}</div>
+        <div class="meta">${ks.map(k=> escapeHtml(rrTeamPlayers(k).join(' · '))).join(' / ')}</div>
+      </div>
+      <div class="pts">${ks.length === 1 ? wins(ks[0])+'W' : ''}</div>
+    </div>`;
+  return `<div class="podium">
+    ${card('podium-silver', '&#129352;', '2nd place', [second])}
+    ${card('podium-gold', '&#129351;', '1st place', [first])}
+    ${card('podium-bronze', '&#129353;', '3rd place', third)}
+  </div>`;
 }
 
 render();
