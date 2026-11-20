@@ -653,6 +653,9 @@
   .lb-row.top1{background:linear-gradient(90deg, rgba(233,199,102,.22), transparent); border-left:3px solid #d4af37;}
   .lb-row.top2{background:linear-gradient(90deg, rgba(223,227,230,.16), transparent); border-left:3px solid #b9c1c9;}
   .lb-row.top3{background:linear-gradient(90deg, rgba(215,154,94,.16), transparent); border-left:3px solid #b06a35;}
+  /* room between the medal stripe and the place number */
+  .lb-row.top1, .lb-row.top2, .lb-row.top3{padding-left:14px;}
+  .lb-row .lb-rank{margin-left:3px;}
   .lb-name{cursor:pointer; border-bottom:1px dashed transparent;}
   .lb-name:hover{border-bottom-color:var(--muted);}
   .lb-name-input{width:auto; padding:4px 6px; font-size:14px; font-weight:600;}
@@ -863,7 +866,8 @@
   .rr-table .rr-tn{text-align:left;}
   .rr-table td.rr-tn{font-weight:700; line-height:1.2; padding-left:4px;}
   .rr-pl{display:block; font-size:10.5px; font-weight:500; color:var(--muted); overflow-wrap:anywhere;}
-  .rr-pos{color:var(--muted); width:18px;}
+  .rr-pos{color:var(--muted); width:26px;}
+  .rr-table td.rr-pos{padding-left:11px; text-align:left;}
   .rr-w{font-weight:800; color:var(--accent);}
   .rr-neg{color:var(--danger);}
   .rr-table tr.rr-q td:first-child{box-shadow:inset 3px 0 0 var(--accent);}
@@ -900,6 +904,7 @@
   .finished-banner .fb-text{display:flex; flex-direction:column; gap:2px; min-width:0;}
   .finished-banner .fb-text b{font-family:var(--font-faq); font-size:16px; color:var(--accent); letter-spacing:.02em; text-transform:uppercase;}
   .finished-banner .fb-text span{font-size:12.5px; color:var(--muted);}
+  .finished-banner .fb-actions{display:flex; gap:10px; flex-wrap:wrap;}
   .finished-banner button{padding:12px 22px; font-size:14px; font-weight:800;}
   .podium-modal .modal-box{max-width:780px;}
   .ps-wrap{margin-top:22px; display:flex; flex-direction:column; gap:14px;}
@@ -915,7 +920,8 @@
   .ps-table .l{text-align:left;}
   .ps-table td.l b{font-weight:700;}
   .ps-sub{display:block; font-size:10.5px; color:var(--muted); font-weight:500;}
-  .ps-pos{color:var(--muted); width:20px; font-weight:700;}
+  .ps-pos{color:var(--muted); width:36px; font-weight:700;}
+  .ps-table td.ps-pos{padding-left:17px; text-align:left;}
   .ps-main{font-weight:800; color:var(--accent);}
   .ps-neg{color:var(--danger);}
   .ps-table tr.top1 td:first-child{box-shadow:inset 3px 0 0 #d4af37;} .ps-table tr.top1 .ps-pos{color:#d4af37;}
@@ -1043,7 +1049,7 @@ function openHelpModal(){
       <p>In <b>Round Robin</b> the teams stay as entered. Under the last group round, <b>Start quarterfinals / semifinals / final</b> seeds the top teams from the group tables &mdash; with two groups it crosses them (A1 v B2, B1 v A2), with one group it pairs 1st v 4th and 2nd v 3rd. Winners move on automatically; the optional 3rd-place match is played by the two semifinal losers.</p>
 
       <h3>7. Finishing</h3>
-      <p><b>Finish tournament</b> (the button under the last round, or in the header) saves a results file to your device and opens the <b>podium</b> as a pop-up. Close it and reopen it any time with <b>Show final podium</b>. <b>Reopen tournament</b> puts you back into play if you need to fix something.</p>
+      <p><b>Finish tournament</b> (the button under the last round, or in the header) saves a results file to your device and opens the <b>podium</b> as a pop-up. Close it and reopen it any time with <b>Show final podium</b>. <b>Reopen tournament</b> (in the header or the finished banner) puts you back into play if you need to fix something. Typing a score into any round after finishing reopens the tournament automatically, so the new score counts &mdash; tap <b>Finish tournament</b> again when you&rsquo;re done (one undo goes back to the finished state).</p>
 
       <h3>Autosave, backups &amp; devices</h3>
       <p>There is no save button. Every score, rename, added or deleted round is written straight to <b>this browser on this device</b> the instant you make it &mdash; the &ldquo;Saved automatically&rdquo; note just confirms it. Reopen the page on the same device and you carry on exactly where you left off.</p>
@@ -1200,6 +1206,37 @@ document.addEventListener('keydown', e=>{
   const k = e.key.toLowerCase();
   if(k === 'z'){ e.preventDefault(); e.shiftKey ? doRedo() : doUndo(); }
   else if(k === 'y'){ e.preventDefault(); doRedo(); }
+});
+
+/* ---------- AUTO-REOPEN ----------
+   Typing a score after the tournament was finished reopens it on the spot:
+   the new score counts, the timer resumes and Finish tournament is back.
+   One undo step restores the finished tournament as it was. The page
+   re-renders once focus leaves the score boxes, so typing isn't cut off. */
+let autoReopenPending = false;
+document.addEventListener('input', e=>{
+  const t = e.target;
+  if(!t || !t.classList || !t.classList.contains('score-input')) return;
+  if(state.stage !== 'finished') return;
+  _pushSnapshot();
+  endScoreEditGroup();
+  scoreEditGroup = t.dataset.ri !== undefined ? +t.dataset.ri : 'ko';   // the handler's own edit folds into this undo step
+  scoreEditTimer = setTimeout(endScoreEditGroup, 4000);
+  state.stage = 'playing';
+  state.finishedAt = null;
+  saveState();
+  autoReopenPending = true;
+  setTimeout(()=> showToast('\u21BA Tournament reopened \u2014 new scores count. Tap Finish tournament when you\u2019re done.', 9000), 0);
+}, true);
+document.addEventListener('focusout', ()=>{
+  if(!autoReopenPending) return;
+  setTimeout(()=>{
+    const a = document.activeElement;
+    if(a && a.classList && a.classList.contains('score-input')) return;   // moved to the next score box
+    if(!autoReopenPending) return;
+    autoReopenPending = false;
+    render();
+  }, 0);
 });
 
 /* ---------- TOAST ---------- */
@@ -2721,7 +2758,7 @@ function renderPlaying(){
       </div>
     </div>
     <div class="container">
-      ${state.stage === 'finished' ? `<div class="finished-banner"><div class="fb-text"><b>&#127937; Tournament finished</b><span>The podium, ${state.tournamentType === 'roundrobin' ? 'overall and group tables' : 'final leaderboard'}${state.knockout ? ' and playoff results' : ''} &mdash; one tap away.</span></div><button type="button" class="accent" id="podiumBannerBtn">&#127942; Show podium &amp; results</button></div>` : ''}
+      ${state.stage === 'finished' ? `<div class="finished-banner"><div class="fb-text"><b>&#127937; Tournament finished</b><span>The podium, ${state.tournamentType === 'roundrobin' ? 'overall and group tables' : 'final leaderboard'}${state.knockout ? ' and playoff results' : ''} &mdash; one tap away.</span></div><div class="fb-actions"><button type="button" class="accent" id="podiumBannerBtn">&#127942; Show podium &amp; results</button><button type="button" class="ghost" id="reopenBannerBtn">&#8634; Reopen tournament</button></div></div>` : ''}
       <div class="layout">
         <div class="card leaderboard-card${lbCollapsedMobile ? ' lb-collapsed' : ''}">
           <div class="section-title">
@@ -2787,6 +2824,8 @@ function renderPlaying(){
   if(finishBtn) finishBtn.addEventListener('click', finishTournament);
   const reopenBtn = wrap.querySelector('#reopenBtn');
   if(reopenBtn) reopenBtn.addEventListener('click', reopenTournament);
+  const reopenBannerBtn = wrap.querySelector('#reopenBannerBtn');
+  if(reopenBannerBtn) reopenBannerBtn.addEventListener('click', reopenTournament);
   ['#podiumTopBtn', '#podiumBannerBtn'].forEach(id=>{ const b = wrap.querySelector(id); if(b) b.addEventListener('click', openPodiumModal); });
 
   if(state.tournamentType === 'roundrobin'){
@@ -4022,8 +4061,8 @@ function rrPodiumHtml(){
       <span class="medal">${medal}</span>
       <div class="pc-mid">
         <div class="rank-label">${label}</div>
-        <div class="name">${ks.length ? ks.map(k=> escapeHtml(rrTeamName(k))).join(' / ') : '&mdash;'}</div>
-        <div class="meta">${ks.map(k=> escapeHtml(rrTeamPlayers(k).join(' · '))).join(' / ')}</div>
+        <div class="name">${ks.length ? ks.map(k=> escapeHtml(rrTeamPlayers(k).join(' · '))).join(' / ') : '&mdash;'}</div>
+        <div class="meta" data-team="${ks.map(k=> escapeHtml(rrTeamName(k))).join(' / ')}">${ks.map(k=> escapeHtml(rrTeamName(k))).join(' / ')}</div>
       </div>
       <div class="pts">${ks.length === 1 ? wins(ks[0])+'W' : ''}</div>
     </div>`;
