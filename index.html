@@ -7,10 +7,12 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#15201b">
-<title>Padel Runner — Free Americano, Mexicano &amp; Round Robin Padel Tournament App</title>
-<meta name="description" content="Free padel tournament app for Americano, Mexicano and Round Robin — rotating partners or fixed teams, 1–4 groups with an overall table, live leaderboard, playoff bracket and podium. Works offline, no sign-up. By Oleg Prachuk.">
-<meta name="keywords" content="padel tournament app, americano padel, mexicano padel, round robin padel, team americano, padel group stage, padel leaderboard, padel bracket, padel scheduler">
+<title>Padel Runner — Free Padel Tournament Web App (Americano, Mexicano, Round Robin)</title>
+<meta name="description" content="Padel Runner is a free padel tournament web app (web tool) for Americano, Mexicano and Round Robin — rotating partners or fixed teams, 1–4 groups with an overall table, live leaderboard, playoff bracket and podium. Runs in any browser, works offline, no sign-up or download. By Oleg Prachuk">
+<meta name="keywords" content="padel runner, padel runner web app, padel tournament web app, padel web tool, padel tournament app, americano padel, mexicano padel, round robin padel, team americano, padel group stage, padel leaderboard, padel bracket, padel scheduler">
 <meta name="application-name" content="Padel Runner">
+<meta name="apple-mobile-web-app-title" content="Padel Runner">
+<meta name="robots" content="index, follow, max-image-preview:large">
 <meta name="author" content="Oleg Prachuk">
 
 <script type="application/ld+json">
@@ -18,13 +20,14 @@
   "@context": "https://schema.org",
   "@type": "WebApplication",
   "name": "Padel Runner",
-  "alternateName": "Americano, Mexicano & Round Robin Padel Tournament App",
-  "url": "https://lebensvoll.github.io/thu-americano",
+  "alternateName": ["Padel Runner web app", "Padel Runner padel tournament web app", "Americano, Mexicano & Round Robin Padel Tournament App"],
+  "url": "https://lebensvoll.github.io/thu-americano/",
   "description": "Free web app for running Americano, Mexicano and Round Robin padel tournaments and social padel events: rotating partners or fixed teams, automatic schedule generator, 1-4 groups with an overall table, live leaderboard, playoff bracket and podium. Built for padel clubs.",
   "softwareVersion": "3.0",
   "datePublished": "2026-07-11",
   "dateModified": "2026-11-20",
   "applicationCategory": "SportsApplication",
+  "applicationSubCategory": "Web app",
   "operatingSystem": "Any (runs in a web browser)",
   "browserRequirements": "Requires JavaScript",
   "isAccessibleForFree": true,
@@ -60,24 +63,24 @@
 
 <!-- ============================================================
      SHARING PREVIEW (messengers, social).
-     Live site: https://lebensvoll.github.io/thu-americano
+     Live site: https://lebensvoll.github.io/thu-americano/
      If the site ever moves, update the domain in the 4 URLs below
      (and keep og-image.png next to this file).
      ============================================================ -->
-<link rel="canonical" href="https://lebensvoll.github.io/thu-americano">
-<meta property="og:url" content="https://lebensvoll.github.io/thu-americano">
+<link rel="canonical" href="https://lebensvoll.github.io/thu-americano/">
+<meta property="og:url" content="https://lebensvoll.github.io/thu-americano/">
 <meta property="og:image" content="https://lebensvoll.github.io/thu-americano/og-image.png">
 <meta name="twitter:image" content="https://lebensvoll.github.io/thu-americano/og-image.png">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="by Oleg Prachuk">
-<meta property="og:title" content="Padel Runner">
-<meta property="og:description" content="Free Americano, Mexicano & Round Robin padel tournament app — rotating partners or fixed teams, groups, live leaderboard, playoff and podium.">
+<meta property="og:title" content="Padel Runner — Padel Tournament Web App">
+<meta property="og:description" content="Free web app for Americano, Mexicano & Round Robin padel tournaments — rotating partners or fixed teams, groups, live leaderboard, playoff and podium.">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Padel Runner — by Oleg Prachuk">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Padel Runner">
-<meta name="twitter:description" content="Free Americano, Mexicano & Round Robin padel tournament app — fixed teams, groups, live leaderboard, playoff, podium.">
+<meta name="twitter:title" content="Padel Runner — Padel Tournament Web App">
+<meta name="twitter:description" content="Free web app for Americano, Mexicano & Round Robin padel tournaments — fixed teams, groups, live leaderboard, playoff, podium.">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -452,8 +455,12 @@
     border:1px solid var(--border); border-radius:9px; padding:10px 12px; font-size:14px; width:100%;
   }
   input:focus, select:focus{outline:none; border-color:var(--accent);}
-  /* setup fields: number boxes and dropdowns share one height so a row lines up */
-  .field select, .field input:not([type=checkbox]){box-sizing:border-box; height:43px;}
+  /* setup controls share the height of the Games / Points switch (40px):
+     number boxes, dropdowns, player and team name boxes and their ✕ buttons */
+  .field select, .field input:not([type=checkbox]),
+  .player-row input, .rr-team-row input,
+  .player-row .rm, .rr-team-row .rm{box-sizing:border-box; height:40px; padding-top:0; padding-bottom:0;}
+  .player-row .rm, .rr-team-row .rm{width:40px; padding:0; display:inline-flex; align-items:center; justify-content:center;}
   button{
     font-family:'Manrope',-apple-system,BlinkMacSystemFont,sans-serif; border:none; border-radius:9px; padding:11px 18px;
     font-size:13.5px; font-weight:700; letter-spacing:0; text-transform:none; cursor:pointer;
@@ -815,7 +822,7 @@
     button{padding:12px 16px; font-size:13px;}
     button.small{padding:10px 14px; font-size:12px;}
     input,select{font-size:16px; padding:12px 12px;} /* 16px avoids iOS auto-zoom on focus */
-    .field select, .field input:not([type=checkbox]){height:46px;}
+    .field select, .field input:not([type=checkbox]), .player-row input, .rr-team-row input, .player-row .rm, .rr-team-row .rm{height:40px; padding-top:0; padding-bottom:0;}
     .score-input{width:56px; padding:10px 4px; font-size:16px;}
     .lb-row{padding:9px 8px;}
     .lb-stats{min-width:auto;}
@@ -997,7 +1004,7 @@
 
 <footer class="site-footer">
   <p>
-    <strong>Padel Runner</strong> is a free Americano, Mexicano &amp; Round Robin padel tournament and event tool.
+    <strong>Padel Runner</strong> is a free padel tournament web app &mdash; a web tool for Americano, Mexicano &amp; Round Robin tournaments and social padel events that runs in any browser, nothing to install.
     Play with rotating partners or fixed teams, in one table or in 1&ndash;4 groups. It builds the schedule
     automatically, keeps a live leaderboard, runs a playoff bracket, shows a podium with the final standings,
     and lets you add or drop players mid-event &mdash; all from a phone at the court. Made for padel clubs
