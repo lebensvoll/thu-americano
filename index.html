@@ -456,6 +456,14 @@
     border:1px solid var(--border); border-radius:9px; padding:10px 12px; font-size:14px; width:100%;
   }
   input:focus, select:focus{outline:none; border-color:var(--accent);}
+  /* own chevron with room on the right (the browser arrow hugs the border) */
+  select:not(#themeSelect){
+    -webkit-appearance:none; appearance:none; padding-right:38px; cursor:pointer;
+    background-image:linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+    background-position:calc(100% - 20px) 52%, calc(100% - 15px) 52%;
+    background-size:5px 5px, 5px 5px; background-repeat:no-repeat;
+  }
+  select:not(#themeSelect):focus{background-image:linear-gradient(45deg, transparent 50%, var(--accent) 50%), linear-gradient(135deg, var(--accent) 50%, transparent 50%);}
   /* setup controls share the height of the Games / Points switch (40px):
      number boxes, dropdowns, player and team name boxes and their ✕ buttons */
   .field select, .field input:not([type=checkbox]),
@@ -549,8 +557,10 @@
   #app .fmt-card .format-btn.active{background:var(--accent); box-shadow:0 2px 8px rgba(0,0,0,.25);}
   #app .fmt-card .format-btn.active .fmt-name{color:var(--ink);}
   .fmt-card .fmt-info{margin-top:14px;}
-  .fmt-info{margin-top:14px; padding:12px 14px 12px 16px; border-radius:10px; border:1px solid var(--border); border-left:3px solid var(--accent); background:var(--panel2); font-size:12.5px; line-height:1.55; color:var(--text);}
-  .fmt-info .fi-title{display:block; font-family:var(--font-faq); font-weight:700; font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--accent); margin-bottom:4px;}
+  .fmt-info{margin-top:14px; padding:9px 12px 9px 14px; border-radius:10px; border:1px solid var(--border); border-left:3px solid var(--accent); background:var(--panel2); font-size:12.5px; line-height:1.55; color:var(--text);}
+  .fmt-info .fi-title{font-weight:700; color:var(--accent);}
+  .fmt-info .fi-more{color:var(--muted); text-decoration:none; white-space:nowrap; font-weight:600;}
+  .fmt-info .fi-more:hover{color:var(--accent);}
   .fmt-info p{margin:0;}
   .fmt-info p + p{margin-top:4px; color:var(--muted);}
   .mex-mode-label{font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin-bottom:8px;}
@@ -721,6 +731,14 @@
      opaque surface and a firmer dim so text isn't fighting the starfield */
   :root[data-theme="graphite"] .modal-overlay{background:rgba(8,9,11,.82);}
   :root[data-theme="graphite"] .modal-box{background:#1c1e23; border-color:#3c3f47;}
+  /* FAQ: dark, blurred backdrop and an opaque card in every theme so the page underneath never shows through */
+  .modal-overlay.faq-modal{background:rgba(4,6,8,.88); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px);}
+  :root[data-theme="default"] .faq-modal .modal-box, :root:not([data-theme]) .faq-modal .modal-box{background:#1d2b24;}
+  :root[data-theme="sakura"] .faq-modal .modal-box{background:#1f1224; border-color:rgba(236,150,220,.28);}
+  :root[data-theme="graphite"] .faq-modal .modal-box{background:#1c1e23;}
+  :root[data-theme="padelpa"] .faq-modal .modal-box{background:#0d1a38;}
+  :root[data-theme="pnb"] .faq-modal .modal-box{background:#0c1838;}
+  .faq-modal .modal-box p, .faq-modal .faq-list{color:var(--text);}
   /* The help / FAQ modal uses a plain proportional sans for its headings —
      Bebas Neue is condensed enough that at these sizes the headings read as
      smaller than the body copy. */
@@ -728,6 +746,8 @@
   .modal-box h2{margin:0 16px 16px 0; font-size:21px; font-weight:800; letter-spacing:.02em; color:var(--accent); padding-right:78px;}
   .modal-box h3{margin:22px 0 6px; font-size:15px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:.03em;}
   .modal-box h3:first-of-type{margin-top:0;}
+  .modal-box h4{margin:14px 0 4px; font-family:var(--font-faq); font-size:13.5px; font-weight:700; color:var(--text);}
+  .modal-box h3 + h4{margin-top:6px;}
   .modal-box p{margin:0 0 4px; font-size:13px; color:var(--text); line-height:1.6;}
   .modal-box .modal-close{position:absolute; top:20px; right:20px;}
   .modal-box-wrap{position:relative;}
@@ -1085,60 +1105,76 @@ function themeSegHtml(){
 
 function openHelpModal(){
   const overlay = document.createElement('div');
-  overlay.className = 'modal-overlay';
+  overlay.className = 'modal-overlay faq-modal';
   overlay.innerHTML = `
     <div class="modal-box modal-box-wrap">
       <button class="ghost small modal-close" id="helpCloseBtn">Close</button>
       <h2>How Padel Runner works</h2>
       <p class="faq-version">Padel Runner <b>3.0</b> &middot; November 2026 &middot; first released July 2026</p>
 
-      <h3>What&rsquo;s new in 3.0 (November 2026)</h3>
+      <h3>1. Formats</h3>
+
+      <h4>Americano</h4>
+      <p>The whole schedule is drawn up front. Partners rotate every round so everyone plays with everyone before any pairing repeats; once every combination is used it simply loops. Each match is played to a points total (e.g. 21) and every player keeps their own score; players are ranked by points won (or by difference). The rotation is planned a few rounds <b>beyond</b> the number you chose and kept in reserve, so rounds you add later continue it cleanly.</p>
+
+      <h4>Team Americano</h4>
+      <p>Switch <b>Players</b> to <b>Fixed teams</b> and enter pairs, two players per row. Pairs stay together all tournament; opponents rotate so every team meets every other team before any match-up repeats. When not all teams fit on court, resting teams rotate so match counts stay within one or two of each other; with few courts a team may now and then rest two rounds running. The <b>Resting</b> line shows team names with their players. The leaderboard ranks teams and shows how many matches each has played.</p>
+
+      <h4>Mexicano</h4>
+      <p>Only Round&nbsp;1 is random. Each later round is built when you tap <b>+ Add round</b>, from the current standings: players are ranked and grouped into foursomes close in level, so winners climb and losers slide.</p>
+      <p><b>Shuffle</b> (default) &mdash; partners change every round: never the same partner twice in a row, as few repeat partners and opponents as possible. <b>Classic</b> &mdash; strict standings: in every foursome 1st + 4th play 2nd + 3rd, so the same partners can meet again round after round.</p>
+
+      <h4>Team Mexicano</h4>
+      <p>Fixed pairs. Round&nbsp;1 is random; after every round teams are ranked by points and meet teams of a similar level. <b>Shuffle</b> avoids last round&rsquo;s opponent and repeat match-ups where it can; <b>Classic</b> pairs 1st v 2nd, 3rd v 4th and so on, so the same teams can meet again. The leaderboard ranks teams; knockout and podium work per team.</p>
+
+      <h4>Round Robin</h4>
+      <p>Fixed teams of two: players 1+2 are team 1, 3+4 team 2, and so on. Split them into 1&ndash;4 groups; every team plays every other team in its group once. Scores are games (first to 4&ndash;9, default 7) or points (first to the number you set) &mdash; type one team&rsquo;s score and, if it lost, the winner&rsquo;s score fills in.</p>
+      <p>A round has at most one match per court: when a group round has more matches than courts, it is played over two or more rounds. With an odd number of teams (or a group with an odd number) one team rests each round, so depending on the time available some teams may play fewer matches. The setup line shows the number of matches, rounds and the estimated time for the groups and the playoff.</p>
+      <p>Group tables rank by wins, then head-to-head, then difference. An <b>Overall</b> table ranks all teams together (wins, then difference; win rate if the groups differ in size). Afterwards an optional playoff (quarterfinals, semifinals or final, plus a 3rd-place match) &mdash; or finish at any time and the podium comes from the overall table.</p>
+
+      <h4>Rests</h4>
+      <p>If the players don&rsquo;t fill every court, players sit out on a fair rotation: nobody sits out two rounds in a row, everyone rests about equally often, and whoever rested longest ago is next.</p>
+
+      <h4>Knockout / playoff</h4>
+      <p>In Americano and Mexicano the bracket pairs a strong finisher with a weaker one (snake seeding); the main leaderboard keeps running underneath and knockout standings are tracked separately. In team modes and Round Robin the teams stay as entered. Round Robin seeds the top teams from the group tables &mdash; with two groups it crosses them (A1 v B2, B1 v A2), with one group it pairs 1st v 4th and 2nd v 3rd. Winners move on automatically; the optional 3rd-place match is played by the two semifinal losers.</p>
+
+      <h3>2. What&rsquo;s new in 3.0 (November 2026)</h3>
       <ul class="faq-list">
         <li><b>Round Robin</b> &mdash; a third format with fixed teams: 1&ndash;4 groups, games or points scoring, an <b>Overall</b> table of all teams and an optional playoff (quarterfinals, semifinals or final, plus a 3rd-place match).</li>
         <li><b>Fixed teams for Americano and Mexicano</b> &mdash; Team Americano and Team Mexicano keep the same pairs all tournament while opponents rotate or follow the standings.</li>
         <li><b>New podium</b> &mdash; a finished banner, a <b>Podium &amp; results</b> button and a pop-up with the top three plus the full final standings (and group tables / playoff results where played). Reopen the tournament from the banner, or just type a missed score.</li>
         <li><b>New themes</b> &mdash; <b>Padel Pa</b> and <b>Padel &amp; Brew</b>, and the theme picker is now one button with a list.</li>
-        <li>Mexicano <b>Shuffle</b> mode, fairer rests in Americano and planned-ahead rounds you can add later.</li>
+        <li>A compact format picker, Mexicano <b>Shuffle</b> mode, fairer rests in Americano and planned-ahead rounds you can add later.</li>
       </ul>
 
-      <h3>1. Set up the tournament</h3>
+      <h3>3. How to use</h3>
+
+      <h4>Set up</h4>
       <p>Tap the title and the line under it (date &middot; club) at the top of the page to name your tournament and venue &mdash; do this before sharing the page, or a reminder banner will keep nagging you.</p>
-      <p>Choose a <b>format</b> &mdash; Americano, Mexicano or Round Robin &mdash; and for Americano and Mexicano choose <b>Players</b>: <b>Individual</b> (partners change) or <b>Fixed teams</b>. Add players (8&ndash;12 works best for individual play), then set the points per match, number of courts, and how long you want the session to run. The recommendation box suggests how many rounds fit that time &mdash; you can override it.</p>
+      <p>Choose a <b>format</b> &mdash; Americano, Mexicano or Round Robin &mdash; and for Americano and Mexicano choose <b>Players</b>: <b>Individual</b> (partners change) or <b>Fixed teams</b>. Tap <b>More</b> next to the one-line description to jump here. Add players (8&ndash;12 works best for individual play), then set the points per match, number of courts, and how long you want the session to run. The recommendation line suggests how many rounds fit that time &mdash; it&rsquo;s an approximation, you can override it.</p>
 
-      <h3>2. The formats</h3>
-      <p><b>Americano</b> &mdash; the whole schedule is drawn up front. Partners rotate so everyone plays with everyone before any pairing repeats; once every combination is used it simply loops. The rotation is also planned a few rounds <b>beyond</b> the number you chose and kept in reserve, so rounds you add later continue it cleanly. Each match is played to a points total (e.g. 21); players are ranked by points won (or by difference).</p>
-      <p><b>Mexicano</b> &mdash; only Round&nbsp;1 is random. Each later round is built when you tap <b>+ Add round</b>, using the current standings, so winners climb and losers slide. <b>Shuffle mode</b> (default) keeps foursomes close in level but rotates partners &mdash; never the same partner twice in a row, as few repeats as possible. <b>Classic</b> always pairs 1st + 4th vs 2nd + 3rd.</p>
-      <p><b>Team Americano</b> &mdash; switch <b>Players</b> to <b>Fixed teams</b> and enter pairs, two players per row (tap a team name to rename it). Partners never change; opponents rotate so every team meets every other team before any match-up repeats. When not all teams fit on court, the resting teams are rotated so match counts stay within one or two of each other; with few courts a team may now and then rest two rounds running. The <b>Resting</b> line shows team names with their players.</p>
-      <p><b>Team Mexicano</b> &mdash; same fixed pairs; after each round teams are ranked by points and meet teams of a similar level (Shuffle also avoids last round&rsquo;s opponent and repeats; Classic pairs 1st v 2nd, 3rd v 4th). In both team modes the leaderboard shows each team with its players and how many matches it has played; knockout and podium work per team.</p>
-      <p><b>Round Robin</b> &mdash; fixed teams: players 1+2 are team 1, 3+4 team 2, and so on. Pick 1&ndash;4 groups; every team plays every other team in its group once. Scores are games (first to 4&ndash;9, default 7) or points (first to the number you set) &mdash; type one team&rsquo;s score and, if it lost, the winner&rsquo;s score fills in. Group tables rank by wins, then head-to-head, then difference. Above them an <b>Overall</b> table ranks all teams together (wins, then difference; win rate if the groups differ in size). With an odd number of teams one team rests each round. The playoff is optional &mdash; tap <b>Finish tournament</b> at any time and the podium is taken from the overall table.</p>
-      <p><b>Rests</b> &mdash; if the player count isn&rsquo;t a multiple of 4 &times; courts, players sit out on a fair rotation: nobody sits out two rounds in a row, everyone rests about equally often, and whoever rested longest ago is next.</p>
+      <h4>Run the rounds</h4>
+      <p>Tap a score box and type one team's score &mdash; the other side fills in automatically to reach the points target. The leaderboard updates instantly, and every entry is <b>saved to this device</b> the moment you type it.</p>
+      <p><b>Rank by</b> (set in Setup) decides the leaderboard order: total points scored, or point differential (points won minus points lost). Rename a court by tapping the number after the word COURT &mdash; use a letter or a name, it carries across every round.</p>
+      <p><b>+ Add round</b> extends the tournament. In Americano the line above the button tells you how many planned rounds are still in reserve &mdash; those come with new partners and fair rests guaranteed; after that, new rounds are built on the spot by the same rules. <b>Delete round</b> on a card removes it: deleting the last round puts it back into the reserve; deleting one in the middle rebuilds every not-yet-scored round after it. From round&nbsp;8 on, Americano offers a choice each time: keep rotating partners, or a lineup balanced by current standings (the same players rest either way).</p>
 
-      <h3>3. Run the rounds</h3>
-      <p>Tap a score box and type one team's score &mdash; the other side fills in automatically to reach the points target. The leaderboard updates instantly, and every entry is <b>saved to this device</b> the moment you type it (you'll see a &ldquo;Saved automatically&rdquo; note).</p>
-      <p><b>Rank by</b> (set in Setup) decides the leaderboard order: total points scored, or point differential (points won minus points lost).</p>
-      <p>Rename a court by tapping the number after the word COURT &mdash; use a letter or a name, it carries across every round.</p>
-      <p><b>+ Add round</b> extends the tournament. In Americano the line above the button tells you how many planned rounds are still in reserve (&ldquo;Rotation planned ahead: 3 more rounds ready&rdquo;) &mdash; those come with new partners and fair rests guaranteed. Once the reserve is used up, new rounds are built on the spot by the same rules. <b>Delete round</b> on a card removes it: deleting the last round puts it back into the reserve; deleting one in the middle rebuilds every not-yet-scored round after it, so rests and partners stay fair. From round&nbsp;8 on, Americano offers a choice each time: keep rotating partners, or a lineup balanced by current standings (the same players rest either way).</p>
+      <h4>Players who join or leave</h4>
+      <p>Tap a player's name on the leaderboard to rename them, or <b>+ Add player</b> to bring someone in mid-tournament &mdash; every round with no score yet is rebuilt to include them, starting from the very next round; a newcomer goes on court straight away. The <b>&#10005;</b> next to a name removes that player from the rotation: they keep every point already earned and stay on the leaderboard. Scored rounds are never changed.</p>
 
-      <h3>4. Players who join or leave</h3>
-      <p>Tap a player's name on the leaderboard to rename them, or <b>+ Add player</b> to bring someone in mid-tournament &mdash; every round that has no score yet is rebuilt to include them, starting from the very next round. Rounds you've already scored don't change, the number of rounds stays the same, and so does the number of courts. A newcomer goes on court straight away rather than to the bench.</p>
-      <p>The <b>&#10005;</b> next to a name removes that player from the rotation. They keep every point already earned and stay on the leaderboard; every not-yet-scored round is rebuilt without them, while any round that already has a score &mdash; and its results &mdash; is left untouched.</p>
+      <h4>Undo / redo</h4>
+      <p>The <b>&#8630; / &#8631;</b> buttons (or Ctrl/Cmd&#8288;+&#8288;Z and Ctrl/Cmd&#8288;+&#8288;Shift&#8288;+&#8288;Z) step back and forward through changes &mdash; adding or deleting a round, removing a player, generating a bracket, finishing, and so on. Score typing within one round counts as a single step. History is kept for the current session only.</p>
 
-      <h3>5. Undo / redo</h3>
-      <p>The <b>&#8630; / &#8631;</b> buttons (or Ctrl/Cmd&#8288;+&#8288;Z and Ctrl/Cmd&#8288;+&#8288;Shift&#8288;+&#8288;Z) step back and forward through structural changes &mdash; adding or deleting a round, removing a player, generating a bracket, finishing, and so on. Score typing within one round counts as a single step. History is kept for the current session only.</p>
+      <h4>Playoff</h4>
+      <p>Once enough players have results, pick a starting stage and generate the bracket. In Round Robin, <b>Start quarterfinals / semifinals / final</b> sits under the last group round; it&rsquo;s optional.</p>
 
-      <h3>6. Knockout / playoff</h3>
-      <p>Once enough players have results, pick a starting stage and generate an elimination bracket. Teams are formed by pairing a strong finisher with a weaker one (snake seeding). The main leaderboard keeps running underneath, and knockout standings are tracked separately.</p>
-      <p>In <b>Round Robin</b> the teams stay as entered. Under the last group round, <b>Start quarterfinals / semifinals / final</b> seeds the top teams from the group tables &mdash; with two groups it crosses them (A1 v B2, B1 v A2), with one group it pairs 1st v 4th and 2nd v 3rd. Winners move on automatically; the optional 3rd-place match is played by the two semifinal losers.</p>
+      <h4>Finishing &amp; the podium</h4>
+      <p><b>Finish tournament</b> (under the last round, or in the header) saves a results file to your device and opens the <b>podium</b>: the top three and the full final standings &mdash; in Round Robin also the overall table, group tables and playoff results. Open it again any time with <b>Podium &amp; results</b>. <b>Reopen tournament</b> puts you back into play; typing a score after finishing reopens it automatically (one undo goes back to the finished state).</p>
 
-      <h3>7. Finishing &amp; the podium</h3>
-      <p><b>Finish tournament</b> (the button under the last round, or in the header) saves a results file to your device and opens the <b>podium</b> as a pop-up. It shows the top three (in Round Robin with the players&rsquo; names large and the team name under them) and below it the full final standings &mdash; in Round Robin the overall table, the group tables and the playoff results. Close it and open it again any time with <b>Podium &amp; results</b> in the header or <b>Show podium &amp; results</b> in the finished banner. <b>Reopen tournament</b> (in the header or the finished banner) puts you back into play if you need to fix something. Typing a score into any round after finishing reopens the tournament automatically, so the new score counts &mdash; tap <b>Finish tournament</b> again when you&rsquo;re done (one undo goes back to the finished state).</p>
+      <h4>Autosave, backups &amp; devices</h4>
+      <p>There is no save button: everything is written straight to <b>this browser on this device</b> the instant you make it. It is <b>not</b> shared or synced &mdash; a friend opening the same link gets their own copy, and clearing browser data (or a private window) wipes it. To back up or move a tournament to another device, use <b>Export</b> (a JSON file) and <b>Import</b>.</p>
 
-      <h3>Autosave, backups &amp; devices</h3>
-      <p>There is no save button. Every score, rename, added or deleted round is written straight to <b>this browser on this device</b> the instant you make it &mdash; the &ldquo;Saved automatically&rdquo; note just confirms it. Reopen the page on the same device and you carry on exactly where you left off.</p>
-      <p>It is <b>not</b> shared or synced: a friend opening the same link gets their own separate copy, and clearing your browser data (or using a private window) wipes it. To keep a backup or move a running tournament to another device, use <b>Export</b> (downloads a JSON file) and <b>Import</b> (loads one back).</p>
-
-      <h3>Colour theme</h3>
-      <p>Tap the theme button at the top of the page (it shows the current theme) and pick from the list: <b>Sterling</b> (the club&rsquo;s Sport &amp; Wellness palette), <b>Graphite</b> (deep-space grey with a dust of stars), <b>Sakura</b> (dark cherry blossom over a magenta nebula), <b>Padel Pa</b> (midnight cobalt with the community&rsquo;s logo) and <b>Padel &amp; Brew</b> (navy, beer amber and racket red with the Padel &amp; Brew logo). Your choice is remembered on this device.</p>
+      <h4>Colour theme</h4>
+      <p>Tap the theme button at the top of the page and pick from the list: <b>Sterling</b> (the club&rsquo;s Sport &amp; Wellness palette), <b>Graphite</b> (deep-space grey with a dust of stars), <b>Sakura</b> (dark cherry blossom over a magenta nebula), <b>Padel Pa</b> (midnight cobalt with the community&rsquo;s logo) and <b>Padel &amp; Brew</b> (navy, beer amber and racket red with the Padel &amp; Brew logo). Your choice is remembered on this device.</p>
 
       <p style="margin-top:20px;">This tool is free for everyone to use. If you'd like to say thanks, message the developer on Instagram: <a href="https://instagram.com/olegprachuk" target="_blank" rel="noopener" style="color:var(--accent); text-decoration:none;">instagram.com/olegprachuk</a></p>
     </div>
@@ -1294,23 +1330,16 @@ document.addEventListener('keydown', e=>{
    the format buttons on the setup screen. */
 function formatInfoHtml(){
   const t = state.tournamentType, tm = t !== 'roundrobin' && !!state.teamMode, mx = state.mexMode === 'classic' ? 'classic' : 'shuffle';
-  const box = (title, a, b)=> `<span class="fi-title">${title}</span><p>${a}</p>${b ? `<p>${b}</p>` : ''}`;
-  const rest = 'If the players don&rsquo;t fill every court, players sit out on a fair rotation &mdash; nobody twice in a row, everyone about equally often.';
-  if(t === 'roundrobin') return box('Round Robin',
-    'Fixed teams of two (players 1+2, 3+4&hellip;). Split them into 1&ndash;4 groups; every team plays every other team in its group once, to a number of games or points.',
-    'Group tables rank by wins, then head-to-head, then difference; an <b>Overall</b> table ranks all teams together. Afterwards an optional playoff (quarterfinals, semifinals or final, plus a 3rd-place match) &mdash; or finish at any time and the podium comes from the overall table.');
-  if(t === 'americano' && !tm) return box('Americano &middot; individual',
-    'The whole schedule is drawn up front. Partners rotate every round so everyone partners with everyone before any pairing repeats; each match is played to a points total and every player keeps their own score.',
-    rest + ' Rounds you add later continue the same rotation.');
-  if(t === 'americano' && tm) return box('Team Americano &middot; fixed teams',
-    'Pairs stay together all tournament; opponents rotate so every team meets every other team before any match-up repeats.',
-    'When not all teams fit on court, resting teams rotate so match counts stay within one or two; with few courts a team may now and then rest two rounds running. The leaderboard ranks teams.');
-  if(t === 'mexicano' && !tm) return mx === 'classic'
-    ? box('Mexicano &middot; Classic', 'Round 1 is random. After every round players are ranked and grouped into foursomes by level &mdash; winners climb, losers slide. In every foursome 1st + 4th play 2nd + 3rd.', 'Strict standings: the same partners can meet again round after round. ' + rest)
-    : box('Mexicano &middot; Shuffle', 'Round 1 is random. After every round players are ranked and grouped into foursomes close in level &mdash; winners climb, losers slide.', 'Partners change every round: never the same partner twice in a row, as few repeat partners and opponents as possible. ' + rest);
+  const line = (title, text)=> `<b class="fi-title">${title}</b> &mdash; ${text} <a href="#" class="fi-more" data-faq="1">More&nbsp;&rsaquo;</a>`;
+  if(t === 'roundrobin') return line('Round Robin', 'fixed teams in 1&ndash;4 groups play each other once; optional playoff, finish any time.');
+  if(t === 'americano' && !tm) return line('Americano', 'partners rotate every round so everyone plays with everyone.');
+  if(t === 'americano') return line('Team Americano', 'fixed pairs; every team meets every other before any repeat.');
+  if(!tm) return mx === 'classic'
+    ? line('Mexicano &middot; Classic', 'foursomes by standings, 1st + 4th vs 2nd + 3rd.')
+    : line('Mexicano &middot; Shuffle', 'foursomes by level, new partner every round.');
   return mx === 'classic'
-    ? box('Team Mexicano &middot; Classic', 'Fixed pairs. Round 1 is random; after every round teams are ranked by points and 1st plays 2nd, 3rd plays 4th, and so on.', 'Strict standings: the same teams can meet again. The leaderboard ranks teams.')
-    : box('Team Mexicano &middot; Shuffle', 'Fixed pairs. Round 1 is random; after every round teams are ranked by points and meet teams of a similar level.', 'Avoids last round&rsquo;s opponent and repeat match-ups where it can. The leaderboard ranks teams.');
+    ? line('Team Mexicano &middot; Classic', 'fixed pairs; 1st plays 2nd, 3rd plays 4th.')
+    : line('Team Mexicano &middot; Shuffle', 'fixed pairs meet teams of similar level, avoiding repeats.');
 }
 
 /* ---------- AUTO-REOPEN ----------
@@ -1807,6 +1836,8 @@ ${rrSetupHtml()}
     formatBtns.forEach(b=> b.classList.toggle('active', b.dataset.type === state.tournamentType));
     const fi = wrap.querySelector('#fmtInfo');
     if(fi) fi.innerHTML = formatInfoHtml();
+    const more = fi && fi.querySelector('.fi-more');
+    if(more) more.addEventListener('click', e=>{ e.preventDefault(); openHelpModal(); });
     const isRR = state.tournamentType === 'roundrobin';
     const tm = !isRR && state.teamMode;
     wrap.querySelector('#amPlayersCard').style.display = (isRR || tm) ? 'none' : '';
@@ -1900,7 +1931,7 @@ ${rrSetupHtml()}
   function updateRec(){
     const playerCount = state.players.map(n=>n.trim()).filter(Boolean).length || 8;
     const {rounds, perRound} = recommendRounds(state.pointsTarget, playerCount, state.numCourts, state.sessionMinutes);
-    recBox.innerHTML = `Recommended: <b>~${rounds} rounds</b> to fit a ${state.sessionMinutes}-minute session &mdash; estimated <b>${perRound.toFixed(1)} min/round</b> at ${state.pointsTarget} points with ${playerCount} players on ${state.numCourts} court(s). This is an approximation; adjust the Rounds field above as you like.`;
+    recBox.innerHTML = `Recommended: <b>~${rounds} rounds</b> for ${state.sessionMinutes} min &middot; ~${perRound.toFixed(1)} min per round`;
   }
   updateRec();
 
@@ -2668,7 +2699,7 @@ function renderKnockoutSection(container){
   if(!state.knockout){
     wrap.innerHTML = `
       <div class="section-title"><span>KNOCKOUT STAGE</span></div>
-      <div class="hint" style="margin-top:0;">Forms 2-player teams from current individual standings (top finisher paired with the lowest qualifying finisher, and so on) and generates an elimination bracket. The main leaderboard stays as-is &mdash; standings for the bracket are tracked separately below once generated.</div>
+      <div class="hint" style="margin-top:0;">Pairs top finishers with lower ones into a bracket; the leaderboard keeps running.</div>
       <div class="grid2" style="margin-top:14px;">
         <div class="field" style="margin-bottom:0;">
           <label>Starting stage</label>
@@ -3732,19 +3763,13 @@ function wireRrSetup(wrap){
     const odd = T % 2 === 1;
     const sizes = rrGroupSizes(T, G);
     const oddGroup = !odd && sizes.some(s=> s%2);
-    oddBox.innerHTML = (odd || oddGroup) ? `<div class="rr-odd-warn">
-        <b>&#9888; ${odd ? 'ODD NUMBER OF TEAMS' : 'A GROUP HAS AN ODD NUMBER OF TEAMS'}</b>
-        Some teams will rest in some rounds &mdash; and depending on the time available, some teams may end up playing fewer matches.
-      </div>` : '';
+    oddBox.innerHTML = (odd || oddGroup) ? `<div class="rr-odd-warn"><b>&#9888; ${odd ? 'Odd number of teams' : 'A group has an odd number of teams'}</b> &mdash; some teams rest and may play fewer matches.</div>` : '';
     if(T < 3){ planBox.innerHTML = 'Add at least 3 teams to see the plan.'; return; }
     const p = rrPlan(T, G, state.numCourts);
     const K = rrPlayoffSize();
-    const sz = sizes.map((s,i)=> (G>1 ? 'Group '+RR_GROUP_LETTERS[i]+': ' : '')+s+' teams').join(' · ');
+    const sz = T + ' teams' + (G>1 ? ' (' + sizes.join('+') + ')' : '');
     const tooFew = T < K ? `<div class="rr-plan-err">Not enough teams for this playoff: it needs ${K}.</div>` : '';
-    planBox.innerHTML = `${sz} &mdash; <b>${p.matches} group matches</b> in <b>${p.rounds} rounds</b> on ${state.numCourts} court${state.numCourts===1?'':'s'}. `
-      + `Estimated <b>~${Math.round(p.groupMin)} min</b> for the groups (~${Math.round(p.per)} min per match, first to ${rrTarget()} ${rrUnit()}) `
-      + `+ <b>~${Math.round(p.koMin)} min</b> playoff.${tooFew}`
-      + `<div class="rr-plan-note">A round has at most one match per court. When a group round has more matches than courts, it is played over two or more rounds.</div>`;
+    planBox.innerHTML = `${sz} &middot; <b>${p.matches} matches</b> &middot; <b>${p.rounds} rounds</b> &middot; ${state.numCourts} court${state.numCourts===1?'':'s'} &middot; <b>~${Math.round(p.groupMin)} min</b> + ~${Math.round(p.koMin)} min playoff${tooFew}`;
   }
 
   function renderTeams(){
@@ -4122,9 +4147,8 @@ function renderRrKnockoutSection(holder){
     const label = {quarterfinal:'Quarterfinals', semifinal:'Semifinals', final:'Final'}[state.rr.playoff];
     wrap.innerHTML = `
       <div class="section-title"><span>PLAYOFF</span></div>
-      <div class="hint" style="margin-top:0;">Group matches played: <b>${played} of ${total}</b>. The top ${K} teams go to the ${label.toLowerCase()}${state.rr.third && K>=4 ? ' (with a 3rd-place match)' : ''}, seeded from the group tables.</div>
-      <div class="rr-ko-actions" style="margin-top:12px;"><button id="rrKoBtn" class="accent">Start ${label.toLowerCase()}</button></div>
-      <div class="hint" style="margin-top:8px;">The playoff is optional: finish the tournament at any time and the podium is taken from the overall table.</div>`;
+      <div class="hint" style="margin-top:0;">Played <b>${played} of ${total}</b> &middot; top ${K} go to the ${label.toLowerCase()}${state.rr.third && K>=4 ? ' + 3rd place' : ''} &middot; optional, you can finish any time.</div>
+      <div class="rr-ko-actions" style="margin-top:12px;"><button id="rrKoBtn" class="accent">Start ${label.toLowerCase()}</button></div>`;
     wrap.querySelector('#rrKoBtn').addEventListener('click', ()=>{
       if(played < total && !confirm(`${total-played} group match${total-played===1?' is':'es are'} still without a score, so the tables may change. Start the playoff anyway?`)) return;
       const ko = rrBuildKnockout();
