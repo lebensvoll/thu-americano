@@ -524,6 +524,17 @@
   .format-btn.active{border-color:var(--accent); background:var(--panel);}
   .format-btn.active .fmt-name{color:var(--accent);}
   .mex-mode{margin-top:14px;}
+  /* compact format picker: names only; the selected combination is explained
+     in one box under the buttons */
+  .fmt-card .fmt-desc{display:none;}
+  .fmt-card .format-btn{padding:11px 14px; text-align:center;}
+  .fmt-card .format-btn .fmt-name{margin-bottom:0; font-size:14px;}
+  .fmt-card .mex-mode{margin-top:12px;}
+  .fmt-card .mex-mode-label{margin-bottom:6px;}
+  .fmt-info{margin-top:14px; padding:12px 14px 12px 16px; border-radius:10px; border:1px solid var(--border); border-left:3px solid var(--accent); background:var(--panel2); font-size:12.5px; line-height:1.55; color:var(--text);}
+  .fmt-info .fi-title{display:block; font-family:var(--font-faq); font-weight:700; font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--accent); margin-bottom:4px;}
+  .fmt-info p{margin:0;}
+  .fmt-info p + p{margin-top:4px; color:var(--muted);}
   .mex-mode-label{font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin-bottom:8px;}
 
   .layout{display:grid; grid-template-columns:340px 1fr; gap:24px; align-items:start;}
@@ -759,6 +770,9 @@
     .field-info label{padding-right:30px; min-height:24px;}
     .field-info .info-icon{position:absolute; top:0; right:0; margin:0; width:26px; height:26px; font-size:13px;}
     .format-toggle{flex-direction:column;}
+    .fmt-card .format-toggle{flex-direction:row; gap:6px;}
+    .fmt-card .format-btn{padding:10px 6px;}
+    .fmt-card .format-btn .fmt-name{font-size:12.5px; letter-spacing:.01em;}
     .layout{grid-template-columns:1fr;}
     /* Sticky sidebar makes sense side-by-side on desktop, but in this
        single-column mobile layout it pins the leaderboard over the rounds
@@ -1245,6 +1259,29 @@ document.addEventListener('keydown', e=>{
   else if(k === 'y'){ e.preventDefault(); doRedo(); }
 });
 
+/* What the chosen format (and its variant) does — shown in the box under
+   the format buttons on the setup screen. */
+function formatInfoHtml(){
+  const t = state.tournamentType, tm = t !== 'roundrobin' && !!state.teamMode, mx = state.mexMode === 'classic' ? 'classic' : 'shuffle';
+  const box = (title, a, b)=> `<span class="fi-title">${title}</span><p>${a}</p>${b ? `<p>${b}</p>` : ''}`;
+  const rest = 'If the players don&rsquo;t fill every court, players sit out on a fair rotation &mdash; nobody twice in a row, everyone about equally often.';
+  if(t === 'roundrobin') return box('Round Robin',
+    'Fixed teams of two (players 1+2, 3+4&hellip;). Split them into 1&ndash;4 groups; every team plays every other team in its group once, to a number of games or points.',
+    'Group tables rank by wins, then head-to-head, then difference; an <b>Overall</b> table ranks all teams together. Afterwards an optional playoff (quarterfinals, semifinals or final, plus a 3rd-place match) &mdash; or finish at any time and the podium comes from the overall table.');
+  if(t === 'americano' && !tm) return box('Americano &middot; individual',
+    'The whole schedule is drawn up front. Partners rotate every round so everyone partners with everyone before any pairing repeats; each match is played to a points total and every player keeps their own score.',
+    rest + ' Rounds you add later continue the same rotation.');
+  if(t === 'americano' && tm) return box('Team Americano &middot; fixed teams',
+    'Pairs stay together all tournament; opponents rotate so every team meets every other team before any match-up repeats.',
+    'When not all teams fit on court, resting teams rotate so match counts stay within one or two; with few courts a team may now and then rest two rounds running. The leaderboard ranks teams.');
+  if(t === 'mexicano' && !tm) return mx === 'classic'
+    ? box('Mexicano &middot; Classic', 'Round 1 is random. After every round players are ranked and grouped into foursomes by level &mdash; winners climb, losers slide. In every foursome 1st + 4th play 2nd + 3rd.', 'Strict standings: the same partners can meet again round after round. ' + rest)
+    : box('Mexicano &middot; Shuffle', 'Round 1 is random. After every round players are ranked and grouped into foursomes close in level &mdash; winners climb, losers slide.', 'Partners change every round: never the same partner twice in a row, as few repeat partners and opponents as possible. ' + rest);
+  return mx === 'classic'
+    ? box('Team Mexicano &middot; Classic', 'Fixed pairs. Round 1 is random; after every round teams are ranked by points and 1st plays 2nd, 3rd plays 4th, and so on.', 'Strict standings: the same teams can meet again. The leaderboard ranks teams.')
+    : box('Team Mexicano &middot; Shuffle', 'Fixed pairs. Round 1 is random; after every round teams are ranked by points and meet teams of a similar level.', 'Avoids last round&rsquo;s opponent and repeat match-ups where it can. The leaderboard ranks teams.');
+}
+
 /* ---------- AUTO-REOPEN ----------
    Typing a score after the tournament was finished reopens it on the spot:
    the new score counts, the timer resumes and Finish tournament is back.
@@ -1591,7 +1628,7 @@ function renderSetup(){
     </div>
     <div class="container">
 
-      <div class="card">
+      <div class="card fmt-card">
         <div class="section-title"><span>TOURNAMENT FORMAT</span></div>
         <div class="format-toggle" id="formatToggle">
           <button type="button" class="format-btn" data-type="americano">
@@ -1633,6 +1670,7 @@ function renderSetup(){
             </button>
           </div>
         </div>
+        <div class="fmt-info" id="fmtInfo" aria-live="polite"></div>
       </div>
 
 ${rrSetupHtml()}
@@ -1733,6 +1771,8 @@ ${rrSetupHtml()}
   });
   function updateFormatUI(){
     formatBtns.forEach(b=> b.classList.toggle('active', b.dataset.type === state.tournamentType));
+    const fi = wrap.querySelector('#fmtInfo');
+    if(fi) fi.innerHTML = formatInfoHtml();
     const isRR = state.tournamentType === 'roundrobin';
     const tm = !isRR && state.teamMode;
     wrap.querySelector('#amPlayersCard').style.display = (isRR || tm) ? 'none' : '';
