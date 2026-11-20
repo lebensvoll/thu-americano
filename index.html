@@ -867,6 +867,10 @@
   .rr-w{font-weight:800; color:var(--accent);}
   .rr-neg{color:var(--danger);}
   .rr-table tr.rr-q td:first-child{box-shadow:inset 3px 0 0 var(--accent);}
+  .rr-overall{margin-bottom:14px; padding-bottom:10px; border-bottom:1px dashed var(--border);}
+  .rr-overall:only-child{border-bottom:0; margin-bottom:0;}
+  .rr-table td.rr-gr{color:var(--muted); font-weight:700; font-size:11px;}
+  .rr-ko-actions{display:flex; gap:10px; flex-wrap:wrap;}
   .rr-legend{font-size:10.5px; color:var(--muted); margin-top:4px; line-height:1.45;}
   .rr-q-dot{display:inline-block; width:8px; height:8px; border-radius:2px; background:var(--accent); margin-right:3px;}
   /* match cards */
@@ -1015,7 +1019,7 @@ function openHelpModal(){
       <p><b>Americano</b> &mdash; the whole schedule is drawn up front. Partners rotate so everyone plays with everyone before any pairing repeats; once every combination is used it simply loops. The rotation is also planned a few rounds <b>beyond</b> the number you chose and kept in reserve, so rounds you add later continue it cleanly.</p>
       <p><b>Mexicano</b> &mdash; only Round&nbsp;1 is random. Each later round is built when you tap <b>+ Add round</b>, using the current standings, so winners climb and losers slide. <b>Shuffle mode</b> (default) keeps foursomes close in level but rotates partners &mdash; never the same partner twice in a row, as few repeats as possible. <b>Classic</b> always pairs 1st + 4th vs 2nd + 3rd.</p>
       <p><b>Fixed teams</b> (Americano and Mexicano) &mdash; switch <b>Players</b> to <b>Fixed teams</b> and enter pairs, two players per row. Partners never change. In Team Americano the opponents rotate: every team meets every other team before any match-up repeats, and when not all teams fit on court the ones resting are rotated fairly (nobody rests twice in a row). In Team Mexicano teams are ranked by points and meet teams of a similar level each round (Shuffle also avoids last round&rsquo;s opponent; Classic pairs 1st v 2nd, 3rd v 4th). The leaderboard, knockout and podium then work per team.</p>
-      <p><b>Round Robin</b> &mdash; fixed teams: players 1+2 are team 1, 3+4 team 2, and so on (tap a team name to rename it). Pick 1&ndash;4 groups; every team plays every other team in its group once. Scores are games (first to 4&ndash;9, default 7) or points (first to the number you set) &mdash; type one team's score and, if it lost, the winner's score fills in. Tables rank by wins, then head-to-head, then game difference. Afterwards the top teams play quarterfinals, semifinals or go straight to the final, with an optional 3rd-place match. With an odd number of teams one team rests each round.</p>
+      <p><b>Round Robin</b> &mdash; fixed teams: players 1+2 are team 1, 3+4 team 2, and so on (tap a team name to rename it). Pick 1&ndash;4 groups; every team plays every other team in its group once. Scores are games (first to 4&ndash;9, default 7) or points (first to the number you set) &mdash; type one team's score and, if it lost, the winner's score fills in. Tables rank by wins, then head-to-head, then game difference. Afterwards the top teams play quarterfinals, semifinals or go straight to the final, with an optional 3rd-place match. With an odd number of teams one team rests each round. Above the group tables an <b>Overall</b> table ranks all teams together (wins, then difference; win rate if the groups differ in size). The playoff is optional &mdash; tap <b>Finish tournament</b> at any time and the podium is taken from the overall table.</p>
       <p>If the player count isn't a multiple of 4 &times; courts, players sit out on a fair rotation: nobody ever sits out two rounds in a row, everyone rests about equally often, and whoever rested longest ago is next.</p>
 
       <h3>2. Run the rounds</h3>
@@ -1345,6 +1349,16 @@ function podiumStandingsHtml(){
         rows.push(`<div class="ps-ko-row"><span class="ps-ko-lab">${escapeHtml(RR_KO_LABEL[m.id] || m.id)}</span><span class="${side==='a'?'ps-win':''}">${nm(A)}</span><b>${rrScored(m.score) ? m.score.a+' : '+m.score.b : '&ndash;'}</b><span class="${side==='b'?'ps-win':''}">${nm(B)}</span></div>`);
       }));
       if(rows.length) html += `<div class="ps-block"><div class="ps-title">Playoff</div>${rows.join('')}</div>`;
+    }
+    {
+      const ov = rrOverall(), multi = groups.length > 1;
+      html += `<div class="ps-block">
+        <div class="ps-title">Overall standings</div>
+        <table class="ps-table"><thead><tr><th></th><th class="l">Team</th>${multi ? '<th>Gr</th>' : ''}<th>P</th><th>W</th><th>L</th><th>+/&minus;</th></tr></thead><tbody>
+        ${ov.map((s,i)=>`<tr class="${rowCls(i)}"><td class="ps-pos">${i+1}</td><td class="l"><b>${escapeHtml(rrTeamName(s.k))}</b><span class="ps-sub">${escapeHtml(rrTeamPlayers(s.k).join(' · '))}</span></td>${multi ? `<td>${RR_GROUP_LETTERS[s.g]}</td>` : ''}<td>${s.p}</td><td class="ps-main">${s.w}</td><td>${s.l}</td><td class="${s.f-s.a<0?'ps-neg':''}">${sign(s.f-s.a)}</td></tr>`).join('')}
+        </tbody></table>
+      </div>`;
+      if(!multi) return `<div class="ps-wrap">${html}</div>`;
     }
     html += `<div class="ps-groups ps-g${groups.length}">` + groups.map((g,gi)=>`
       <div class="ps-block">
@@ -2707,7 +2721,7 @@ function renderPlaying(){
       </div>
     </div>
     <div class="container">
-      ${state.stage === 'finished' ? `<div class="finished-banner"><div class="fb-text"><b>&#127937; Tournament finished</b><span>The podium, ${state.tournamentType === 'roundrobin' ? 'group tables' : 'final leaderboard'}${state.knockout ? ' and playoff results' : ''} &mdash; one tap away.</span></div><button type="button" class="accent" id="podiumBannerBtn">&#127942; Show podium &amp; results</button></div>` : ''}
+      ${state.stage === 'finished' ? `<div class="finished-banner"><div class="fb-text"><b>&#127937; Tournament finished</b><span>The podium, ${state.tournamentType === 'roundrobin' ? 'overall and group tables' : 'final leaderboard'}${state.knockout ? ' and playoff results' : ''} &mdash; one tap away.</span></div><button type="button" class="accent" id="podiumBannerBtn">&#127942; Show podium &amp; results</button></div>` : ''}
       <div class="layout">
         <div class="card leaderboard-card${lbCollapsedMobile ? ' lb-collapsed' : ''}">
           <div class="section-title">
@@ -3368,6 +3382,26 @@ function rrQualifierOrder(groups){
   }
   return out;
 }
+// Overall table of all teams, whatever the number of groups. One group:
+// the group table itself. Several groups: wins, then score difference,
+// then score won; if the groups differ in size (so teams have different
+// numbers of matches), win rate and difference per match instead.
+function rrOverall(){
+  const groups = rrStandings();
+  if(groups.length === 1) return groups[0].slice();
+  const all = groups.flat();
+  const sizes = groups.map(g=> g.length);
+  const even = sizes.every(n=> n === sizes[0]);
+  const wr = s=> s.p ? s.w/s.p : 0, dpm = s=> s.p ? (s.f-s.a)/s.p : 0;
+  all.sort((x,y)=> even
+    ? (y.w-x.w || (y.f-y.a)-(x.f-x.a) || y.f-x.f || x.pos-y.pos || x.k-y.k)
+    : (wr(y)-wr(x) || dpm(y)-dpm(x) || y.f-x.f || x.pos-y.pos || x.k-y.k));
+  return all;
+}
+function rrOverallEven(){
+  const sizes = rrGroupSizes(rrTeamCount(), state.rr.groups);
+  return sizes.every(n=> n === sizes[0]);
+}
 function rrPlayoffSize(){ return {quarterfinal:8, semifinal:4, final:2}[state.rr.playoff] || 4; }
 
 // Seeded pairs for the first playoff round, as team indices.
@@ -3706,7 +3740,27 @@ function renderRrStandings(container){
   const groups = rrStandings();
   const anyPlayed = groups.some(g=> g.some(s=> s.p > 0));
   const q = rrQualifySet(groups);
-  container.innerHTML = groups.map((g, gi)=>`
+  const multi = groups.length > 1;
+  const overall = rrOverall();
+  const ovHtml = `
+    <div class="rr-group rr-overall">
+      <div class="rr-group-title">Overall &middot; all ${overall.length} teams</div>
+      <table class="rr-table">
+        <thead><tr><th></th><th class="rr-tn">Team</th>${multi ? '<th title="Group">Gr</th>' : ''}<th title="Played">P</th><th title="Won">W</th><th title="Lost">L</th><th title="${rrUnit()} difference">+/&minus;</th></tr></thead>
+        <tbody>${overall.map((s,i)=>{
+          const d = s.f - s.a;
+          const [p1,p2] = rrTeamPlayers(s.k);
+          return `<tr class="${anyPlayed && q.has(s.k) ? 'rr-q' : ''}">
+            <td class="rr-pos">${i+1}</td>
+            <td class="rr-tn">${rrTeamLabelHtml(s.k)}<span class="rr-pl">${escapeHtml(p1)} · ${escapeHtml(p2)}</span></td>
+            ${multi ? `<td class="rr-gr">${RR_GROUP_LETTERS[s.g]}</td>` : ''}
+            <td>${s.p}</td><td class="rr-w">${s.w}</td><td>${s.l}</td>
+            <td class="${d<0?'rr-neg':''}">${d>0?'+'+d:d}</td>
+          </tr>`;}).join('')}</tbody>
+      </table>
+      <div class="rr-legend">${multi ? (rrOverallEven() ? `Ranked by wins, then ${rrUnit()} difference, then ${rrUnit()} won.` : `Groups differ in size, so ranked by win rate, then ${rrUnit()} difference per match.`) + ' ' : ''}Finish at any time &mdash; without a playoff the podium comes from this table.</div>
+    </div>`;
+  container.innerHTML = ovHtml + (!multi ? `<div class="rr-legend">${anyPlayed ? '<span class="rr-q-dot"></span> playoff place now · ' : ''}Ranked by wins, then head-to-head, then ${rrUnit()} difference.</div>` : groups.map((g, gi)=>`
     <div class="rr-group">
       ${groups.length > 1 ? `<div class="rr-group-title">Group ${RR_GROUP_LETTERS[gi]}</div>` : ''}
       <table class="rr-table">
@@ -3722,7 +3776,7 @@ function renderRrStandings(container){
           </tr>`;}).join('')}</tbody>
       </table>
     </div>`).join('')
-    + `<div class="rr-legend">${anyPlayed ? '<span class="rr-q-dot"></span> playoff place now · ' : ''}Ranked by wins, then head-to-head, then ${rrUnit()} difference.</div>`;
+    + `<div class="rr-legend">${anyPlayed ? '<span class="rr-q-dot"></span> playoff place now · ' : ''}Groups: ranked by wins, then head-to-head, then ${rrUnit()} difference.</div>`);
   wireTeamLabelEdit(container);
 }
 
@@ -3912,7 +3966,8 @@ function renderRrKnockoutSection(holder){
     wrap.innerHTML = `
       <div class="section-title"><span>PLAYOFF</span></div>
       <div class="hint" style="margin-top:0;">Group matches played: <b>${played} of ${total}</b>. The top ${K} teams go to the ${label.toLowerCase()}${state.rr.third && K>=4 ? ' (with a 3rd-place match)' : ''}, seeded from the group tables.</div>
-      <div style="margin-top:12px;"><button id="rrKoBtn" class="accent">Start ${label.toLowerCase()}</button></div>`;
+      <div class="rr-ko-actions" style="margin-top:12px;"><button id="rrKoBtn" class="accent">Start ${label.toLowerCase()}</button></div>
+      <div class="hint" style="margin-top:8px;">The playoff is optional: finish the tournament at any time and the podium is taken from the overall table.</div>`;
     wrap.querySelector('#rrKoBtn').addEventListener('click', ()=>{
       if(played < total && !confirm(`${total-played} group match${total-played===1?' is':'es are'} still without a score, so the tables may change. Start the playoff anyway?`)) return;
       const ko = rrBuildKnockout();
@@ -3952,11 +4007,11 @@ function rrPodiumHtml(){
     first = rrTeamOfPair(pl.first); second = rrTeamOfPair(pl.second);
     third = pl.third.filter(Boolean).map(rrTeamOfPair);
     if(!third.length && state.rr.playoff === 'final'){
-      const nxt = rrQualifierOrder(rrStandings()).map(x=>x.k).find(k=> k !== first && k !== second);
+      const nxt = rrOverall().map(x=>x.k).find(k=> k !== first && k !== second);
       if(nxt !== undefined) third = [nxt];
     }
   } else {
-    const order = rrQualifierOrder(rrStandings()).map(s=>s.k);
+    const order = rrOverall().filter(s=> s.p > 0).map(s=>s.k);
     if(order.length < 3) return '<div class="empty">Not enough completed matches to determine a podium.</div>';
     [first, second] = order; third = [order[2]];
   }
