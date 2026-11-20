@@ -524,13 +524,21 @@
   .format-btn.active{border-color:var(--accent); background:var(--panel);}
   .format-btn.active .fmt-name{color:var(--accent);}
   .mex-mode{margin-top:14px;}
-  /* compact format picker: names only; the selected combination is explained
-     in one box under the buttons */
+  /* ---------- FORMAT PICKER: iOS-style segmented controls ----------
+     One row per choice: label on the left (above it on phones), a rounded
+     track with equal segments; the chosen segment is filled with the theme
+     accent. #app prefix so theme-specific .format-btn rules don't leak in. */
   .fmt-card .fmt-desc{display:none;}
-  .fmt-card .format-btn{padding:11px 14px; text-align:center;}
-  .fmt-card .format-btn .fmt-name{margin-bottom:0; font-size:14px;}
-  .fmt-card .mex-mode{margin-top:12px;}
-  .fmt-card .mex-mode-label{margin-bottom:6px;}
+  .fmt-card .fmt-row{display:grid; grid-template-columns:92px 1fr; align-items:center; gap:12px; margin:0;}
+  .fmt-card .fmt-row + .fmt-row{margin-top:10px;}
+  .fmt-card .fmt-row .mex-mode-label{margin:0; font-size:11px; font-weight:700; letter-spacing:.08em;}
+  #app .fmt-card .format-toggle{display:flex; flex-direction:row; gap:3px; padding:3px; border-radius:12px; background:var(--dark); border:1px solid var(--border); box-shadow:inset 0 1px 2px rgba(0,0,0,.25);}
+  #app .fmt-card .format-btn{flex:1 1 0; min-width:0; margin:0; padding:9px 6px; border:0; border-radius:9px; background:transparent; box-shadow:none; text-align:center; backdrop-filter:none; -webkit-backdrop-filter:none; transition:background .15s, color .15s;}
+  #app .fmt-card .format-btn .fmt-name{margin:0; font-size:13px; letter-spacing:.03em; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  #app .fmt-card .format-btn:hover .fmt-name{color:var(--text);}
+  #app .fmt-card .format-btn.active{background:var(--accent); box-shadow:0 2px 8px rgba(0,0,0,.25);}
+  #app .fmt-card .format-btn.active .fmt-name{color:var(--ink);}
+  .fmt-card .fmt-info{margin-top:14px;}
   .fmt-info{margin-top:14px; padding:12px 14px 12px 16px; border-radius:10px; border:1px solid var(--border); border-left:3px solid var(--accent); background:var(--panel2); font-size:12.5px; line-height:1.55; color:var(--text);}
   .fmt-info .fi-title{display:block; font-family:var(--font-faq); font-weight:700; font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--accent); margin-bottom:4px;}
   .fmt-info p{margin:0;}
@@ -770,9 +778,9 @@
     .field-info label{padding-right:30px; min-height:24px;}
     .field-info .info-icon{position:absolute; top:0; right:0; margin:0; width:26px; height:26px; font-size:13px;}
     .format-toggle{flex-direction:column;}
-    .fmt-card .format-toggle{flex-direction:row; gap:6px;}
-    .fmt-card .format-btn{padding:10px 6px;}
-    .fmt-card .format-btn .fmt-name{font-size:12.5px; letter-spacing:.01em;}
+    .fmt-card .fmt-row{grid-template-columns:1fr; gap:6px;}
+    #app .fmt-card .format-btn{padding:10px 4px;}
+    #app .fmt-card .format-btn .fmt-name{font-size:12.5px; letter-spacing:.02em;}
     .layout{grid-template-columns:1fr;}
     /* Sticky sidebar makes sense side-by-side on desktop, but in this
        single-column mobile layout it pins the leaderboard over the rounds
@@ -1630,6 +1638,8 @@ function renderSetup(){
 
       <div class="card fmt-card">
         <div class="section-title"><span>TOURNAMENT FORMAT</span></div>
+        <div class="mex-mode fmt-row">
+          <div class="mex-mode-label">Format</div>
         <div class="format-toggle" id="formatToggle">
           <button type="button" class="format-btn" data-type="americano">
             <span class="fmt-name">Americano</span>
@@ -1644,7 +1654,8 @@ function renderSetup(){
             <span class="fmt-desc">Fixed teams of two. Every team plays every other team in its group (1&ndash;4 groups), then the top teams go to a playoff.</span>
           </button>
         </div>
-        <div class="mex-mode" id="teamModeBox">
+        </div>
+        <div class="mex-mode fmt-row" id="teamModeBox">
           <div class="mex-mode-label">Players</div>
           <div class="format-toggle" id="teamModeToggle">
             <button type="button" class="format-btn" data-team="0">
@@ -1657,11 +1668,11 @@ function renderSetup(){
             </button>
           </div>
         </div>
-        <div class="mex-mode" id="mexModeBox">
-          <div class="mex-mode-label">Mexicano pairing</div>
+        <div class="mex-mode fmt-row" id="mexModeBox">
+          <div class="mex-mode-label">Pairing</div>
           <div class="format-toggle" id="mexModeToggle">
             <button type="button" class="format-btn" data-mex="shuffle">
-              <span class="fmt-name">Shuffle mode</span>
+              <span class="fmt-name">Shuffle</span>
               <span class="fmt-desc">Active rotation. Foursomes still follow the standings, but partners change every round &mdash; never the same partner twice in a row, as few repeat partners and opponents as possible.</span>
             </button>
             <button type="button" class="format-btn" data-mex="classic">
