@@ -7,8 +7,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#15201b">
-<title>Padel Runner — Free Americano &amp; Mexicano Padel Tournament App</title>
-<meta name="description" content="Free tool for running Americano, Mexicano & Round Robin padel tournaments — live leaderboard, group tables, knockout bracket, session timer. By Oleg Prachuk.">
+<title>Padel Runner — Free Americano, Mexicano &amp; Round Robin Padel Tournament App</title>
+<meta name="description" content="Free padel tournament app for Americano, Mexicano and Round Robin — rotating partners or fixed teams, 1–4 groups with an overall table, live leaderboard, playoff bracket, podium and session timer. Works offline, no sign-up. By Oleg Prachuk.">
+<meta name="keywords" content="padel tournament app, americano padel, mexicano padel, round robin padel, team americano, padel group stage, padel leaderboard, padel bracket, padel scheduler">
+<meta name="application-name" content="Padel Runner">
 <meta name="author" content="Oleg Prachuk">
 
 <script type="application/ld+json">
@@ -18,7 +20,10 @@
   "name": "Padel Runner",
   "alternateName": "Americano, Mexicano & Round Robin Padel Tournament App",
   "url": "https://lebensvoll.github.io/thu-americano",
-  "description": "Free web app for running Americano, Mexicano and Round Robin padel tournaments and social padel events: automatic schedule generator, live leaderboard, group tables and knockout bracket. Built for padel clubs.",
+  "description": "Free web app for running Americano, Mexicano and Round Robin padel tournaments and social padel events: rotating partners or fixed teams, automatic schedule generator, 1-4 groups with an overall table, live leaderboard, playoff bracket and podium. Built for padel clubs.",
+  "softwareVersion": "3.0",
+  "datePublished": "2026-07-11",
+  "dateModified": "2026-11-20",
   "applicationCategory": "SportsApplication",
   "operatingSystem": "Any (runs in a web browser)",
   "browserRequirements": "Requires JavaScript",
@@ -31,8 +36,11 @@
   "featureList": [
     "Americano tournament scheduler",
     "Mexicano standings-based rounds",
-    "Round Robin with fixed teams, 1-4 groups and a playoff",
+    "Round Robin with fixed teams, 1-4 groups, an overall table and an optional playoff",
+    "Team Americano and Team Mexicano with fixed pairs",
     "Live leaderboard",
+    "Podium with full final standings",
+    "Colour themes",
     "Knockout / elimination bracket",
     "Add or remove players mid-event",
     "Works offline, no sign-up"
@@ -63,13 +71,13 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="by Oleg Prachuk">
 <meta property="og:title" content="Padel Runner">
-<meta property="og:description" content="Free tool for running Americano & Mexicano padel tournaments — live leaderboard, knockout bracket, session timer.">
+<meta property="og:description" content="Free Americano, Mexicano & Round Robin padel tournament app — rotating partners or fixed teams, groups, live leaderboard, playoff and podium.">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Padel Runner — by Oleg Prachuk">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Padel Runner">
-<meta name="twitter:description" content="Free Americano & Mexicano padel tournament runner — live leaderboard, knockout, timer.">
+<meta name="twitter:description" content="Free Americano, Mexicano & Round Robin padel tournament app — fixed teams, groups, live leaderboard, playoff, podium.">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -370,7 +378,10 @@
   .hero .actions{display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end;}
   .actions-utils{display:contents;} /* transparent on desktop; a real flex row only on mobile */
   .hero-actions-col{display:flex; flex-direction:column; align-items:flex-end; gap:8px;}
-  .hero-credit{font-size:10px; color:var(--muted); opacity:.5; letter-spacing:.02em; text-decoration:none;}
+  .faq-list{margin:4px 0 6px; padding-left:18px; font-size:13px; line-height:1.6; color:var(--text);}
+  .faq-list li{margin:2px 0;}
+  .modal-box .faq-version{margin:-2px 0 18px; font-size:12px; color:var(--muted);}
+  .hero-credit{font-size:11px; color:var(--muted); opacity:.5; letter-spacing:.02em; text-decoration:none;}
   .hero-credit:hover{opacity:.8;}
   .hero-club-trigger{cursor:pointer; border-bottom:1px dashed transparent;}
   .hero-club-trigger:hover{border-bottom-color:var(--muted); color:var(--text);}
@@ -950,10 +961,11 @@
 <footer class="site-footer">
   <p>
     <strong>Padel Runner</strong> is a free Americano, Mexicano &amp; Round Robin padel tournament and event tool.
-    It builds the schedule automatically, keeps a live leaderboard, runs a knockout
-    bracket, and lets you add or drop players mid-event &mdash; all from a phone
-    at the court. Made for padel clubs and social padel events: no sign-up, no ads, works offline.
-    Developed by <a href="https://instagram.com/olegprachuk" target="_blank" rel="noopener">Oleg Prachuk</a>.
+    Play with rotating partners or fixed teams, in one table or in 1&ndash;4 groups. It builds the schedule
+    automatically, keeps a live leaderboard, runs a playoff bracket, shows a podium with the final standings,
+    and lets you add or drop players mid-event &mdash; all from a phone at the court. Made for padel clubs
+    and social padel events: no sign-up, no ads, works offline.
+    Developed by <a href="https://instagram.com/olegprachuk" target="_blank" rel="noopener">Oleg Prachuk</a> &middot; version 3.0, November 2026.
   </p>
 </footer>
 
@@ -1018,45 +1030,58 @@ function openHelpModal(){
     <div class="modal-box modal-box-wrap">
       <button class="ghost small modal-close" id="helpCloseBtn">Close</button>
       <h2>How Padel Runner works</h2>
+      <p class="faq-version">Padel Runner <b>3.0</b> &middot; November 2026 &middot; first released July 2026</p>
+
+      <h3>What&rsquo;s new in 3.0 (November 2026)</h3>
+      <ul class="faq-list">
+        <li><b>Round Robin</b> &mdash; a third format with fixed teams: 1&ndash;4 groups, games or points scoring, an <b>Overall</b> table of all teams and an optional playoff (quarterfinals, semifinals or final, plus a 3rd-place match).</li>
+        <li><b>Fixed teams for Americano and Mexicano</b> &mdash; Team Americano and Team Mexicano keep the same pairs all tournament while opponents rotate or follow the standings.</li>
+        <li><b>New podium</b> &mdash; a finished banner, a <b>Podium &amp; results</b> button and a pop-up with the top three plus the full final standings (and group tables / playoff results where played). Reopen the tournament from the banner, or just type a missed score.</li>
+        <li><b>New themes</b> &mdash; <b>Padel Pa</b> and the light <b>Padel &amp; Brew</b>, and the theme picker is now one button with a list.</li>
+        <li>Mexicano <b>Shuffle</b> mode, fairer rests in Americano and planned-ahead rounds you can add later.</li>
+      </ul>
 
       <h3>1. Set up the tournament</h3>
       <p>Tap the title and the line under it (date &middot; club) at the top of the page to name your tournament and venue &mdash; do this before sharing the page, or a reminder banner will keep nagging you.</p>
-      <p>Choose a <b>format</b> &mdash; Americano, Mexicano or Round Robin. For Americano and Mexicano add your players (8&ndash;12 works best), then set the points per match, number of courts, and how long you want the session to run. The recommendation box suggests how many rounds fit that time &mdash; you can override it.</p>
-      <p><b>Americano</b> &mdash; the whole schedule is drawn up front. Partners rotate so everyone plays with everyone before any pairing repeats; once every combination is used it simply loops. The rotation is also planned a few rounds <b>beyond</b> the number you chose and kept in reserve, so rounds you add later continue it cleanly.</p>
-      <p><b>Mexicano</b> &mdash; only Round&nbsp;1 is random. Each later round is built when you tap <b>+ Add round</b>, using the current standings, so winners climb and losers slide. <b>Shuffle mode</b> (default) keeps foursomes close in level but rotates partners &mdash; never the same partner twice in a row, as few repeats as possible. <b>Classic</b> always pairs 1st + 4th vs 2nd + 3rd.</p>
-      <p><b>Fixed teams</b> (Americano and Mexicano) &mdash; switch <b>Players</b> to <b>Fixed teams</b> and enter pairs, two players per row. Partners never change. In Team Americano the opponents rotate: every team meets every other team before any match-up repeats, and when not all teams fit on court the ones resting are rotated fairly (nobody rests twice in a row). In Team Mexicano teams are ranked by points and meet teams of a similar level each round (Shuffle also avoids last round&rsquo;s opponent; Classic pairs 1st v 2nd, 3rd v 4th). The leaderboard, knockout and podium then work per team.</p>
-      <p><b>Round Robin</b> &mdash; fixed teams: players 1+2 are team 1, 3+4 team 2, and so on (tap a team name to rename it). Pick 1&ndash;4 groups; every team plays every other team in its group once. Scores are games (first to 4&ndash;9, default 7) or points (first to the number you set) &mdash; type one team's score and, if it lost, the winner's score fills in. Tables rank by wins, then head-to-head, then game difference. Afterwards the top teams play quarterfinals, semifinals or go straight to the final, with an optional 3rd-place match. With an odd number of teams one team rests each round. Above the group tables an <b>Overall</b> table ranks all teams together (wins, then difference; win rate if the groups differ in size). The playoff is optional &mdash; tap <b>Finish tournament</b> at any time and the podium is taken from the overall table.</p>
-      <p>If the player count isn't a multiple of 4 &times; courts, players sit out on a fair rotation: nobody ever sits out two rounds in a row, everyone rests about equally often, and whoever rested longest ago is next.</p>
+      <p>Choose a <b>format</b> &mdash; Americano, Mexicano or Round Robin &mdash; and for Americano and Mexicano choose <b>Players</b>: <b>Individual</b> (partners change) or <b>Fixed teams</b>. Add players (8&ndash;12 works best for individual play), then set the points per match, number of courts, and how long you want the session to run. The recommendation box suggests how many rounds fit that time &mdash; you can override it.</p>
 
-      <h3>2. Run the rounds</h3>
+      <h3>2. The formats</h3>
+      <p><b>Americano</b> &mdash; the whole schedule is drawn up front. Partners rotate so everyone plays with everyone before any pairing repeats; once every combination is used it simply loops. The rotation is also planned a few rounds <b>beyond</b> the number you chose and kept in reserve, so rounds you add later continue it cleanly. Each match is played to a points total (e.g. 21); players are ranked by points won (or by difference).</p>
+      <p><b>Mexicano</b> &mdash; only Round&nbsp;1 is random. Each later round is built when you tap <b>+ Add round</b>, using the current standings, so winners climb and losers slide. <b>Shuffle mode</b> (default) keeps foursomes close in level but rotates partners &mdash; never the same partner twice in a row, as few repeats as possible. <b>Classic</b> always pairs 1st + 4th vs 2nd + 3rd.</p>
+      <p><b>Team Americano</b> &mdash; switch <b>Players</b> to <b>Fixed teams</b> and enter pairs, two players per row (tap a team name to rename it). Partners never change; opponents rotate so every team meets every other team before any match-up repeats. When not all teams fit on court, the resting teams are rotated so match counts stay within one or two of each other; with few courts a team may now and then rest two rounds running. The <b>Resting</b> line shows team names with their players.</p>
+      <p><b>Team Mexicano</b> &mdash; same fixed pairs; after each round teams are ranked by points and meet teams of a similar level (Shuffle also avoids last round&rsquo;s opponent and repeats; Classic pairs 1st v 2nd, 3rd v 4th). In both team modes the leaderboard shows each team with its players and how many matches it has played; knockout and podium work per team.</p>
+      <p><b>Round Robin</b> &mdash; fixed teams: players 1+2 are team 1, 3+4 team 2, and so on. Pick 1&ndash;4 groups; every team plays every other team in its group once. Scores are games (first to 4&ndash;9, default 7) or points (first to the number you set) &mdash; type one team&rsquo;s score and, if it lost, the winner&rsquo;s score fills in. Group tables rank by wins, then head-to-head, then difference. Above them an <b>Overall</b> table ranks all teams together (wins, then difference; win rate if the groups differ in size). With an odd number of teams one team rests each round. The playoff is optional &mdash; tap <b>Finish tournament</b> at any time and the podium is taken from the overall table.</p>
+      <p><b>Rests</b> &mdash; if the player count isn&rsquo;t a multiple of 4 &times; courts, players sit out on a fair rotation: nobody sits out two rounds in a row, everyone rests about equally often, and whoever rested longest ago is next.</p>
+
+      <h3>3. Run the rounds</h3>
       <p>Tap a score box and type one team's score &mdash; the other side fills in automatically to reach the points target. The leaderboard updates instantly, and every entry is <b>saved to this device</b> the moment you type it (you'll see a &ldquo;Saved automatically&rdquo; note).</p>
       <p><b>Rank by</b> (set in Setup) decides the leaderboard order: total points scored, or point differential (points won minus points lost).</p>
       <p>Rename a court by tapping the number after the word COURT &mdash; use a letter or a name, it carries across every round.</p>
       <p><b>+ Add round</b> extends the tournament. In Americano the line above the button tells you how many planned rounds are still in reserve (&ldquo;Rotation planned ahead: 3 more rounds ready&rdquo;) &mdash; those come with new partners and fair rests guaranteed. Once the reserve is used up, new rounds are built on the spot by the same rules. <b>Delete round</b> on a card removes it: deleting the last round puts it back into the reserve; deleting one in the middle rebuilds every not-yet-scored round after it, so rests and partners stay fair. From round&nbsp;8 on, Americano offers a choice each time: keep rotating partners, or a lineup balanced by current standings (the same players rest either way).</p>
 
-      <h3>3. Players who join or leave</h3>
+      <h3>4. Players who join or leave</h3>
       <p>Tap a player's name on the leaderboard to rename them, or <b>+ Add player</b> to bring someone in mid-tournament &mdash; every round that has no score yet is rebuilt to include them, starting from the very next round. Rounds you've already scored don't change, the number of rounds stays the same, and so does the number of courts. A newcomer goes on court straight away rather than to the bench.</p>
       <p>The <b>&#10005;</b> next to a name removes that player from the rotation. They keep every point already earned and stay on the leaderboard; every not-yet-scored round is rebuilt without them, while any round that already has a score &mdash; and its results &mdash; is left untouched.</p>
 
-      <h3>4. Undo / redo</h3>
+      <h3>5. Undo / redo</h3>
       <p>The <b>&#8630; / &#8631;</b> buttons (or Ctrl/Cmd&#8288;+&#8288;Z and Ctrl/Cmd&#8288;+&#8288;Shift&#8288;+&#8288;Z) step back and forward through structural changes &mdash; adding or deleting a round, removing a player, generating a bracket, finishing, and so on. Score typing within one round counts as a single step. History is kept for the current session only.</p>
 
-      <h3>5. Session timer</h3>
+      <h3>6. Session timer</h3>
       <p>The bar above the rounds shows how long you've been playing (since the schedule was generated) and roughly how much of your planned session is left. Go past the planned time and it flips to <b>Overtime</b>. It freezes when you finish.</p>
 
-      <h3>6. Knockout stage</h3>
+      <h3>7. Knockout / playoff</h3>
       <p>Once enough players have results, pick a starting stage and generate an elimination bracket. Teams are formed by pairing a strong finisher with a weaker one (snake seeding). The main leaderboard keeps running underneath, and knockout standings are tracked separately.</p>
       <p>In <b>Round Robin</b> the teams stay as entered. Under the last group round, <b>Start quarterfinals / semifinals / final</b> seeds the top teams from the group tables &mdash; with two groups it crosses them (A1 v B2, B1 v A2), with one group it pairs 1st v 4th and 2nd v 3rd. Winners move on automatically; the optional 3rd-place match is played by the two semifinal losers.</p>
 
-      <h3>7. Finishing</h3>
-      <p><b>Finish tournament</b> (the button under the last round, or in the header) saves a results file to your device and opens the <b>podium</b> as a pop-up. Close it and reopen it any time with <b>Show final podium</b>. <b>Reopen tournament</b> (in the header or the finished banner) puts you back into play if you need to fix something. Typing a score into any round after finishing reopens the tournament automatically, so the new score counts &mdash; tap <b>Finish tournament</b> again when you&rsquo;re done (one undo goes back to the finished state).</p>
+      <h3>8. Finishing &amp; the podium</h3>
+      <p><b>Finish tournament</b> (the button under the last round, or in the header) saves a results file to your device and opens the <b>podium</b> as a pop-up. It shows the top three (in Round Robin with the players&rsquo; names large and the team name under them) and below it the full final standings &mdash; in Round Robin the overall table, the group tables and the playoff results. Close it and open it again any time with <b>Podium &amp; results</b> in the header or <b>Show podium &amp; results</b> in the finished banner. <b>Reopen tournament</b> (in the header or the finished banner) puts you back into play if you need to fix something. Typing a score into any round after finishing reopens the tournament automatically, so the new score counts &mdash; tap <b>Finish tournament</b> again when you&rsquo;re done (one undo goes back to the finished state).</p>
 
       <h3>Autosave, backups &amp; devices</h3>
       <p>There is no save button. Every score, rename, added or deleted round is written straight to <b>this browser on this device</b> the instant you make it &mdash; the &ldquo;Saved automatically&rdquo; note just confirms it. Reopen the page on the same device and you carry on exactly where you left off.</p>
       <p>It is <b>not</b> shared or synced: a friend opening the same link gets their own separate copy, and clearing your browser data (or using a private window) wipes it. To keep a backup or move a running tournament to another device, use <b>Export</b> (downloads a JSON file) and <b>Import</b> (loads one back).</p>
 
       <h3>Colour theme</h3>
-      <p>Tap the theme button at the top of the page (it shows the current theme) and pick from the list: <b>Sterling</b> (the club&rsquo;s Sport &amp; Wellness palette), <b>Graphite</b> (deep-space grey with a dust of stars), <b>Sakura</b> (dark cherry blossom over a magenta nebula) <b>Padel Pa</b> (midnight cobalt with the community&rsquo;s logo) or <b>Padel &amp; Brew</b> (light: white with the logo&rsquo;s racket red, beer amber and navy). Your choice is remembered on this device.</p>
+      <p>Tap the theme button at the top of the page (it shows the current theme) and pick from the list: <b>Sterling</b> (the club&rsquo;s Sport &amp; Wellness palette), <b>Graphite</b> (deep-space grey with a dust of stars), <b>Sakura</b> (dark cherry blossom over a magenta nebula), <b>Padel Pa</b> (midnight cobalt with the community&rsquo;s logo) and <b>Padel &amp; Brew</b> (light: white with the logo&rsquo;s racket red, beer amber and navy). Your choice is remembered on this device.</p>
 
       <p style="margin-top:20px;">This tool is free for everyone to use. If you'd like to say thanks, message the developer on Instagram: <a href="https://instagram.com/olegprachuk" target="_blank" rel="noopener" style="color:var(--accent); text-decoration:none;">instagram.com/olegprachuk</a></p>
     </div>
@@ -3588,7 +3613,7 @@ function rrSetupHtml(){
             </select>
           </div>
           <div class="field">
-            <label>Playoff</label>
+            <label>Playoff (optional)</label>
             <select id="rrPlayoff">
               <option value="quarterfinal">Quarterfinals (8 teams)</option>
               <option value="semifinal">Semifinals (4 teams)</option>
