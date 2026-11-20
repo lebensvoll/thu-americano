@@ -8,7 +8,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#15201b">
 <title>Padel Runner — Free Americano, Mexicano &amp; Round Robin Padel Tournament App</title>
-<meta name="description" content="Free padel tournament app for Americano, Mexicano and Round Robin — rotating partners or fixed teams, 1–4 groups with an overall table, live leaderboard, playoff bracket, podium and session timer. Works offline, no sign-up. By Oleg Prachuk.">
+<meta name="description" content="Free padel tournament app for Americano, Mexicano and Round Robin — rotating partners or fixed teams, 1–4 groups with an overall table, live leaderboard, playoff bracket and podium. Works offline, no sign-up. By Oleg Prachuk.">
 <meta name="keywords" content="padel tournament app, americano padel, mexicano padel, round robin padel, team americano, padel group stage, padel leaderboard, padel bracket, padel scheduler">
 <meta name="application-name" content="Padel Runner">
 <meta name="author" content="Oleg Prachuk">
@@ -1115,14 +1115,11 @@ function openHelpModal(){
       <h3>5. Undo / redo</h3>
       <p>The <b>&#8630; / &#8631;</b> buttons (or Ctrl/Cmd&#8288;+&#8288;Z and Ctrl/Cmd&#8288;+&#8288;Shift&#8288;+&#8288;Z) step back and forward through structural changes &mdash; adding or deleting a round, removing a player, generating a bracket, finishing, and so on. Score typing within one round counts as a single step. History is kept for the current session only.</p>
 
-      <h3>6. Session timer</h3>
-      <p>The bar above the rounds shows how long you've been playing (since the schedule was generated) and roughly how much of your planned session is left. Go past the planned time and it flips to <b>Overtime</b>. It freezes when you finish.</p>
-
-      <h3>7. Knockout / playoff</h3>
+      <h3>6. Knockout / playoff</h3>
       <p>Once enough players have results, pick a starting stage and generate an elimination bracket. Teams are formed by pairing a strong finisher with a weaker one (snake seeding). The main leaderboard keeps running underneath, and knockout standings are tracked separately.</p>
       <p>In <b>Round Robin</b> the teams stay as entered. Under the last group round, <b>Start quarterfinals / semifinals / final</b> seeds the top teams from the group tables &mdash; with two groups it crosses them (A1 v B2, B1 v A2), with one group it pairs 1st v 4th and 2nd v 3rd. Winners move on automatically; the optional 3rd-place match is played by the two semifinal losers.</p>
 
-      <h3>8. Finishing &amp; the podium</h3>
+      <h3>7. Finishing &amp; the podium</h3>
       <p><b>Finish tournament</b> (the button under the last round, or in the header) saves a results file to your device and opens the <b>podium</b> as a pop-up. It shows the top three (in Round Robin with the players&rsquo; names large and the team name under them) and below it the full final standings &mdash; in Round Robin the overall table, the group tables and the playoff results. Close it and open it again any time with <b>Podium &amp; results</b> in the header or <b>Show podium &amp; results</b> in the finished banner. <b>Reopen tournament</b> (in the header or the finished banner) puts you back into play if you need to fix something. Typing a score into any round after finishing reopens the tournament automatically, so the new score counts &mdash; tap <b>Finish tournament</b> again when you&rsquo;re done (one undo goes back to the finished state).</p>
 
       <h3>Autosave, backups &amp; devices</h3>
@@ -1307,7 +1304,7 @@ function formatInfoHtml(){
 
 /* ---------- AUTO-REOPEN ----------
    Typing a score after the tournament was finished reopens it on the spot:
-   the new score counts, the timer resumes and Finish tournament is back.
+   the new score counts and Finish tournament is back.
    One undo step restores the finished tournament as it was. The page
    re-renders once focus leaves the score boxes, so typing isn't cut off. */
 let autoReopenPending = false;
